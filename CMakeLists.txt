@@ -16,10 +16,8 @@ set(AIRSIM_ROOT "C:/SSD/GitProject/AirSim")
 INCLUDE_DIRECTORIES("${AIRSIM_ROOT}/AirLib/include")
 
 function (link_airsim arg)
-    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/deps/rpclib/lib/x64/Debug/rpc.lib")
-    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/lib/x64/Debug/AirLib.lib")
-    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/lib/x64/Release/AirLib.lib")
-    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/deps/rpclib/lib/x64/Release/rpc.lib")
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/deps/rpclib/lib/x64/RelWithDebInfo/rpc.lib")
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/lib/x64/RelWithDebInfo/AirLib.lib")
 endfunction ()
 
 find_package(Eigen3 CONFIG REQUIRED)
@@ -61,7 +59,6 @@ add_library(${PROJECT_NAME} ${LIBRARY_FILE})
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
-    target_link_options(${PROJECT_NAME} PUBLIC "/FORCE:MULTIPLE")
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
