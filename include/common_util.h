@@ -37,7 +37,7 @@ namespace std {
 
 namespace comutil {
 
-    void debug_img();
+    std::string timeToString(std::chrono::system_clock::time_point t);
 
     // If folder exists, delete it and make a empty new folder.
     void checkFolder(const fs::path& folder);
@@ -57,6 +57,7 @@ namespace comutil {
 	// Return the time interval between "now" parameter and the time this function is executed.
 	float getTimeInterval(std::chrono::steady_clock::time_point& now);
 
+    void debug_img();
 	void debug_img(std::vector<cv::Mat>& vImgs);
 
     // Sleep x second.

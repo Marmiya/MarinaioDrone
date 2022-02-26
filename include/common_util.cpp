@@ -3,6 +3,15 @@
 
 namespace comutil {
 
+    std::string timeToString(std::chrono::system_clock::time_point t)
+    {
+        std::time_t time = std::chrono::system_clock::to_time_t(t);
+        std::string time_str = std::ctime(&time);
+        time_str.resize(time_str.size() - 1);
+        replace(time_str.begin(), time_str.end(), ':', ' ');
+        return time_str;
+    }
+
     void debug_img() {
 
         std::vector<cv::Mat> vImgs{ cv::Mat(1, 1, CV_8UC3) };
