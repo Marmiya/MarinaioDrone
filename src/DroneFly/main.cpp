@@ -1,18 +1,10 @@
 #include <argparse/argparse.hpp>
 #include <cpr/cpr.h>
 
-#include <CGAL/Point_set_3.h>
-#include <CGAL/Point_set_3/IO.h>
-#include <CGAL/Polygon_2.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-//#include <CGAL/cluster_point_set.h>
-#include <CGAL/Random.h>
 #include <glog/logging.h>
 #include <boost/format.hpp>
 #include <CGAL/cluster_point_set.h>
-#include <CGAL/random_selection.h>
 #include <CGAL/Boolean_set_operations_2.h>
-#include <CGAL/point_generators_2.h>
 #include <json/reader.h>
 #include <algorithm>
 #include <regex>
@@ -28,15 +20,9 @@
 #include "Next_best_target.h"
 #include "common_util.h"
 #include <opencv2/features2d.hpp>
-#include <CGAL\Polygon_mesh_processing\transform.h>
-//#include "SLAM/include/vcc_zxm_mslam.h"
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef K::Point_2 Point;
-typedef CGAL::Polygon_2<K> Polygon_2;
+using RotatedBox = cgaltools::RotatedBox;
 
-//Path
-boost::filesystem::path log_root("log");
 //Camera
 const cv::Vec3b BACKGROUND_COLOR(57,181,55);
 const cv::Vec3b SKY_COLOR(161, 120, 205);
@@ -123,22 +109,22 @@ public:
 		if (now_string.length() > 10)
 			labels.push_back(now_string);
 		std::vector<cv::Rect2f> result;
-		for (auto label : labels)
+		for (const auto& label : labels)
 		{
 			now_string = label;
 			cv::Rect2f box;
 			std::string::size_type position1 = now_string.find_first_of("[");
 			std::string::size_type position2 = now_string.find_first_of(",");
-			float xmin = atof((now_string.substr(position1 + 1, position2 - position1 - 1)).c_str());
+			double xmin = atof((now_string.substr(position1 + 1, position2 - position1 - 1)).c_str());
 			now_string = now_string.substr(position2 + 2);
 			position2 = now_string.find_first_of(",");
-			float ymin = atof((now_string.substr(0, position2 - 1)).c_str());
+			double ymin = atof((now_string.substr(0, position2 - 1)).c_str());
 			now_string = now_string.substr(position2 + 2);
 			position2 = now_string.find_first_of(",");
-			float xmax = atof((now_string.substr(0, position2 - 1)).c_str());
+			double xmax = atof((now_string.substr(0, position2 - 1)).c_str());
 			now_string = now_string.substr(position2 + 2);
 			position2 = now_string.find_first_of("]");
-			float ymax = atof((now_string.substr(0, position2 - 1)).c_str());
+			double ymax = atof((now_string.substr(0, position2 - 1)).c_str());
 			if (xmin < 0 && ymin < 0 && xmax > cols && ymax > rows)
 				continue;
 			if (xmin < 0)
@@ -255,7 +241,7 @@ public:
 //			cv::Vec3b point_color = v_img.at("segmentation").at<cv::Vec3b>(it->pt.y, it->pt.x);
 //			if (point_color == BACKGROUND_COLOR)
 //				continue;
-//			Eigen::Vector3f point(it->pt.x, it->pt.y, 1.f);
+//			Eigen::Vector3d point(it->pt.x, it->pt.y, 1.f);
 //			point = INTRINSIC.inverse() * point;
 //			point *= v_img.at("depth_planar").at<float>(it->pt.y, it->pt.x) / point[2];
 //
@@ -274,42 +260,40 @@ public:
 //	}
 //};
 
-
-
 class Mapper
 {
 public:
 	Json::Value m_args;
-	Polygon_2 m_boundary;
+	Polygon2 m_boundary;
 	Mapper(const Json::Value& v_args):m_args(v_args)
 	{
-		std::vector<Point_2> points;
+		std::vector<Point2> points;
 		if (!v_args["boundary"].isNull()) {
 			int num_point = v_args["boundary"].size() / 3;
 			for (int i_point = 0; i_point < num_point; ++i_point) {
-				Point_2 p_lonlat(v_args["boundary"][i_point * 3 + 0].asFloat(),
+				Point2 p_lonlat(v_args["boundary"][i_point * 3 + 0].asFloat(),
 					v_args["boundary"][i_point * 3 + 1].asFloat());
-				Eigen::Vector2f p_mercator = lonLat2Mercator(Eigen::Vector2f(p_lonlat.x(), p_lonlat.y())) - Eigen::Vector2f(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat());
-				//Eigen::Vector2f p_mercator = lonLat2Mercator(Eigen::Vector2f(p_lonlat.x(), p_lonlat.y())) - lonLat2Mercator(Eigen::Vector2f(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat()));
+				Eigen::Vector2d p_mercator = lonLat2Mercator(Eigen::Vector2d(p_lonlat.x(), p_lonlat.y())) - Eigen::Vector2d(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat());
+				//Eigen::Vector2d p_mercator = lonLat2Mercator(Eigen::Vector2d(p_lonlat.x(), p_lonlat.y())) - lonLat2Mercator(Eigen::Vector2d(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat()));
 				points.emplace_back(p_mercator.x(), p_mercator.y());
 			}
-			m_boundary = Polygon_2(points.begin(), points.end());
+			m_boundary = Polygon2(points.begin(), points.end());
 		}
 		else
 		{
-			std::vector<Point_2> points;
-			const Eigen::Vector3f map_start_mesh(m_args["MAP_START_UNREAL_X"].asFloat() / 100.f, -m_args["MAP_START_UNREAL_Y"].asFloat() / 100.f, m_args["MAP_START_UNREAL_Z"].asFloat() / 100.f);
-			const Eigen::Vector3f map_end_mesh(m_args["MAP_END_UNREAL_X"].asFloat()/100.f, -m_args["MAP_END_UNREAL_Y"].asFloat() / 100.f, m_args["MAP_END_UNREAL_Z"].asFloat() / 100.f);
+			std::vector<Point2> points;
+			const Eigen::Vector3d map_start_mesh(m_args["MAP_START_UNREAL_X"].asFloat() / 100.f, -m_args["MAP_START_UNREAL_Y"].asFloat() / 100.f, m_args["MAP_START_UNREAL_Z"].asFloat() / 100.f);
+			const Eigen::Vector3d map_end_mesh(m_args["MAP_END_UNREAL_X"].asFloat()/100.f, -m_args["MAP_END_UNREAL_Y"].asFloat() / 100.f, m_args["MAP_END_UNREAL_Z"].asFloat() / 100.f);
 			points.emplace_back(map_start_mesh.x(), map_start_mesh.y());
 			points.emplace_back(map_start_mesh.x(), map_end_mesh.y());
 			points.emplace_back(map_end_mesh.x(), map_end_mesh.y());
 			points.emplace_back(map_end_mesh.x(), map_start_mesh.y());
-			m_boundary = Polygon_2(points.begin(), points.end());
+			m_boundary = Polygon2(points.begin(), points.end());
 		}
 	};
 	virtual void get_buildings(std::vector<Building>& v_buildings,
 		const Pos_Pack& v_current_pos,
-		const int v_cur_frame_id, Height_map& v_height_map)=0;
+		const int v_cur_frame_id, modeltools::Height_map& v_height_map)=0;
 };
 
 class GT_mapper:public Mapper
@@ -322,17 +306,17 @@ public:
 		if(false)
 		{
 			m_buildings_target.resize(3);
-			m_buildings_target[0].bounding_box_3d= Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 4 - 10, 130 * 6 - 10, 0),
-				Eigen::Vector3f(130 * 4 + 10, 130 * 6 + 10, 50)
+			m_buildings_target[0].bounding_box_3d= RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 4 - 10, 130 * 6 - 10, 0),
+				Eigen::Vector3d(130 * 4 + 10, 130 * 6 + 10, 50)
 			));
-			m_buildings_target[1].bounding_box_3d= Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 8 - 10,130 * 3 - 10,0),
-				Eigen::Vector3f(130 * 8 + 10,130 * 3 + 10,50)
+			m_buildings_target[1].bounding_box_3d= RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 8 - 10,130 * 3 - 10,0),
+				Eigen::Vector3d(130 * 8 + 10,130 * 3 + 10,50)
 			));
-			m_buildings_target[2].bounding_box_3d= Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 6 - 10, 130 * 1 - 10, 0),
-				Eigen::Vector3f(130 * 6 + 10, 130 * 1 + 10, 50)
+			m_buildings_target[2].bounding_box_3d= RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 6 - 10, 130 * 1 - 10, 0),
+				Eigen::Vector3d(130 * 6 + 10, 130 * 1 + 10, 50)
 			));
 			
 			
@@ -351,9 +335,9 @@ public:
 				cv::Point2f(6,20)
 			);
 			auto cv_box = m_buildings_target[0].bounding_box_3d.cv_box;
-			m_buildings_target[0].bounding_box_3d.box=Eigen::AlignedBox3f(
-				Eigen::Vector3f(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
-				Eigen::Vector3f(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
+			m_buildings_target[0].bounding_box_3d.box=Eigen::AlignedBox3d(
+				Eigen::Vector3d(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
+				Eigen::Vector3d(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
 			);
 			m_buildings_target[0].bounding_box_3d.angle=0.f;
 			m_buildings_target[1].bounding_box_3d.cv_box=cv::RotatedRect(
@@ -363,9 +347,9 @@ public:
 			);
 			cv_box = m_buildings_target[1].bounding_box_3d.cv_box;
 			m_buildings_target[1].bounding_box_3d.angle=cv_box.angle/180.f*M_PI;
-			m_buildings_target[1].bounding_box_3d.box=Eigen::AlignedBox3f(
-				Eigen::Vector3f(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
-				Eigen::Vector3f(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
+			m_buildings_target[1].bounding_box_3d.box=Eigen::AlignedBox3d(
+				Eigen::Vector3d(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
+				Eigen::Vector3d(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
 			);
 			m_buildings_target[2].bounding_box_3d.cv_box=cv::RotatedRect(
 				cv::Point2f(78,-14),
@@ -374,26 +358,26 @@ public:
 			);
 			cv_box = m_buildings_target[2].bounding_box_3d.cv_box;
 			m_buildings_target[2].bounding_box_3d.angle=cv_box.angle/180.f*M_PI;
-			m_buildings_target[2].bounding_box_3d.box=Eigen::AlignedBox3f(
-				Eigen::Vector3f(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
-				Eigen::Vector3f(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
+			m_buildings_target[2].bounding_box_3d.box=Eigen::AlignedBox3d(
+				Eigen::Vector3d(cv_box.center.x-cv_box.size.width/2,cv_box.center.y-cv_box.size.height/2,5),
+				Eigen::Vector3d(cv_box.center.x+cv_box.size.width/2,cv_box.center.y+cv_box.size.height/2,38)
 			);
-			m_buildings_target[3].bounding_box_3d=Rotated_box(
-				Eigen::AlignedBox3f(
-					Eigen::Vector3f(-60,80,5),
-					Eigen::Vector3f(73,135,37)
+			m_buildings_target[3].bounding_box_3d= RotatedBox(
+				Eigen::AlignedBox3d(
+					Eigen::Vector3d(-60,80,5),
+					Eigen::Vector3d(73,135,37)
 				),3
 			);
-			m_buildings_target[4].bounding_box_3d=Rotated_box(
-				Eigen::AlignedBox3f(
-					Eigen::Vector3f(34,17,5),
-					Eigen::Vector3f(137,66,34)
+			m_buildings_target[4].bounding_box_3d= RotatedBox(
+				Eigen::AlignedBox3d(
+					Eigen::Vector3d(34,17,5),
+					Eigen::Vector3d(137,66,34)
 				),-36.f
 			);
-			m_buildings_target[5].bounding_box_3d=Rotated_box(
-				Eigen::AlignedBox3f(
-					Eigen::Vector3f(102,64,5),
-					Eigen::Vector3f(174,108,70)
+			m_buildings_target[5].bounding_box_3d= RotatedBox(
+				Eigen::AlignedBox3d(
+					Eigen::Vector3d(102,64,5),
+					Eigen::Vector3d(174,108,70)
 				),-37.f
 			);
 			
@@ -408,16 +392,16 @@ public:
 		else if(false)
 		{
 			m_buildings_target.resize(2);
-			m_buildings_target[0].bounding_box_3d=Rotated_box(
-				Eigen::AlignedBox3f(
-					Eigen::Vector3f(486,-978,3),
-					Eigen::Vector3f(647,-914,48)
+			m_buildings_target[0].bounding_box_3d=RotatedBox(
+				Eigen::AlignedBox3d(
+					Eigen::Vector3d(486,-978,3),
+					Eigen::Vector3d(647,-914,48)
 				),49
 			);
-			m_buildings_target[1].bounding_box_3d=Rotated_box(
-				Eigen::AlignedBox3f(
-					Eigen::Vector3f(609,-884,3),
-					Eigen::Vector3f(742,-830,25)
+			m_buildings_target[1].bounding_box_3d=RotatedBox(
+				Eigen::AlignedBox3d(
+					Eigen::Vector3d(609,-884,3),
+					Eigen::Vector3d(742,-830,25)
 				),0
 			);
 
@@ -434,7 +418,7 @@ public:
 			tinyobj::attrib_t attr;
 			std::vector<tinyobj::shape_t> shapes;
 			std::vector<tinyobj::material_t> mtl;
-			std::tie(attr, shapes, mtl) = load_obj(args["model_path"].asString());
+			std::tie(attr, shapes, mtl) = modeltools::load_obj(args["model_path"].asString());
 
 			m_buildings_target.resize(shapes.size());
 			for (int cluster_id = 0; cluster_id < shapes.size(); ++cluster_id) {
@@ -446,7 +430,7 @@ public:
 					{
 						tinyobj::index_t idx = shapes[cluster_id].mesh.indices[index_offset + i_vertice];
 
-						current_building.points_world_space.insert(Point_3(
+						current_building.points_world_space.insert(Point3(
 							attr.vertices[3 * idx.vertex_index + 0],
 							attr.vertices[3 * idx.vertex_index + 1],
 							attr.vertices[3 * idx.vertex_index + 2]
@@ -454,7 +438,7 @@ public:
 					}
 					index_offset += shapes[cluster_id].mesh.num_face_vertices[i_face];
 				}
-				current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
+				current_building.bounding_box_3d = cgaltools::get_bounding_box(current_building.points_world_space);
 				current_building.boxes.push_back(current_building.bounding_box_3d);
 			}
 			m_buildings_safe_place = m_buildings_target;
@@ -463,13 +447,13 @@ public:
 		else 
 		{
 
-			CGAL::Point_set_3<Point_3, Vector_3> original_point_cloud;
-			std::vector<CGAL::Point_set_3<Point_3, Vector_3>> pcs;
+			CGAL::Point_set_3<Point3, Vector3> original_point_cloud;
+			std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
 			if (boost::filesystem::is_directory(args["model_path"].asString())) {
 				boost::filesystem::directory_iterator end_iter;
 				for (fs::directory_iterator iter(args["model_path"].asString()); iter != end_iter; iter++) {
-					CGAL::Point_set_3<Point_3, Vector_3> pc_item;
-					CGAL::read_ply_point_set(std::ifstream(iter->path().string(), std::ios::binary), pc_item);
+					CGAL::Point_set_3<Point3, Vector3> pc_item;
+					CGAL::IO::read_point_set(iter->path().string(), pc_item);
 					pcs.push_back(pc_item);
 				}
 				//CGAL::read_ply_point_set(std::ifstream("D:\\datasets\\Realcity\\Shenzhen\\sample_500000.ply", std::ios::binary), original_point_cloud);
@@ -479,9 +463,9 @@ public:
 				for (int cluster_id = 0; cluster_id < pcs.size(); ++cluster_id) {
 					Building& current_building = m_buildings_safe_place[cluster_id];
 					bool add_as_target = true;
-					for (Point_set::Index idx : pcs[cluster_id]) {
+					for (PointSet3::Index idx : pcs[cluster_id]) {
 						current_building.points_world_space.insert(pcs[cluster_id].point(idx));
-						Point_2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
+						Point2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
 						if(m_boundary.size()>0)
 						{
 							for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++iter_segment)
@@ -492,7 +476,7 @@ public:
 						}
 					}
 					//current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
-					current_building.bounding_box_3d = get_bounding_box_rotated(current_building.points_world_space);
+					current_building.bounding_box_3d = cgaltools::get_bounding_box_rotated(current_building.points_world_space);
 					current_building.boxes.push_back(current_building.bounding_box_3d);
 
 					if(add_as_target)
@@ -501,8 +485,8 @@ public:
 				return;
 			}
 			else {
-				CGAL::read_ply_point_set(std::ifstream(args["model_path"].asString(), std::ios::binary), original_point_cloud);
-				CGAL::Point_set_3<Point_3, Vector_3> point_cloud(original_point_cloud);
+				CGAL::IO::read_point_set(args["model_path"].asString(), original_point_cloud);
+				CGAL::Point_set_3<Point3, Vector3> point_cloud(original_point_cloud);
 				// Delete ground planes
 				{
 					for (int idx = point_cloud.size() - 1; idx >= 0; idx--) {
@@ -512,11 +496,11 @@ public:
 
 					point_cloud.collect_garbage();
 				}
-				CGAL::write_ply_point_set(std::ofstream("points_without_plane.ply"), point_cloud);
+				CGAL::IO::write_point_set("points_without_plane.ply", point_cloud);
 				// Cluster building
 				std::size_t nb_clusters;
 				{
-					Point_set::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
+					PointSet3::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
 
 					std::vector<std::pair<std::size_t, std::size_t>> adjacencies;
 
@@ -526,11 +510,11 @@ public:
 						adjacencies(std::back_inserter(adjacencies)));
 					m_buildings_target.resize(nb_clusters);
 
-					Point_set::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
-					Point_set::Property_map<unsigned char> green = point_cloud
+					PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
+					PointSet3::Property_map<unsigned char> green = point_cloud
 						.add_property_map<unsigned char>("green", 0).first;
-					Point_set::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
-					for (Point_set::Index idx : point_cloud) {
+					PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
+					for (PointSet3::Index idx : point_cloud) {
 						// One color per cluster
 						int cluster_id = cluster_map[idx];
 						CGAL::Random rand(cluster_id);
@@ -544,7 +528,7 @@ public:
 				}
 				for (int i_building_1 = 0; i_building_1 < m_buildings_target.size(); ++i_building_1) {
 					//m_buildings_target[i_building_1].bounding_box_3d = get_bounding_box(m_buildings_target[i_building_1].points_world_space);
-					m_buildings_target[i_building_1].bounding_box_3d = get_bounding_box_rotated(m_buildings_target[i_building_1].points_world_space);
+					m_buildings_target[i_building_1].bounding_box_3d = cgaltools::get_bounding_box_rotated(m_buildings_target[i_building_1].points_world_space);
 					m_buildings_target[i_building_1].bounding_box_3d.box.min().z() -= args["HEIGHT_CLIP"].asFloat();
 					m_buildings_target[i_building_1].boxes.push_back(m_buildings_target[i_building_1].bounding_box_3d);
 				}
@@ -558,7 +542,7 @@ public:
 					{
 						bool should_delete = false;
 						for (int i_point = 0; i_point < 4; ++i_point) {
-							Point_2 p(points[i_point].x, points[i_point].y);
+							Point2 p(points[i_point].x, points[i_point].y);
 							for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++iter_segment)
 								//if (CGAL::squared_distance(p, *iter_segment) < args["safe_distance"].asFloat() * args["safe_distance"].asFloat() * 2)
 								if (CGAL::squared_distance(p, *iter_segment) < 0)
@@ -582,7 +566,7 @@ public:
 
 	void get_buildings(std::vector<Building>& v_buildings,
 		const Pos_Pack& v_current_pos,
-		const int v_cur_frame_id, Height_map& v_height_map) override
+		const int v_cur_frame_id, modeltools::Height_map& v_height_map) override
 	{
 		if (v_buildings.size() == 0)
 		{
@@ -607,26 +591,26 @@ public:
 		if (false)
 		{
 			m_buildings_target.resize(5);
-			m_buildings_target[0].bounding_box_3d = Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 4 - 10, 130 * 6 - 10, 0),
-				Eigen::Vector3f(130 * 4 + 10, 130 * 6 + 10, 50)
+			m_buildings_target[0].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 4 - 10, 130 * 6 - 10, 0),
+				Eigen::Vector3d(130 * 4 + 10, 130 * 6 + 10, 50)
 			));
-			m_buildings_target[1].bounding_box_3d = Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 8 - 10, 130 * 3 - 10, 0),
-				Eigen::Vector3f(130 * 8 + 10, 130 * 3 + 10, 50)
+			m_buildings_target[1].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 8 - 10, 130 * 3 - 10, 0),
+				Eigen::Vector3d(130 * 8 + 10, 130 * 3 + 10, 50)
 			));
-			m_buildings_target[2].bounding_box_3d = Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 6 - 10, 130 * 1 - 10, 0),
-				Eigen::Vector3f(130 * 6 + 10, 130 * 1 + 10, 50)
+			m_buildings_target[2].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 6 - 10, 130 * 1 - 10, 0),
+				Eigen::Vector3d(130 * 6 + 10, 130 * 1 + 10, 50)
 			));
 
-			m_buildings_target[3].bounding_box_3d = Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 12 - 10, 130 * 7 - 10, 0),
-				Eigen::Vector3f(130 * 12 + 10, 130 * 7 + 10, 50)
+			m_buildings_target[3].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 12 - 10, 130 * 7 - 10, 0),
+				Eigen::Vector3d(130 * 12 + 10, 130 * 7 + 10, 50)
 			));
-			m_buildings_target[4].bounding_box_3d = Rotated_box(Eigen::AlignedBox3f(
-				Eigen::Vector3f(130 * 14 - 10, 130 * 1 - 10, 0),
-				Eigen::Vector3f(130 * 14 + 10, 130 * 1 + 10, 50)
+			m_buildings_target[4].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
+				Eigen::Vector3d(130 * 14 - 10, 130 * 1 - 10, 0),
+				Eigen::Vector3d(130 * 14 + 10, 130 * 1 + 10, 50)
 			));
 
 
@@ -641,7 +625,7 @@ public:
 			tinyobj::attrib_t attr;
 			std::vector<tinyobj::shape_t> shapes;
 			std::vector<tinyobj::material_t> mtl;
-			std::tie(attr, shapes, mtl) = load_obj(args["model_path"].asString());
+			std::tie(attr, shapes, mtl) = modeltools::load_obj(args["model_path"].asString());
 
 			m_buildings_target.resize(shapes.size());
 			for (int cluster_id = 0; cluster_id < shapes.size(); ++cluster_id) {
@@ -653,7 +637,7 @@ public:
 					{
 						tinyobj::index_t idx = shapes[cluster_id].mesh.indices[index_offset + i_vertice];
 
-						current_building.points_world_space.insert(Point_3(
+						current_building.points_world_space.insert(Point3(
 							attr.vertices[3 * idx.vertex_index + 0],
 							attr.vertices[3 * idx.vertex_index + 1],
 							attr.vertices[3 * idx.vertex_index + 2]
@@ -661,7 +645,7 @@ public:
 					}
 					index_offset += shapes[cluster_id].mesh.num_face_vertices[i_face];
 				}
-				current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
+				current_building.bounding_box_3d = cgaltools::get_bounding_box(current_building.points_world_space);
 				current_building.boxes.push_back(current_building.bounding_box_3d);
 			}
 			m_buildings_safe_place = m_buildings_target;
@@ -669,13 +653,13 @@ public:
 		}
 		else
 		{
-			CGAL::Point_set_3<Point_3, Vector_3> original_point_cloud;
-			std::vector<CGAL::Point_set_3<Point_3, Vector_3>> pcs;
+			CGAL::Point_set_3<Point3, Vector3> original_point_cloud;
+			std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
 			if (boost::filesystem::is_directory(args["model_path"].asString())) {
 				boost::filesystem::directory_iterator end_iter;
 				for (fs::directory_iterator iter(args["model_path"].asString()); iter != end_iter; iter++) {
-					CGAL::Point_set_3<Point_3, Vector_3> pc_item;
-					CGAL::read_ply_point_set(std::ifstream(iter->path().string(), std::ios::binary), pc_item);
+					CGAL::Point_set_3<Point3, Vector3> pc_item;
+					CGAL::IO::read_point_set(iter->path().string(), pc_item);
 					pcs.push_back(pc_item);
 				}
 				//CGAL::read_ply_point_set(std::ifstream("D:\\datasets\\Realcity\\Shenzhen\\sample_500000.ply", std::ios::binary), original_point_cloud);
@@ -685,9 +669,9 @@ public:
 				for (int cluster_id = 0; cluster_id < pcs.size(); ++cluster_id) {
 					Building& current_building = m_buildings_safe_place[cluster_id];
 					bool add_as_target = true;
-					for (Point_set::Index idx : pcs[cluster_id]) {
+					for (PointSet3::Index idx : pcs[cluster_id]) {
 						current_building.points_world_space.insert(pcs[cluster_id].point(idx));
-						Point_2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
+						Point2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
 						if (m_boundary.size() > 0)
 						{
 							for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++iter_segment)
@@ -698,7 +682,7 @@ public:
 						}
 					}
 					//current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
-					current_building.bounding_box_3d = get_bounding_box_rotated(current_building.points_world_space);
+					current_building.bounding_box_3d = cgaltools::get_bounding_box_rotated(current_building.points_world_space);
 					current_building.boxes.push_back(current_building.bounding_box_3d);
 
 					if (add_as_target)
@@ -708,8 +692,8 @@ public:
 				return;
 			}
 			else {
-				CGAL::read_ply_point_set(std::ifstream(args["model_path"].asString(), std::ios::binary), original_point_cloud);
-				CGAL::Point_set_3<Point_3, Vector_3> point_cloud(original_point_cloud);
+				CGAL::IO::read_point_set(args["model_path"].asString(), original_point_cloud);
+				CGAL::Point_set_3<Point3, Vector3> point_cloud(original_point_cloud);
 				// Delete ground planes
 				{
 					for (int idx = point_cloud.size() - 1; idx >= 0; idx--) {
@@ -719,11 +703,11 @@ public:
 
 					point_cloud.collect_garbage();
 				}
-				CGAL::write_ply_point_set(std::ofstream("points_without_plane.ply"), point_cloud);
+				CGAL::IO::write_point_set("points_without_plane.ply", point_cloud);
 				// Cluster building
 				std::size_t nb_clusters;
 				{
-					Point_set::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
+					PointSet3::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
 
 					std::vector<std::pair<std::size_t, std::size_t>> adjacencies;
 
@@ -733,11 +717,11 @@ public:
 						adjacencies(std::back_inserter(adjacencies)));
 					m_buildings_target.resize(nb_clusters);
 
-					Point_set::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
-					Point_set::Property_map<unsigned char> green = point_cloud
+					PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
+					PointSet3::Property_map<unsigned char> green = point_cloud
 						.add_property_map<unsigned char>("green", 0).first;
-					Point_set::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
-					for (Point_set::Index idx : point_cloud) {
+					PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
+					for (PointSet3::Index idx : point_cloud) {
 						// One color per cluster
 						int cluster_id = cluster_map[idx];
 						CGAL::Random rand(cluster_id);
@@ -751,7 +735,7 @@ public:
 				}
 				for (int i_building_1 = 0; i_building_1 < m_buildings_target.size(); ++i_building_1) {
 					//m_buildings_target[i_building_1].bounding_box_3d = get_bounding_box(m_buildings_target[i_building_1].points_world_space);
-					m_buildings_target[i_building_1].bounding_box_3d = get_bounding_box_rotated(m_buildings_target[i_building_1].points_world_space);
+					m_buildings_target[i_building_1].bounding_box_3d = cgaltools::get_bounding_box_rotated(m_buildings_target[i_building_1].points_world_space);
 					m_buildings_target[i_building_1].bounding_box_3d.box.min().z() -= args["HEIGHT_CLIP"].asFloat();
 					m_buildings_target[i_building_1].boxes.push_back(m_buildings_target[i_building_1].bounding_box_3d);
 				}
@@ -765,7 +749,7 @@ public:
 					{
 						bool should_delete = false;
 						for (int i_point = 0; i_point < 4; ++i_point) {
-							Point_2 p(points[i_point].x, points[i_point].y);
+							Point2 p(points[i_point].x, points[i_point].y);
 							for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++iter_segment)
 								if (CGAL::squared_distance(p, *iter_segment) < args["safe_distance"].asFloat() * args["safe_distance"].asFloat() * 2)
 									should_delete = true;
@@ -785,14 +769,14 @@ public:
 
 	void get_buildings(std::vector<Building>& v_buildings,
 		const Pos_Pack& v_current_pos,
-		const int v_cur_frame_id, Height_map& v_height_map) override
+		const int v_cur_frame_id, modeltools::Height_map& v_height_map) override
 	{
 		if (v_buildings.size() != m_buildings_target.size())
 		{
 			for (auto& item_building : m_buildings_target) {
 				v_height_map.update(item_building.bounding_box_3d);
 				if (!m_is_building_add[&item_building - &m_buildings_target[0]] &&
-					(Eigen::Vector2f(v_current_pos.pos_mesh.x() - item_building.bounding_box_3d.box.center().x(),
+					(Eigen::Vector2d(v_current_pos.pos_mesh.x() - item_building.bounding_box_3d.box.center().x(),
 						v_current_pos.pos_mesh.y() - item_building.bounding_box_3d.box.center().y())).norm() < m_args["ccpp_cell_distance"].asFloat() * 3)
 				{
 					v_buildings.push_back(item_building);
@@ -810,8 +794,8 @@ public:
 	Airsim_tools* m_airsim_client;
 	std::map<cv::Vec3b, std::string> m_color_to_mesh_name_map;
 	// Read Mesh
-	std::map<string, Point_cloud> m_point_clouds;
-	std::map<string, Surface_mesh> m_meshes;
+	std::map<string, PointSet3> m_point_clouds;
+	std::map<string, SurfaceMesh> m_meshes;
 	
 	Virtual_mapper(const Json::Value& args, Airsim_tools* v_airsim_client, std::map<cv::Vec3b, std::string> color_to_mesh_name_map)
 	: Mapper(args), m_airsim_client(v_airsim_client){
@@ -891,7 +875,7 @@ public:
 			isValid = false;
 		return result;
 	}
-	std::pair<cv::RotatedRect, Point_2> get_bbox_3d(const Point_cloud& v_point_cloud)
+	std::pair<cv::RotatedRect, Point2> get_bbox_3d(const PointSet3& v_point_cloud)
 	{
 		std::vector<float> vertices_z;
 		std::vector<cv::Point2f> vertices_xy;
@@ -905,7 +889,7 @@ public:
 		float min_z = *std::min_element(vertices_z.begin(), vertices_z.end());
 
 		//Note: Coordinates transformation
-		return std::make_pair(box, Point_2(min_z, max_z));
+		return std::make_pair(box, Point2(min_z, max_z));
 	}
 	float calculate_3d_iou(const Building& building1, const Building& building2)
 	{
@@ -937,8 +921,8 @@ public:
 		return intersection_volume / union_volume;
 	}
 	void read_mesh(std::string in_path,
-		std::map<string, Point_cloud>& v_out_point_clouds,
-		std::map<string, Surface_mesh>& v_out_meshes)
+		std::map<string, PointSet3>& v_out_point_clouds,
+		std::map<string, SurfaceMesh>& v_out_meshes)
 	{
 		boost::filesystem::path myPath(in_path);
 		boost::filesystem::recursive_directory_iterator endIter;
@@ -948,7 +932,7 @@ public:
 			bool bl = std::regex_match(v_name.begin(), v_name.end(), rx);
 			if (iter->path().filename().extension().string() == ".obj" && bl)
 			{
-				std::vector<Point_3> cornerPoints;
+				std::vector<Point3> cornerPoints;
 
 				std::fstream in_offset((myPath / iter->path().stem()).string() + ".txt", std::ios::in);
 				std::string offsets;
@@ -956,12 +940,12 @@ public:
 				int x_offset = atoi(offsets.substr(0, offsets.find(",")).c_str());
 				int y_offset = atoi(offsets.substr(offsets.find(",") + 1).c_str());
 
-				Surface_mesh mesh = convert_obj_from_tinyobjloader_to_surface_mesh(
-					load_obj(iter->path().string()));
-				Point_cloud point_cloud(true);
+				SurfaceMesh mesh = cgaltools::convert_obj_from_tinyobjloader_to_surface_mesh(
+					modeltools::load_obj(iter->path().string()));
+				PointSet3 point_cloud(true);
 				for (auto& item_point : mesh.vertices())
 				{
-					Point_3 p(mesh.point(item_point).x() + x_offset, mesh.point(item_point).y() + y_offset, mesh.point(item_point).z());
+					Point3 p(mesh.point(item_point).x() + x_offset, mesh.point(item_point).y() + y_offset, mesh.point(item_point).z());
 					point_cloud.insert(p);
 					mesh.point(item_point) = p;
 				}
@@ -979,7 +963,7 @@ public:
 	}
 	void get_buildings(std::vector<Building>& v_buildings,
 		const Pos_Pack& v_current_pos,
-		const int v_cur_frame_id, Height_map& v_height_map) override {
+		const int v_cur_frame_id, modeltools::Height_map& v_height_map) override {
 		std::vector<Building> current_buildings;
 		int num_building_current_frame = 0;
 		// Get current image and pose
@@ -1005,7 +989,7 @@ public:
 			bool isValid;
 			std::vector <CGAL::Bbox_2> boxes_2d;
 			std::vector <cv::RotatedRect> boxes_3d;
-			std::vector<Point_2> zses;
+			std::vector<Point2> zses;
 			std::vector<ImageCluster> clusters = solveCluster(current_image["segmentation"], m_color_to_mesh_name_map, isValid);
 			for (auto& building : clusters)
 			{
@@ -1014,20 +998,20 @@ public:
 				// Transform the point cloud and meshes from world to camera
 				if (m_meshes.find(building.name) == m_meshes.end())
 					continue;
-				Surface_mesh item_mesh(m_meshes.at(building.name));
+				SurfaceMesh item_mesh(m_meshes.at(building.name));
 
-				Point_set item_points;
+				PointSet3 item_points;
 				std::copy(item_mesh.points().begin(), item_mesh.points().end(), item_points.point_back_inserter());
 
 				auto box = get_bbox_3d(item_points);
 
 				// 3D Box in mesh coordinate
-				Eigen::AlignedBox3f box_3d(Eigen::Vector3f(box.first.center.x - box.first.size.width / 2, box.first.center.y - box.first.size.height / 2, box.second.x()),
-					Eigen::Vector3f(box.first.center.x + box.first.size.width / 2, box.first.center.y + box.first.size.height / 2, box.second.y()));
+				Eigen::AlignedBox3d box_3d(Eigen::Vector3d(box.first.center.x - box.first.size.width / 2, box.first.center.y - box.first.size.height / 2, box.second.x()),
+					Eigen::Vector3d(box.first.center.x + box.first.size.width / 2, box.first.center.y + box.first.size.height / 2, box.second.y()));
 
 				float angle = (-box.first.angle + 90) / 180.f * M_PI;
 
-				Rotated_box bounding_box_3d(box_3d, angle);
+				RotatedBox bounding_box_3d(box_3d, angle);
 			
 				current_building.bounding_box_3d = bounding_box_3d;
 				current_building.bounding_box_2d = building.box;
@@ -1057,7 +1041,7 @@ public:
 		//// Input: Vector of building (std::vector<Building>)
 		//// Output: Vector of building with point cloud in world space (std::vector<Building>)
 		//{
-		//	Point_set cur_frame_total_points_in_world_coordinates;
+		//	PointSet3 cur_frame_total_points_in_world_coordinates;
 		//	std::vector<bool> should_delete(current_buildings.size(), false);
 		//	for (auto& item_building : current_buildings) {
 		//		size_t cluster_index = &item_building - &current_buildings[0];
@@ -1066,7 +1050,7 @@ public:
 		//			continue;
 		//		}
 		//		for (const auto& item_point : item_building.points_camera_space.points()) {
-		//			Eigen::Vector3f point_eigen(item_point.x(), item_point.y(), item_point.z());
+		//			Eigen::Vector3d point_eigen(item_point.x(), item_point.y(), item_point.z());
 		//			point_eigen = v_current_pos.camera_matrix.inverse() * point_eigen;
 		//			item_building.points_world_space.insert(Point_3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
 		//			cur_frame_total_points_in_world_coordinates.insert(Point_3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
@@ -1106,11 +1090,11 @@ public:
 		//			float min_distance = z_mins[cluster_index];
 		//			float max_distance = z_maxs[cluster_index];
 		//			float y_min_2d = item_building.bounding_box_2d.ymin();
-		//			Eigen::Vector3f point_pos_img(0, y_min_2d, 1);
-		//			Eigen::Vector3f point_pos_camera_XZ = INTRINSIC.inverse() * point_pos_img;
+		//			Eigen::Vector3d point_pos_img(0, y_min_2d, 1);
+		//			Eigen::Vector3d point_pos_camera_XZ = INTRINSIC.inverse() * point_pos_img;
 		//			float distance_candidate = min_distance;
 		//			float scale = distance_candidate / point_pos_camera_XZ[2];
-		//			Eigen::Vector3f point_pos_world = v_current_pos.camera_matrix.inverse() * (scale * point_pos_camera_XZ);
+		//			Eigen::Vector3d point_pos_world = v_current_pos.camera_matrix.inverse() * (scale * point_pos_camera_XZ);
 		//			float final_height = point_pos_world[2];
 		//			// Shorter than camera, recalculate using max distance
 		//			if (final_height < v_current_pos.pos_mesh[2]) {
@@ -1182,7 +1166,7 @@ public:
 	}
 	
 	void get_buildings(std::vector<Building>& v_buildings, const Pos_Pack& v_current_pos, const int v_cur_frame_id,
-		Height_map& v_height_map) override
+	                   modeltools::Height_map& v_height_map) override
 	{
 		std::vector<Building> current_buildings;
 		int num_building_current_frame;
@@ -1237,7 +1221,7 @@ public:
 		// Input: Vector of building (std::vector<Building>)
 		// Output: Vector of building with point cloud in world space (std::vector<Building>)
 		{
-			Point_set cur_frame_total_points_in_world_coordinates;
+			PointSet3 cur_frame_total_points_in_world_coordinates;
 			std::vector<bool> should_delete(current_buildings.size(), false);
 			for (auto& item_building : current_buildings) {
 				size_t cluster_index = &item_building - &current_buildings[0];
@@ -1246,10 +1230,10 @@ public:
 					continue;
 				}
 				for (const auto& item_point : item_building.points_camera_space.points()) {
-					Eigen::Vector3f point_eigen(item_point.x(), item_point.y(), item_point.z());
+					Eigen::Vector3d point_eigen(item_point.x(), item_point.y(), item_point.z());
 					point_eigen = v_current_pos.camera_matrix.inverse() * point_eigen;
-					item_building.points_world_space.insert(Point_3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
-					cur_frame_total_points_in_world_coordinates.insert(Point_3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
+					item_building.points_world_space.insert(Point3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
+					cur_frame_total_points_in_world_coordinates.insert(Point3(point_eigen.x(), point_eigen.y(), point_eigen.z()));
 				}
 				//CGAL::write_ply_point_set(std::ofstream(std::to_string(cluster_index) + "_world.ply"), item_building.points_world_space);
 			}
@@ -1289,14 +1273,14 @@ public:
 					float max_distance = z_maxs[cluster_index];
 					float y_min_2d = item_building.bounding_box_2d.ymin();
 
-					Eigen::Vector3f point_pos_img(0, y_min_2d, 1);
+					Eigen::Vector3d point_pos_img(0, y_min_2d, 1);
 					// BUG HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					//Eigen::Vector3f point_pos_camera_XZ = INTRINSIC.inverse() * point_pos_img;
-					Eigen::Vector3f point_pos_camera_XZ = point_pos_img;
+					//Eigen::Vector3d point_pos_camera_XZ = INTRINSIC.inverse() * point_pos_img;
+					Eigen::Vector3d point_pos_camera_XZ = point_pos_img;
 
 					float distance_candidate = min_distance;
 					float scale = distance_candidate / point_pos_camera_XZ[2];
-					Eigen::Vector3f point_pos_world = v_current_pos.camera_matrix.inverse() * (scale * point_pos_camera_XZ);
+					Eigen::Vector3d point_pos_world = v_current_pos.camera_matrix.inverse() * (scale * point_pos_camera_XZ);
 
 					float final_height = point_pos_world[2];
 					// Shorter than camera, recalculate using max distance
@@ -1307,7 +1291,7 @@ public:
 						final_height = point_pos_world[2];
 					}
 
-					item_building.bounding_box_3d = get_bounding_box(item_building.points_world_space);
+					item_building.bounding_box_3d = cgaltools::get_bounding_box(item_building.points_world_space);
 					item_building.bounding_box_3d.box.min()[2] = 0;
 					item_building.bounding_box_3d.box.max()[2] = final_height;
 				}
@@ -1388,21 +1372,10 @@ void calculate_trajectory_intrinsic(const Json::Value& v_args, float& horizontal
 int main(int argc, char** argv){
 	std::cout << "Read config " << argv[2] << std::endl;
 	Json::Value args;
+	std::string logPath;
 	{
-		if (boost::filesystem::exists(log_root))
-			boost::filesystem::remove_all(log_root);
-		boost::filesystem::create_directories(log_root);
-		boost::filesystem::create_directories(log_root/"img");
-		boost::filesystem::create_directories(log_root/"seg");
-		boost::filesystem::create_directories(log_root/"point_world");
-		boost::filesystem::create_directories(log_root/"ccpp_map");
-		boost::filesystem::create_directories(log_root/"wgs_log");
-		boost::filesystem::create_directories(log_root/"gradually_results");
-		boost::filesystem::create_directories(log_root/"path");
-		//FLAGS_logtostderr = 1;
-		FLAGS_stderrthreshold = 0; 
-		FLAGS_log_dir = (log_root).string();
 		google::InitGoogleLogging(argv[0]);
+
 		argparse::ArgumentParser program("Jointly exploration, navigation and reconstruction");
 		program.add_argument("--config_file").required();
 		try {
@@ -1426,26 +1399,51 @@ int main(int argc, char** argv){
 			std::cout << program;
 			exit(0);
 		}
+
+		int STAGE = args["stage"].asInt();
+		logPath = args["logPath"].asString();
+		auto logt = comutil::timeToString(std::chrono::system_clock::now());
+
+		logPath += logt + " STAGE " + std::to_string(STAGE);
+		fs::path lop(logPath);
+		logPath += "/";
+		fs::create_directory(lop);
+
+		std::cout << "Stage: " << STAGE << "\n"
+			<< "Log Path: " << logPath << "\n";
+
+		fs::create_directories(logPath + "img");
+		fs::create_directories(logPath + "seg");
+		fs::create_directories(logPath + "point_world");
+		fs::create_directories(logPath + "ccpp_map");
+		fs::create_directories(logPath + "wgs_log");
+		fs::create_directories(logPath + "gradually_results");
+		fs::create_directories(logPath + "path");
+
+		FLAGS_stderrthreshold = 0;
+		FLAGS_log_dir = (lop).string();
 	}
+
 	bool software_parameter_is_log = args["is_log"].asBool();
 	bool software_parameter_is_viz = args["is_viz"].asBool();
-	FLAGS_stderrthreshold = software_parameter_is_log?0:2;
+	FLAGS_stderrthreshold = software_parameter_is_log ? 0 : 2;
 	
 	Visualizer* viz = new Visualizer;
 	viz->m_uncertainty_map_distance = args["ccpp_cell_distance"].asFloat();
 
-	LOG(INFO) << "Initialization directory, airsim,map converter  and reset color";
+	LOG(INFO) << "Initialization directory, airsim, map converter and reset color";
+
 	Airsim_tools* airsim_client;
 	std::map<cv::Vec3b, std::string> color_to_mesh_name_map; // Color (RGB) to mesh name
 	{
-		Eigen::Vector3f unreal_start = Eigen::Vector3f(
-			args["unreal_player_start"][0].asFloat(),
-			args["unreal_player_start"][1].asFloat(),
-			args["unreal_player_start"][2].asFloat()
+		Eigen::Vector3d unreal_start = Eigen::Vector3d(
+			args["unreal_player_start"][0].asDouble(),
+			args["unreal_player_start"][1].asDouble(),
+			args["unreal_player_start"][2].asDouble()
 		);
 		map_converter.initDroneStart(unreal_start);
 
-		if(args["mapper"].asString()!="gt_mapper" && args["mapper"].asString() != "graduate_gt_mapper")
+		if (args["mapper"].asString() != "gt_mapper" && args["mapper"].asString() != "graduate_gt_mapper")
 		{
 			airsim_client = new Airsim_tools(unreal_start);
 			airsim_client->reset_color("building");
@@ -1482,12 +1480,12 @@ int main(int argc, char** argv){
 	
 	// Some global structure
 	bool end = false;
-	float DRONE_STEP = args["DRONE_STEP"].asFloat();
+	double DRONE_STEP = args["DRONE_STEP"].asDouble();
 	bool with_interpolated =args["with_interpolated"].asBool();
-	const Eigen::Vector3f map_start_unreal(args["MAP_START_UNREAL_X"].asFloat(), args["MAP_START_UNREAL_Y"].asFloat(), args["MAP_START_UNREAL_Z"].asFloat());
-	const Eigen::Vector3f map_end_unreal(args["MAP_END_UNREAL_X"].asFloat(), args["MAP_END_UNREAL_Y"].asFloat(), args["MAP_END_UNREAL_Z"].asFloat());
-	const Eigen::Vector3f map_start_mesh(map_start_unreal.x() / 100.f, -map_end_unreal.y() / 100.f, map_start_unreal.z() / 100.f) ;
-	const Eigen::Vector3f map_end_mesh(map_end_unreal.x() / 100.f, -map_start_unreal.y() / 100.f, map_end_unreal.z() / 100.f);
+	const Eigen::Vector3d map_start_unreal(args["MAP_START_UNREAL_X"].asDouble(), args["MAP_START_UNREAL_Y"].asDouble(), args["MAP_START_UNREAL_Z"].asDouble());
+	const Eigen::Vector3d map_end_unreal(args["MAP_END_UNREAL_X"].asDouble(), args["MAP_END_UNREAL_Y"].asDouble(), args["MAP_END_UNREAL_Z"].asDouble());
+	const Eigen::Vector3d map_start_mesh(map_start_unreal.x() / 100., -map_end_unreal.y() / 100., map_start_unreal.z() / 100.) ;
+	const Eigen::Vector3d map_end_mesh(map_end_unreal.x() / 100., -map_start_unreal.y() / 100., map_end_unreal.z() / 100.);
 
 	Next_best_target* next_best_target;
 	if (args["nbv_target"] == "Topology_decomposition")
@@ -1502,19 +1500,19 @@ int main(int argc, char** argv){
 		throw;
 
 	LOG(INFO) << "Initialize height map";
-	Height_map runtime_height_map(map_start_mesh,map_end_mesh,
-		args["heightmap_resolution"].asFloat(),
-		args["heightmap_dilate"].asInt()
-		);
-	Height_map safezone_height_map = runtime_height_map;
+	modeltools::Height_map runtime_height_map(map_start_mesh,map_end_mesh,
+	                                          args["heightmap_resolution"].asFloat(),
+	                                          args["heightmap_dilate"].asInt()
+	);
+	modeltools::Height_map safezone_height_map = runtime_height_map;
 	bool has_safe_zone = args.isMember("safe_zone_model_path");
 	if(has_safe_zone)
 	{
 		LOG(INFO) << "Read safe zone " << args["safe_zone_model_path"].asString();
-		CGAL::Point_set_3<Point_3, Vector_3> safe_zone_point_cloud;
-		CGAL::read_ply_point_set(std::ifstream(args["safe_zone_model_path"].asString(), std::ios::binary), safe_zone_point_cloud);
-		Height_map original_height_map(safe_zone_point_cloud, args["heightmap_resolution"].asFloat(),
-			args["heightmap_dilate"].asInt());
+		CGAL::Point_set_3<Point3, Vector3> safe_zone_point_cloud;
+		CGAL::IO::read_point_set(args["safe_zone_model_path"].asString(), safe_zone_point_cloud);
+		modeltools::Height_map original_height_map(safe_zone_point_cloud, args["heightmap_resolution"].asFloat(),
+		                                           args["heightmap_dilate"].asInt());
 		safezone_height_map = original_height_map;
 		safezone_height_map.save_height_map_mesh("log");
 	}
@@ -1534,33 +1532,38 @@ int main(int argc, char** argv){
 	
 	std::vector<Building> total_buildings; // Map result
 	std::vector<MyViewpoint> total_passed_trajectory; // Trajectory result
-	float reconstruction_length = 0.f;
-	float exploration_length = 0.f;
-	float max_turn = 0.f;
+	double reconstruction_length = 0.;
+	double exploration_length = 0.;
+	double max_turn = 0.;
 
 	Pos_Pack current_pos = map_converter.get_pos_pack_from_unreal(
-		Eigen::Vector3f(args["START_X"].asFloat(), 
-			args["START_Y"].asFloat(), 
-			args["START_Z"].asFloat()),  -M_PI / 2, 63 / 180.f * M_PI);
+		Eigen::Vector3d(args["START_X"].asDouble(),
+			args["START_Y"].asDouble(),
+			args["START_Z"].asDouble()),  -M_PI / 2., 63. / 180. * M_PI);
+
 	int cur_frame_id = 0;
 	int building_num_record = -1;
 	int current_building_num= 0;
 	MyViewpoint next_viewpoint;
 	Tree tree;
+
+
 	while (!end) {
 		LOG(INFO) << "<<<<<<<<<<<<< Frame " << cur_frame_id << " <<<<<<<<<<<<<";
 
-		auto t = recordTime();
+		auto t = comutil::recordTime();
 		//if(next_best_target->m_motion_status==Motion_status::exploration)
 		mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
-		std::vector<Rotated_box> cur_boxes;
+		std::vector<RotatedBox> cur_boxes;
 		for (const auto& item : total_buildings)
 			cur_boxes.push_back(item.bounding_box_3d);
-		Surface_mesh cur_mesh = get_rotated_box_mesh(cur_boxes);
+
+		SurfaceMesh cur_mesh = modeltools::get_rotated_box_mesh(cur_boxes);
 		CGAL::IO::write_PLY("test.ply",cur_mesh);
 		tree = Tree(cur_mesh.faces().begin(),cur_mesh.faces().end(),cur_mesh);
+
 		next_best_target->update_uncertainty(current_pos, total_buildings);
-		profileTime(t, "Height map", software_parameter_is_log);
+		comutil::checkpointTime(t, "Height map", software_parameter_is_log);
 
 		std::vector<MyViewpoint> current_trajectory;
 		if(!with_interpolated||(with_interpolated&& !is_interpolated))
@@ -1586,14 +1589,14 @@ int main(int argc, char** argv){
 			LOG(INFO) << (boost::format("Current mode: %s. Building progress: %d/%d") % std::to_string(next_best_target->m_motion_status) % current_building_num % total_buildings.size()).str();
 
 		}
-		profileTime(t, "Generate trajectory", software_parameter_is_log);
+		comutil::checkpointTime(t, "Generate trajectory", software_parameter_is_log);
 
 		// Statics
 		{
 			if (cur_frame_id > 1)
 			{
-				float distance = (next_viewpoint.pos_mesh - current_pos.pos_mesh).norm();
-				if(next_best_target->m_motion_status==Motion_status::exploration || next_best_target->m_motion_status == Motion_status::final_check)
+				double distance = (next_viewpoint.pos_mesh - current_pos.pos_mesh).norm();
+				if (next_best_target->m_motion_status == Motion_status::exploration || next_best_target->m_motion_status == Motion_status::final_check)
 					exploration_length += distance;
 				else
 					reconstruction_length+= distance;
@@ -1606,8 +1609,7 @@ int main(int argc, char** argv){
 		}
 
 		// Visualize
-		//debug_img(std::vector<cv::Mat>{original_height_map.m_map_dilated});
-		if(software_parameter_is_viz)
+		if (software_parameter_is_viz)
 		{
 			viz->lock();
 			viz->m_buildings = total_buildings;
@@ -1616,7 +1618,7 @@ int main(int argc, char** argv){
 			viz->m_uncertainty_map.clear();
 			for (const auto& item : next_best_target->sample_points) {
 				int index = &item - &next_best_target->sample_points[0];
-				viz->m_uncertainty_map.emplace_back(Eigen::Vector2f(item.x(), item.y()), next_best_target->region_status[index]);
+				viz->m_uncertainty_map.emplace_back(Eigen::Vector2d(item.x(), item.y()), next_best_target->region_status[index]);
 			}
 			viz->m_pos = current_pos.pos_mesh;
 			viz->m_direction = current_pos.direction;
@@ -1630,13 +1632,15 @@ int main(int argc, char** argv){
 			//debug_img(std::vector<cv::Mat>{height_map.m_map_dilated});
 		}
 		//debug_img(std::vector<cv::Mat>{original_height_map.m_map_dilated});
-		profileTime(t, "Viz", software_parameter_is_log);
+		comutil::checkpointTime(t, "Viz", software_parameter_is_log);
 
 		{
-			Eigen::Vector3f direction = next_viewpoint.pos_mesh - current_pos.pos_mesh;
-			Eigen::Vector3f next_direction, next_direction_temp;
-			Eigen::Vector3f next_pos;
-			int interpolated_num = int(direction.norm() /  DRONE_STEP);
+			Eigen::Vector3d direction = next_viewpoint.pos_mesh - current_pos.pos_mesh;
+			Eigen::Vector3d next_direction, next_direction_temp;
+			Eigen::Vector3d next_pos;
+
+			int interpolated_num = static_cast<int>(direction.norm() /  DRONE_STEP);
+
 			if (direction.norm() < 2 * DRONE_STEP||!with_interpolated)
 			{
 				//next_direction = next_pos_direction.second.normalized();
@@ -1647,13 +1651,14 @@ int main(int argc, char** argv){
 			}
 			else// Bug here
 			{
-				next_direction = direction.normalized();
+				/*next_direction = direction.normalized();
 				next_pos = current_pos.pos_mesh + next_direction * DRONE_STEP;
-				Eigen::Vector2f next_2D_direction(next_viewpoint.direction.x(), next_viewpoint.direction.y());
-				Eigen::Vector2f current_2D_direction(current_pos.direction.x(), current_pos.direction.y());
-				float current_yaw = atan2(current_2D_direction.y(), current_2D_direction.x());
-				float next_direction_yaw = atan2(next_2D_direction.y(), next_2D_direction.x());
-				float angle_delta;
+				Eigen::Vector2d next_2D_direction(next_viewpoint.direction.x(), next_viewpoint.direction.y());
+				Eigen::Vector2d current_2D_direction(current_pos.direction.x(), current_pos.direction.y());
+
+				double current_yaw = atan2(current_2D_direction.y(), current_2D_direction.x());
+				double next_direction_yaw = atan2(next_2D_direction.y(), next_2D_direction.x());
+				double angle_delta;
 				if (abs(current_yaw - next_direction_yaw) > M_PI)
 				{
 					if (current_yaw > next_direction_yaw)
@@ -1686,28 +1691,31 @@ int main(int argc, char** argv){
 				}
 				next_direction.z() = -std::sqrt(next_direction.x() * next_direction.x() + next_direction.y() * next_direction.y()) * std::tan(45.f / 180 * M_PI);
 				next_direction.normalize();
-				is_interpolated = true;
+				is_interpolated = true;*/
 			}
+
 			total_passed_trajectory.push_back(next_viewpoint);
-			std::ofstream pose("D:/test_data/" + std::to_string(cur_frame_id) + ".txt");
-			pose << next_pos << next_direction_temp;
-			pose.close();
-			float pitch = -std::atan2f(next_direction[2], std::sqrtf(next_direction[0] * next_direction[0] + next_direction[1] * next_direction[1]));
-			float yaw = std::atan2f(next_direction[1], next_direction[0]);
+
+			//std::ofstream pose("D:/test_data/" + std::to_string(cur_frame_id) + ".txt");
+			//pose << next_pos << next_direction_temp;
+			//pose.close();
+			double pitch = -std::atan2f(next_direction[2], std::sqrtf(next_direction[0] * next_direction[0] + next_direction[1] * next_direction[1]));
+			double yaw = std::atan2f(next_direction[1], next_direction[0]);
 			current_pos = map_converter.get_pos_pack_from_mesh(next_pos, yaw, pitch);
 			cur_frame_id++;
+
 		}
-		profileTime(t, "Find next move", software_parameter_is_log);
+		comutil::checkpointTime(t, "Find next move", software_parameter_is_log);
 		LOG(INFO) << "<<<<<<<<<<<<< Frame " << cur_frame_id - 1 << " done! <<<<<<<<<<<<<";
 		LOG(INFO) << "";
 
-		std::vector<Rotated_box> boxes;
+		std::vector<RotatedBox> boxes;
 		if(cur_frame_id == 50 || cur_frame_id == 100 || cur_frame_id==150|| cur_frame_id == 450||cur_frame_id == 750)
 		{
 			for (const auto& item : total_buildings)
 				boxes.push_back(item.bounding_box_3d);
-			//Surface_mesh mesh = get_box_mesh(boxes);
-			Surface_mesh mesh = get_rotated_box_mesh(boxes);
+			//SurfaceMesh mesh = get_box_mesh(boxes);
+			SurfaceMesh mesh = modeltools::get_rotated_box_mesh(boxes);
 			CGAL::IO::write_PLY("log/gradually_results/box" + std::to_string(cur_frame_id) + ".ply", mesh);
 			write_normal_path_with_flag(total_passed_trajectory, 
 				"log/gradually_results/camera_normal_" + std::to_string(cur_frame_id) + ".log");
@@ -1718,7 +1726,7 @@ int main(int argc, char** argv){
 		viz->lock();
 		viz->m_buildings = total_buildings;
 		viz->m_pos = total_passed_trajectory[total_passed_trajectory.size()-1].pos_mesh;
-		viz->m_direction = Eigen::Vector3f(0,0,1);
+		viz->m_direction = Eigen::Vector3d(0,0,1);
 		viz->m_trajectories.clear();
 		viz->m_trajectories = total_passed_trajectory;
 
@@ -1727,7 +1735,7 @@ int main(int argc, char** argv){
 		viz->m_uncertainty_map.clear();
 		for (const auto& item : next_best_target->sample_points) {
 			int index = &item - &next_best_target->sample_points[0];
-			viz->m_uncertainty_map.emplace_back(Eigen::Vector2f(item.x(), item.y()), next_best_target->region_status[index]);
+			viz->m_uncertainty_map.emplace_back(Eigen::Vector2d(item.x(), item.y()), next_best_target->region_status[index]);
 		}
 		viz->unlock();
 		//override_sleep(100);
@@ -1735,36 +1743,36 @@ int main(int argc, char** argv){
 	}
 	//total_passed_trajectory.pop_back();
 
-	std::vector<Rotated_box> boxes;
+	std::vector<RotatedBox> boxes;
 	for (const auto& item : total_buildings)
 		boxes.push_back(item.bounding_box_3d);
-	//Surface_mesh mesh = get_box_mesh(boxes);
-	Surface_mesh mesh = get_rotated_box_mesh(boxes);
-	CGAL::IO::write_PLY(std::ofstream((log_root/"proxy.ply").string()), mesh);
+	//SurfaceMesh mesh = get_box_mesh(boxes);
+	SurfaceMesh mesh = modeltools::get_rotated_box_mesh(boxes);
+	CGAL::IO::write_PLY(logPath + "proxy.ply", mesh);
 
 	boxes.clear();
 	// Uncertainty
-	std::vector<Eigen::AlignedBox3f> boxess1;
+	std::vector<Eigen::AlignedBox3d> boxess1;
 	std::vector<cv::Vec3b> boxess1_color;
-	std::vector<Eigen::AlignedBox3f> boxess2;
+	std::vector<Eigen::AlignedBox3d> boxess2;
 	std::vector<cv::Vec3b> boxess2_color;
 	for (const auto& item : next_best_target->sample_points) {
 		int index = &item - &next_best_target->sample_points[0];
 		if (next_best_target->region_status[index] == cv::Vec3b(0, 255, 0))
 		{
-			boxess1.push_back(Eigen::AlignedBox3f(Eigen::Vector3f(item.x() - args["ccpp_cell_distance"].asFloat() / 2, item.y() - args["ccpp_cell_distance"].asFloat() / 2, -1),
-				Eigen::Vector3f(item.x() + args["ccpp_cell_distance"].asFloat() / 2, item.y() + args["ccpp_cell_distance"].asFloat() / 2, 1)));
+			boxess1.push_back(Eigen::AlignedBox3d(Eigen::Vector3d(item.x() - args["ccpp_cell_distance"].asFloat() / 2, item.y() - args["ccpp_cell_distance"].asFloat() / 2, -1),
+				Eigen::Vector3d(item.x() + args["ccpp_cell_distance"].asFloat() / 2, item.y() + args["ccpp_cell_distance"].asFloat() / 2, 1)));
 			boxess1_color.push_back(next_best_target->region_status[index]);
 		}
 		else
 		{
 			boxess2_color.push_back(next_best_target->region_status[index]);
-			boxess2.push_back(Eigen::AlignedBox3f(Eigen::Vector3f(item.x() - args["ccpp_cell_distance"].asFloat() / 2, item.y() - args["ccpp_cell_distance"].asFloat() / 2, -1),
-				Eigen::Vector3f(item.x() + args["ccpp_cell_distance"].asFloat() / 2, item.y() + args["ccpp_cell_distance"].asFloat() / 2, 1)));
+			boxess2.push_back(Eigen::AlignedBox3d(Eigen::Vector3d(item.x() - args["ccpp_cell_distance"].asFloat() / 2, item.y() - args["ccpp_cell_distance"].asFloat() / 2, -1),
+				Eigen::Vector3d(item.x() + args["ccpp_cell_distance"].asFloat() / 2, item.y() + args["ccpp_cell_distance"].asFloat() / 2, 1)));
 		}
 	}
-	get_box_mesh_with_colors(boxess1, boxess1_color, (log_root / "uncertainty_map1.obj").string());
-	get_box_mesh_with_colors(boxess2, boxess2_color, (log_root / "uncertainty_map2.obj").string());
+	modeltools::get_box_mesh_with_colors(boxess1, boxess1_color, logPath + "uncertainty_map1.obj");
+	modeltools::get_box_mesh_with_colors(boxess2, boxess2_color, logPath + "uncertainty_map2.obj");
 	
 	LOG(ERROR) <<"Total path num: "<< total_passed_trajectory.size();
 	LOG(ERROR) <<"Total path length: "<< evaluate_length(total_passed_trajectory);
@@ -1774,22 +1782,23 @@ int main(int argc, char** argv){
 	LOG(ERROR) << "Vertical step: " << vertical_step;
 	LOG(ERROR) << "Horizontal step: " << horizontal_step;
 	LOG(ERROR) << "Split minimum distance: " << split_min_distance;
-	runtime_height_map.save_height_map_tiff((log_root / "height_map.tiff").string());
-	debug_img(std::vector<cv::Mat>{runtime_height_map.m_map_dilated});
+	runtime_height_map.save_height_map_tiff(logPath + "height_map.tiff");
+
+	comutil::debug_img();
 
 	if (args["output_waypoint"].asBool())
 	{
 		total_passed_trajectory = ensure_global_safe(total_passed_trajectory, runtime_height_map, args["safe_distance"].asFloat(), mapper->m_boundary);
 	}
 
-	write_unreal_path(total_passed_trajectory, (log_root/"path" / "camera_after_transaction.log").string());
-	write_smith_path(total_passed_trajectory, (log_root /"path"/ "camera_smith_invert_x.log").string());
-	write_normal_path_with_flag(total_passed_trajectory, (log_root / "path"/"camera_with_flag.log").string());
+	write_unreal_path(total_passed_trajectory, logPath + "path" + "/camera_after_transaction.log");
+	write_smith_path(total_passed_trajectory, logPath + "path" + "/camera_smith_invert_x.log");
+	write_normal_path_with_flag(total_passed_trajectory, logPath + "path" + "/camera_with_flag.log");
 	LOG(ERROR) << "Write trajectory done!";
 
 	std::vector<MyViewpoint> safe_global_trajectory;
 	safe_global_trajectory = ensure_three_meter_dji(simplify_path_reduce_waypoints(total_passed_trajectory),safezone_height_map, args["safe_distance"].asFloat());
-	write_wgs_path(args, safe_global_trajectory, (log_root / "path/").string());
+	write_wgs_path(args, safe_global_trajectory, logPath + "path/");
 	LOG(ERROR) << "Total waypoint length: " << evaluate_length(safe_global_trajectory);
 	LOG(ERROR) << "Total waypoint num: " << safe_global_trajectory.size();
 	
@@ -1805,13 +1814,13 @@ int main(int argc, char** argv){
 		viz->m_uncertainty_map.clear();
 		for (const auto& item : next_best_target->sample_points) {
 			int index = &item - &next_best_target->sample_points[0];
-			viz->m_uncertainty_map.emplace_back(Eigen::Vector2f(item.x(), item.y()), next_best_target->region_status[index]);
+			viz->m_uncertainty_map.emplace_back(Eigen::Vector2d(item.x(), item.y()), next_best_target->region_status[index]);
 		}
 		viz->unlock();
 		//override_sleep(100);
 		//debug_img(std::vector<cv::Mat>{height_map.m_map_dilated});
 	}
-	debug_img(std::vector<cv::Mat>{runtime_height_map.m_map_dilated});
+	comutil::debug_img();
 
 	return 0;
 }

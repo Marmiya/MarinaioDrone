@@ -21,6 +21,7 @@
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CGAL/Random.h>
 #include <CGAL/Surface_mesh/Surface_mesh.h>
 #include <opencv2/opencv.hpp>
 
@@ -202,6 +203,7 @@ namespace cgaltools {
 		const std::tuple<tinyobj::attrib_t, std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> v_obj_in);
 
 	Eigen::AlignedBox3d get_bounding_box(const PointSet3& v_point_set);
+	RotatedBox get_bounding_box_rotated(const PointSet3& v_point_set);
 
 	Eigen::Vector3d cgal_point_2_eigen(const Point3& p);
 

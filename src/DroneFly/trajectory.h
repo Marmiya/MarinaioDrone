@@ -13,29 +13,29 @@
 #include "building.h"
 #include "map_util.h"
 
-Eigen::Vector2f lonLat2Mercator(const Eigen::Vector2f& lonLat) {
-	Eigen::Vector2f mercator;
+Eigen::Vector2d lonLat2Mercator(const Eigen::Vector2d& lonLat) {
+	Eigen::Vector2d mercator;
 	double x = lonLat.x() * 20037508.34 / 180;
 	double y = log(tan((90 + lonLat.y()) * M_PI / 360)) / (M_PI / 180);
 	y = y * 20037508.34 / 180;
-	mercator = Eigen::Vector2f(x, y);
+	mercator = Eigen::Vector2d(x, y);
 	return mercator;
 }
 
-Eigen::Vector2f mercator2lonLat(const Eigen::Vector2f& mercator) {
-	Eigen::Vector2f lonLat;
+Eigen::Vector2d mercator2lonLat(const Eigen::Vector2d& mercator) {
+	Eigen::Vector2d lonLat;
 	double x = mercator.x() / 20037508.34 * 180;
 	double y = mercator.y() / 20037508.34 * 180;
 	y = 180 / M_PI * (2 * atan(exp(y * M_PI / 180)) - M_PI / 2);
-	lonLat = Eigen::Vector2f(x, y);
+	lonLat = Eigen::Vector2d(x, y);
 	return lonLat;
 }
 
-Eigen::Vector3f wgs2cgcs2000(const Eigen::Vector3f& v_wgs) {
-	Eigen::Matrix3f converter;
+Eigen::Vector3d wgs2cgcs2000(const Eigen::Vector3d& v_wgs) {
+	Eigen::Matrix3d converter;
 	converter << 0.999997079, 3.47778126e-7, -2.6082455e-7, 3.21041821e-8, 1, 2.14655547e-8, 2.13904843e-7, -3.436997e-8, 1;
 
-	Eigen::Vector3f cgcs2000 = converter * v_wgs;
+	Eigen::Vector3d cgcs2000 = converter * v_wgs;
 	return cgcs2000;
 }
 
@@ -46,8 +46,8 @@ void write_unreal_path(const std::vector<MyViewpoint>& v_trajectories,
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
 	{
-		const Eigen::Vector3f& position = v_trajectories[i].pos_mesh * 100;
-		const Eigen::Vector3f& direction = v_trajectories[i].direction;
+		const Eigen::Vector3d& position = v_trajectories[i].pos_mesh * 100;
+		const Eigen::Vector3d& direction = v_trajectories[i].direction;
 		boost::format fmt("%04d.png,%s,%s,%s,%s,0,%s\n");
 		float pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) *
 			180. / M_PI;
@@ -65,8 +65,8 @@ void write_smith_path(const std::vector<MyViewpoint>& v_trajectories,
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
 	{
-		const Eigen::Vector3f& position = v_trajectories[i].pos_mesh * 100;
-		const Eigen::Vector3f& direction = v_trajectories[i].direction;
+		const Eigen::Vector3d& position = v_trajectories[i].pos_mesh * 100;
+		const Eigen::Vector3d& direction = v_trajectories[i].direction;
 		boost::format fmt("%04d.png,%s,%s,%s,%s,0,%s\n");
 		float pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) *
 			180. / M_PI;
@@ -83,8 +83,8 @@ void write_normal_path_with_flag(const std::vector<MyViewpoint>& v_trajectories,
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i) {
-		const Eigen::Vector3f& position = v_trajectories[i].pos_mesh;
-		const Eigen::Vector3f& direction = v_trajectories[i].direction;
+		const Eigen::Vector3d& position = v_trajectories[i].pos_mesh;
+		const Eigen::Vector3d& direction = v_trajectories[i].direction;
 		boost::format fmt("%04d.png,%s,%s,%s,%s,0,%s,%s\n");
 		pose << (fmt % i % position[0] % position[1] % position[2] % v_trajectories[i].pitch % v_trajectories[i].yaw % v_trajectories[i].is_towards_reconstruction).str();
 	}
@@ -92,14 +92,14 @@ void write_normal_path_with_flag(const std::vector<MyViewpoint>& v_trajectories,
 	pose.close();
 }
 
-void write_normal_path(const std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>>& v_trajectories,
+void write_normal_path(const std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>& v_trajectories,
                        const std::string& v_path)
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
 	{
-		const Eigen::Vector3f& position = v_trajectories[i].first;
-		const Eigen::Vector3f& direction = v_trajectories[i].second;
+		const Eigen::Vector3d& position = v_trajectories[i].first;
+		const Eigen::Vector3d& direction = v_trajectories[i].second;
 		boost::format fmt("%04d.png,%s,%s,%s,%s,0,%s\n");
 		float pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) *
 			180. / M_PI;
@@ -112,13 +112,13 @@ void write_normal_path(const std::vector<std::pair<Eigen::Vector3f, Eigen::Vecto
 }
 
 // Second element of the pair is the focus point
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> interpolate_path(const std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>>& v_trajectories) {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> interpolated_trajectory;
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> interpolate_path(const std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>& v_trajectories) {
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> interpolated_trajectory;
 	for (int i = 0; i < v_trajectories.size()-1; ++i) {
-		const Eigen::Vector3f& position = v_trajectories[i].first;
-		const Eigen::Vector3f& next_position = v_trajectories[i+1].first;
-		const Eigen::Vector3f& next_focus = v_trajectories[i+1].second;
-		Eigen::Vector3f towards = next_position-position;
+		const Eigen::Vector3d& position = v_trajectories[i].first;
+		const Eigen::Vector3d& next_position = v_trajectories[i+1].first;
+		const Eigen::Vector3d& next_focus = v_trajectories[i+1].second;
+		Eigen::Vector3d towards = next_position-position;
 		int num = towards.norm() / 3.f;
 		towards.normalize();
 		for(int i_interpolate=0;i_interpolate<num;++i_interpolate)
@@ -138,14 +138,14 @@ std::vector<MyViewpoint> simplify_path_reduce_waypoints(const std::vector<MyView
 	std::vector<MyViewpoint> simplified_trajectory;
 	int i0 = 0;
 	int i1 = 1;
-	Eigen::Vector3f towards(0.f, 0.f, 0.f);
+	Eigen::Vector3d towards(0.f, 0.f, 0.f);
 	simplified_trajectory.push_back(v_trajectories[0]);
 	while(i1 < v_trajectories.size())
 	{
-		const Eigen::Vector3f& position0 = v_trajectories[i1-1].pos_mesh;
-		const Eigen::Vector3f& position1 = v_trajectories[i1].pos_mesh;
-		Eigen::Vector3f next_towards = (position1 - position0).normalized();
-		if(towards== Eigen::Vector3f (0.f, 0.f, 0.f))
+		const Eigen::Vector3d& position0 = v_trajectories[i1-1].pos_mesh;
+		const Eigen::Vector3d& position1 = v_trajectories[i1].pos_mesh;
+		Eigen::Vector3d next_towards = (position1 - position0).normalized();
+		if(towards== Eigen::Vector3d (0.f, 0.f, 0.f))
 		{
 			i1 += 1;
 			towards = next_towards;
@@ -167,20 +167,20 @@ std::vector<MyViewpoint> simplify_path_reduce_waypoints(const std::vector<MyView
 }
 
 void write_wgs_path(const Json::Value& v_args,const std::vector<MyViewpoint>& v_trajectories,const std::string& v_path) {
-	//Eigen::Vector2f origin_wgs(113.92332,22.64429); // Yingrenshi
-	Eigen::Vector3f origin_wgs(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat(), 0.f);
-	//Eigen::Vector2f origin_xy=lonLat2Mercator(origin_wgs);
-	Eigen::Vector2f origin_xy(origin_wgs.x(), origin_wgs.y());
+	//Eigen::Vector2d origin_wgs(113.92332,22.64429); // Yingrenshi
+	Eigen::Vector3d origin_wgs(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat(), 0.f);
+	//Eigen::Vector2d origin_xy=lonLat2Mercator(origin_wgs);
+	Eigen::Vector2d origin_xy(origin_wgs.x(), origin_wgs.y());
 	std::ofstream pose_total(v_path+"camera_wgs.txt");
 	std::ofstream pose(v_path+"camera_wgs_0.txt");
 
-	Eigen::Vector3f prev_pos = v_trajectories[0].pos_mesh;
+	Eigen::Vector3d prev_pos = v_trajectories[0].pos_mesh;
 	int cur_log_id = 0;
 	for (int i_id = 0; i_id < v_trajectories.size(); i_id++) {
-		const Eigen::Vector3f& position = v_trajectories[i_id].pos_mesh;
-		Eigen::Vector2f pos_mac = Eigen::Vector2f(position.x(), position.y()) + origin_xy;
-		Eigen::Vector2f pos_wgs = mercator2lonLat(pos_mac);
-		const Eigen::Vector3f& direction = v_trajectories[i_id].direction;
+		const Eigen::Vector3d& position = v_trajectories[i_id].pos_mesh;
+		Eigen::Vector2d pos_mac = Eigen::Vector2d(position.x(), position.y()) + origin_xy;
+		Eigen::Vector2d pos_wgs = mercator2lonLat(pos_mac);
+		const Eigen::Vector3d& direction = v_trajectories[i_id].direction;
 
 		boost::format fmt("%f %f %f %f %f\n");
 		float pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) / M_PI * 180.f;
@@ -206,9 +206,9 @@ void write_wgs_path(const Json::Value& v_args,const std::vector<MyViewpoint>& v_
 	pose_total.close();
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_unreal_trajectory(const std::string& v_path)
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> read_unreal_trajectory(const std::string& v_path)
 {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> o_trajectories;
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 
@@ -231,10 +231,10 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_unreal_trajectory(
 		float dy = std::tanf(yaw / 180.f * M_PI) * dx;
 		float dz = std::sqrtf(dx * dx + dy * dy) * std::tanf(pitch / 180.f * M_PI);
 
-		Eigen::Vector3f direction(dx, dy, dz);
+		Eigen::Vector3d direction(dx, dy, dz);
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(std::atof(tokens[1].c_str()), -std::atof(tokens[2].c_str()),
+			Eigen::Vector3d(std::atof(tokens[1].c_str()), -std::atof(tokens[2].c_str()),
 			                std::atof(tokens[3].c_str())) / 100,
 			direction.normalized()
 		));
@@ -245,9 +245,9 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_unreal_trajectory(
 	return o_trajectories;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_normal_trajectory(const std::string& v_path)
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> read_normal_trajectory(const std::string& v_path)
 {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> o_trajectories;
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 
@@ -271,10 +271,10 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_normal_trajectory(
 		float dy = std::sin(yaw / 180.f * M_PI) * dxdy;
 		float dx = std::cos(yaw / 180.f * M_PI) * dxdy;
 
-		Eigen::Vector3f direction(dx, dy, dz);
+		Eigen::Vector3d direction(dx, dy, dz);
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str())),
+			Eigen::Vector3d(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str())),
 			direction.normalized()
 		));
 	}
@@ -284,8 +284,8 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_normal_trajectory(
 	return o_trajectories;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_hui_trajectory(const std::string& v_path) {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> o_trajectories;
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> read_hui_trajectory(const std::string& v_path) {
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 
@@ -300,8 +300,8 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_hui_trajectory(con
 		boost::split(tokens, line, boost::is_any_of(","));
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(std::atof(tokens[0].c_str()), std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str())),
-			Eigen::Vector3f(0, 0, -1)
+			Eigen::Vector3d(std::atof(tokens[0].c_str()), std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str())),
+			Eigen::Vector3d(0, 0, -1)
 		));
 	} while (!pose.eof());
 
@@ -309,8 +309,8 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_hui_trajectory(con
 	return o_trajectories;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_smith_trajectory(const std::string& v_path) {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> o_trajectories;
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> read_smith_trajectory(const std::string& v_path) {
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 
@@ -332,10 +332,10 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_smith_trajectory(c
 		float dy = std::sin(yaw / 180.f * M_PI) * dxdy;
 		float dx = std::cos(yaw / 180.f * M_PI) * dxdy;
 
-		Eigen::Vector3f direction(dx, dy, dz);
+		Eigen::Vector3d direction(dx, dy, dz);
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(-std::atof(tokens[1].c_str())/100, std::atof(tokens[2].c_str()) / 100, std::atof(tokens[3].c_str()) / 100) ,
+			Eigen::Vector3d(-std::atof(tokens[1].c_str())/100, std::atof(tokens[2].c_str()) / 100, std::atof(tokens[3].c_str()) / 100) ,
 			direction.normalized()
 		));
 	} while (!pose.eof());
@@ -344,9 +344,9 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_smith_trajectory(c
 	return o_trajectories;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector2f>> read_wgs84_trajectory(const std::string& v_path)
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector2d>> read_wgs84_trajectory(const std::string& v_path)
 {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector2f>> o_trajectories;
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector2d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 
@@ -370,8 +370,8 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector2f>> read_wgs84_trajectory(c
 		float z = std::atof(tokens[2].c_str());
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(longitude, latitude, z),
-			Eigen::Vector2f(pitch,yaw)
+			Eigen::Vector3d(longitude, latitude, z),
+			Eigen::Vector2d(pitch,yaw)
 		));
 	}
 	while (!pose.eof());
@@ -380,9 +380,9 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector2f>> read_wgs84_trajectory(c
 	return o_trajectories;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_smith_spline_trajectory(const std::string& v_path)
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> read_smith_spline_trajectory(const std::string& v_path)
 {
-	std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> o_trajectories;
+	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> o_trajectories;
 	std::ifstream pose(v_path);
 	if (!pose.is_open()) throw "File not opened";
 	std::string t;
@@ -405,8 +405,8 @@ std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> read_smith_spline_traje
 		float y = std::atof(tokens[1].c_str());
 
 		o_trajectories.push_back(std::make_pair(
-			Eigen::Vector3f(x, y, z),
-			Eigen::Vector3f(0.f, 0.f, 0.f)
+			Eigen::Vector3d(x, y, z),
+			Eigen::Vector3d(0.f, 0.f, 0.f)
 		));
 	}
 	while (!pose.eof());
@@ -426,7 +426,7 @@ float evaluate_length(const std::vector<MyViewpoint> v_trajectory) {
 	return total_length;
 }
 
-bool ensure_no_views_less_than_three_meter(const Eigen::Vector3f& v_pos,const std::vector<Eigen::Vector3f>& v_exists_pos)
+bool ensure_no_views_less_than_three_meter(const Eigen::Vector3d& v_pos,const std::vector<Eigen::Vector3d>& v_exists_pos)
 {
 	for(const auto& item:v_exists_pos)
 	{
@@ -436,9 +436,9 @@ bool ensure_no_views_less_than_three_meter(const Eigen::Vector3f& v_pos,const st
 	return true;
 }
 
-std::vector<MyViewpoint> ensure_three_meter_dji(const std::vector<MyViewpoint>& v_trajectory, const Height_map& v_height_map, const float v_safe_distance) {
+std::vector<MyViewpoint> ensure_three_meter_dji(const std::vector<MyViewpoint>& v_trajectory, const modeltools::Height_map& v_height_map, const float v_safe_distance) {
 	std::vector<MyViewpoint> safe_trajectory;
-	std::vector<Eigen::Vector3f> exists_pos;
+	std::vector<Eigen::Vector3d> exists_pos;
 	for (int i = 0; i < v_trajectory.size(); ++i) {
 		const auto& cur_item = v_trajectory[i];
 		
@@ -457,7 +457,7 @@ std::vector<MyViewpoint> ensure_three_meter_dji(const std::vector<MyViewpoint>& 
 			MyViewpoint v;
 			while(!accept)
 			{
-				v.pos_mesh=Eigen::Vector3f(
+				v.pos_mesh=Eigen::Vector3d(
 					cur_item.pos_mesh.x()+(ud(gen)-.5f)*2*search_radius,
 					cur_item.pos_mesh.y()+(ud(gen)-.5f)*2*search_radius,
 					cur_item.pos_mesh.z()+(ud(gen))*search_radius);
@@ -475,7 +475,7 @@ std::vector<MyViewpoint> ensure_three_meter_dji(const std::vector<MyViewpoint>& 
 
 std::vector<MyViewpoint> ensure_global_safe(
 	const std::vector<MyViewpoint>& v_trajectory,
-	const Height_map& v_height_map, const float v_safe_distance,const Polygon_2& v_boundary)
+	const modeltools::Height_map& v_height_map, const float v_safe_distance,const Polygon2& v_boundary)
 {
 	std::vector<MyViewpoint> safe_trajectory;
 	std::vector<MyViewpoint> boundary_safe_trajectory = v_trajectory;
@@ -483,23 +483,23 @@ std::vector<MyViewpoint> ensure_global_safe(
 	//// Ensure boundary safe
 	//for (int i = 0; i < v_trajectory.size() - 1; ++i) {
 	//	boundary_safe_trajectory.push_back(v_trajectory[i]);
-	//	Eigen::Vector2f cur_item = Eigen::Vector2f(v_trajectory[i].first.x(), v_trajectory[i].first.y());
+	//	Eigen::Vector2d cur_item = Eigen::Vector2d(v_trajectory[i].first.x(), v_trajectory[i].first.y());
 	//	float cur_z = v_trajectory[i].first.z();
-	//	auto next_item = Eigen::Vector2f(v_trajectory[i + 1].first.x(), v_trajectory[i + 1].first.y());
+	//	auto next_item = Eigen::Vector2d(v_trajectory[i + 1].first.x(), v_trajectory[i + 1].first.y());
 	//	float length_2D = (cur_item - next_item).norm();
-	//	Eigen::Vector2f temp_point = cur_item;
+	//	Eigen::Vector2d temp_point = cur_item;
 	//	bool accept;
 	//	bool fail = false;
 
 	//	while ((cur_item - next_item).norm() > 5)
 	//	{
 	//		cur_item = temp_point;
-	//		Eigen::Vector2f direction = (next_item - cur_item).normalized();
+	//		Eigen::Vector2d direction = (next_item - cur_item).normalized();
 	//		for (int angle_in_degree = 0; angle_in_degree <= 90; angle_in_degree+=10)
 	//		{
 	//			// Add angle
 	//			float now_angle = std::atan2(direction.y(), direction.x()) + (angle_in_degree / 180 * M_PI);
-	//			Eigen::Vector2f now_direction = Eigen::Vector2f(std::cos(now_angle), std::sin(now_angle));
+	//			Eigen::Vector2d now_direction = Eigen::Vector2d(std::cos(now_angle), std::sin(now_angle));
 	//			while ((cur_item - temp_point).norm() < length_2D && (cur_item - next_item).norm() > 5)
 	//			{
 	//				cur_item += now_direction * 2;
@@ -513,14 +513,14 @@ std::vector<MyViewpoint> ensure_global_safe(
 	//			}
 	//			if (accept)
 	//			{
-	//				boundary_safe_trajectory.push_back(std::make_pair(Eigen::Vector3f(cur_item.x(), cur_item.y(), cur_z), v_trajectory[i].second));
+	//				boundary_safe_trajectory.push_back(std::make_pair(Eigen::Vector3d(cur_item.x(), cur_item.y(), cur_z), v_trajectory[i].second));
 	//				temp_point = cur_item;
 	//				break;
 	//			}
 
 	//			// Sub angle
 	//			now_angle = std::atan2(direction.y(), direction.x()) - (angle_in_degree / 180 * M_PI);
-	//			now_direction = Eigen::Vector2f(std::cos(now_angle), std::sin(now_angle));
+	//			now_direction = Eigen::Vector2d(std::cos(now_angle), std::sin(now_angle));
 	//			while ((cur_item - temp_point).norm() < length_2D && (cur_item - next_item).norm() > 5)
 	//			{
 	//				cur_item += now_direction * 2;
@@ -534,7 +534,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 	//			}
 	//			if (accept)
 	//			{
-	//				boundary_safe_trajectory.push_back(std::make_pair(Eigen::Vector3f(cur_item.x(), cur_item.y(), cur_z), v_trajectory[i].second));
+	//				boundary_safe_trajectory.push_back(std::make_pair(Eigen::Vector3d(cur_item.x(), cur_item.y(), cur_z), v_trajectory[i].second));
 	//				temp_point = cur_item;
 	//				break;
 	//			}
@@ -548,7 +548,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 
 	// Ensure Height Safe
 	for (int i = 0; i < boundary_safe_trajectory.size()-1;++i) {
-		Eigen::Vector3f cur_item = boundary_safe_trajectory[i].pos_mesh;
+		Eigen::Vector3d cur_item = boundary_safe_trajectory[i].pos_mesh;
 		auto next_item = boundary_safe_trajectory[i + 1];
 
 
@@ -560,7 +560,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 		boundary_safe_trajectory[i + 1].calculate_direction();
 
 		safe_trajectory.push_back(boundary_safe_trajectory[i]);
-		Eigen::Vector3f direction = (next_item.pos_mesh - cur_item).normalized();
+		Eigen::Vector3d direction = (next_item.pos_mesh - cur_item).normalized();
 		bool accept = true;
 		float top_height = cur_item.z();
 		
@@ -580,9 +580,9 @@ std::vector<MyViewpoint> ensure_global_safe(
 		}
 		if(!accept)
 		{
-			safe_trajectory.emplace_back(Eigen::Vector3f(boundary_safe_trajectory[i].pos_mesh.x(), boundary_safe_trajectory[i].pos_mesh.y(), top_height), boundary_safe_trajectory[i].focus_point);
+			safe_trajectory.emplace_back(Eigen::Vector3d(boundary_safe_trajectory[i].pos_mesh.x(), boundary_safe_trajectory[i].pos_mesh.y(), top_height), boundary_safe_trajectory[i].focus_point);
 			safe_trajectory.back().is_towards_reconstruction = next_item.is_towards_reconstruction;
-			safe_trajectory.emplace_back(Eigen::Vector3f(next_item.pos_mesh.x(), next_item.pos_mesh.y(), top_height), next_item.focus_point);
+			safe_trajectory.emplace_back(Eigen::Vector3d(next_item.pos_mesh.x(), next_item.pos_mesh.y(), top_height), next_item.focus_point);
 			safe_trajectory.back().is_towards_reconstruction = next_item.is_towards_reconstruction;
 		}
 		/*
@@ -596,8 +596,8 @@ std::vector<MyViewpoint> ensure_global_safe(
 		}
 		if(!accept)
 		{
-			safe_trajectory.emplace_back(Eigen::Vector3f(v_trajectory[i].first.x(), v_trajectory[i].first.y(), next_item.first.z() + 5), v_trajectory[i].second);
-			safe_trajectory.emplace_back(Eigen::Vector3f(next_item.first.x(), next_item.first.y(), next_item.first.z() + 5), v_trajectory[i+1].second);
+			safe_trajectory.emplace_back(Eigen::Vector3d(v_trajectory[i].first.x(), v_trajectory[i].first.y(), next_item.first.z() + 5), v_trajectory[i].second);
+			safe_trajectory.emplace_back(Eigen::Vector3d(next_item.first.x(), next_item.first.y(), next_item.first.z() + 5), v_trajectory[i+1].second);
 		}*/
 
 	}
@@ -607,7 +607,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 
 std::vector<MyViewpoint> ensure_safe_trajectory(
 	const std::vector<MyViewpoint>& v_trajectory,
-	const Height_map& v_height_map,const float v_safe_distance)
+	const modeltools::Height_map& v_height_map,const float v_safe_distance)
 {
 	std::vector<MyViewpoint> safe_trajectory;
 	for (auto item : v_trajectory) {
@@ -637,29 +637,29 @@ struct Trajectory_params
 /*
 bool generate_next_view_curvature(const Trajectory_params& v_params,
                         Building& v_building,
-                        std::pair<Eigen::Vector3f, Eigen::Vector3f>& v_cur_pos)
+                        std::pair<Eigen::Vector3d, Eigen::Vector3d>& v_cur_pos)
 {
-	const Eigen::AlignedBox3f* target_box = nullptr;
+	const Eigen::AlignedBox3d* target_box = nullptr;
 	float cur_angle = 0.f;
 	bool start_flag = false;
 	int cur_box_id = -1;
 	float angle_step = v_params.xy_angle / 180.f * M_PI;
 	// Init
-	if (v_cur_pos.first == Eigen::Vector3f(0.f, 0.f, 0.f))
+	if (v_cur_pos.first == Eigen::Vector3d(0.f, 0.f, 0.f))
 	{
 		start_flag = true;
-		const Eigen::AlignedBox3f* closest_box;
+		const Eigen::AlignedBox3d* closest_box;
 		while (closest_box != target_box || target_box == nullptr)
 		{
 			cur_box_id += 1;
 			target_box = &v_building.boxes[cur_box_id];
-			Eigen::Vector3f next_position(v_cur_pos.first);
+			Eigen::Vector3d next_position(v_cur_pos.first);
 			float radius = std::max(target_box->sizes().x(), target_box->sizes().y()) / 2 + v_params.view_distance;
 			next_position.x() = radius * std::cos(cur_angle) + target_box->center().x();
 			next_position.y() = radius * std::sin(cur_angle) + target_box->center().y();
 			closest_box = &*std::min_element(v_building.boxes.begin(), v_building.boxes.end(),
-			                                 [&next_position](const Eigen::AlignedBox3f& item1,
-			                                                  const Eigen::AlignedBox3f& item2)
+			                                 [&next_position](const Eigen::AlignedBox3d& item1,
+			                                                  const Eigen::AlignedBox3d& item2)
 			                                 {
 				                                 return (next_position - item1.center()).norm() < (next_position - item2
 					                                 .center()).norm();
@@ -671,13 +671,13 @@ bool generate_next_view_curvature(const Trajectory_params& v_params,
 	else
 	{
 		target_box = &*std::min_element(v_building.boxes.begin(), v_building.boxes.end(),
-		                                [&v_cur_pos](const Eigen::AlignedBox3f& item1, const Eigen::AlignedBox3f& item2)
+		                                [&v_cur_pos](const Eigen::AlignedBox3d& item1, const Eigen::AlignedBox3d& item2)
 		                                {
 			                                return (v_cur_pos.first - item1.center()).norm() < (v_cur_pos.first - item2.
 				                                center()).norm();
 		                                });
 		cur_box_id = target_box - &v_building.boxes[0];
-		Eigen::Vector3f view_to_center = v_cur_pos.first - target_box->center();
+		Eigen::Vector3d view_to_center = v_cur_pos.first - target_box->center();
 		cur_angle = std::atan2f(view_to_center[1], view_to_center[0]);
 	}
 
@@ -689,8 +689,8 @@ bool generate_next_view_curvature(const Trajectory_params& v_params,
 		return false;
 
 	//std::cout << cur_box_id << ", " << cur_angle << std::endl;
-	Eigen::Vector3f next_position(v_cur_pos.first);
-	Eigen::Vector3f camera_focus = target_box->center();
+	Eigen::Vector3d next_position(v_cur_pos.first);
+	Eigen::Vector3d camera_focus = target_box->center();
 
 	next_position.x() = radius * std::cos(cur_angle) + target_box->center().x();
 	next_position.y() = radius * std::sin(cur_angle) + target_box->center().y();
@@ -702,14 +702,14 @@ bool generate_next_view_curvature(const Trajectory_params& v_params,
 
 std::vector<MyViewpoint> find_short_cut(
 	const std::vector<MyViewpoint>& v_trajectory,
-	const Height_map& v_height_map, const float v_safe_distance,const Building& v_cur_building, const Tree& v_tree)
+	const modeltools::Height_map& v_height_map, const float v_safe_distance,const Building& v_cur_building, const Tree& v_tree)
 {
-	//Eigen::Vector3f center = v_cur_building.bounding_box_3d.box.center();
+	//Eigen::Vector3d center = v_cur_building.bounding_box_3d.box.center();
 	std::vector<MyViewpoint> safe_trajectory;
 
 	for (auto item : v_trajectory) {
 		size_t id_item = &item-&v_trajectory[0];
-		Eigen::Vector3f safe_position = item.pos_mesh;
+		Eigen::Vector3d safe_position = item.pos_mesh;
 
 		bool accept = false;
 		while(!accept)
@@ -720,23 +720,23 @@ std::vector<MyViewpoint> find_short_cut(
 			bool ray_accept=false;
 			while(!ray_accept)
 			{
-				auto source = Point_3(safe_position.x(),safe_position.y(),safe_position.z());
-				auto destination = Point_3(item.focus_point.x(),item.focus_point.y(),item.focus_point.z());
+				auto source = Point3(safe_position.x(),safe_position.y(),safe_position.z());
+				auto destination = Point3(item.focus_point.x(),item.focus_point.y(),item.focus_point.z());
 				auto direction = destination-source;
 				direction/=std::sqrt(direction.squared_length());
-				Ray ray(source,direction);
+				Ray3 ray(source,direction);
 				auto result = v_tree.first_intersection(ray);
 				if(!result)
 					ray_accept = true;
 				else
 				{
-					const Point_3* point=boost::get<Point_3>(&(result->first));
+					const Point3* point=boost::get<Point3>(&(result->first));
 					if(point)
 					{
 						ray_accept = CGAL::squared_distance(source, destination) < CGAL::squared_distance(source, *point)+.01;
 						if(!ray_accept)
 						{
-							Eigen::Vector3f direction(item.direction.x(),item.direction.y(),0);
+							Eigen::Vector3d direction(item.direction.x(),item.direction.y(),0);
 							direction.normalize();
 							safe_position += direction * 1;
 						}
@@ -754,7 +754,7 @@ std::vector<MyViewpoint> find_short_cut(
 		//if(safe_position.z() > 1 * item.pos_mesh.z() && v_height_map.get_height(safe_position.x(), safe_position.y()) > v_cur_building.bounding_box_3d.box.max().z())
 		//{
 		//	safe_position = item.pos_mesh;
-		//	Eigen::Vector3f direction = item.focus_point - safe_position;
+		//	Eigen::Vector3d direction = item.focus_point - safe_position;
 		//	direction.z() = 0;
 		//	direction.normalize();
 		//	direction.z() = 1;
@@ -809,11 +809,11 @@ void cluster_duplicate(
 	std::vector<bool> delete_flag(v_trajectory.size(), false);
 	for(int i_pair = 0; i_pair < duplicate_pairs.size(); ++i_pair)
 	{
-		const Eigen::Vector3f& pos = v_trajectory[duplicate_pairs[i_pair][0]].pos_mesh;
-		const Eigen::Vector3f& first_focus_point= v_trajectory[duplicate_pairs[i_pair][0]].pos_mesh;
-		const Eigen::Vector3f& last_focus_point= v_trajectory[duplicate_pairs[i_pair].back()].pos_mesh;
+		const Eigen::Vector3d& pos = v_trajectory[duplicate_pairs[i_pair][0]].pos_mesh;
+		const Eigen::Vector3d& first_focus_point= v_trajectory[duplicate_pairs[i_pair][0]].pos_mesh;
+		const Eigen::Vector3d& last_focus_point= v_trajectory[duplicate_pairs[i_pair].back()].pos_mesh;
 		
-		Eigen::Vector3f direction = (first_focus_point - pos).normalized();
+		Eigen::Vector3d direction = (first_focus_point - pos).normalized();
 		
 		float new_angle = -std::atan2(direction.z(), std::sqrtf(direction.x() * direction.x() + direction.y() * direction.y()));
 		float surface_distance_one_view = std::tan(new_angle+(v_fov / 2) / 180.f * M_PI) * v_view_distance - std::tan(new_angle-(v_fov / 2) / 180.f * M_PI) * v_view_distance;
@@ -822,7 +822,7 @@ void cluster_duplicate(
 
 		if (step >= duplicate_pairs[i_pair].size()) // Can not be optimized
 			continue;
-		Eigen::Vector3f current_focus_point = first_focus_point;
+		Eigen::Vector3d current_focus_point = first_focus_point;
 		for(int i_view = 1;i_view < duplicate_pairs[i_pair].size();i_view++)
 		{
 			if(i_view>=step)
@@ -846,7 +846,7 @@ void cluster_duplicate(
 
 
 std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
-	std::vector<Building>& v_buildings, const Height_map& v_height_map, const float v_vertical_step, const float horizontal_step, const float split_min_distance, const Tree& v_tree)
+	std::vector<Building>& v_buildings, const modeltools::Height_map& v_height_map, const float v_vertical_step, const float horizontal_step, const float split_min_distance, const Tree& v_tree)
 {
 	float view_distance = v_params["view_distance"].asFloat();
 	float safe_distance = v_params["safe_distance"].asFloat();
@@ -887,7 +887,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			
 			item_building.is_divide = true;
 			temp_building.parent = i_building;
-			Eigen::Vector3f min_vector, max_vector;
+			Eigen::Vector3d min_vector, max_vector;
 			for (int i = 0; i < split_width_num; i++)
 			{
 				max_vector[2] = item_building.bounding_box_3d.box.max().z();
@@ -906,17 +906,17 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 					if (j == split_length_num - 1)
 						max_vector[1] = item_building.bounding_box_3d.box.max().y();
 
-					Eigen::Isometry3f transform = Eigen::Isometry3f::Identity();
+					Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
 					transform.translate(item_building.bounding_box_3d.box.center());
-					transform.rotate(Eigen::AngleAxisf(item_building.bounding_box_3d.angle, Eigen::Vector3f::UnitZ()));
+					transform.rotate(Eigen::AngleAxisf(item_building.bounding_box_3d.angle, Eigen::Vector3d::UnitZ()));
 					transform.translate(-item_building.bounding_box_3d.box.center());
 
-					Rotated_box box;
+					cgaltools::RotatedBox box;
 					box.angle = item_building.bounding_box_3d.angle;
 
-					Eigen::Vector3f v1 = transform * min_vector;
-					Eigen::Vector3f v2 = transform * Eigen::Vector3f(max_vector.x(), min_vector.y(), min_vector.z());
-					Eigen::Vector3f v3 = transform * max_vector;
+					Eigen::Vector3d v1 = transform * min_vector;
+					Eigen::Vector3d v2 = transform * Eigen::Vector3d(max_vector.x(), min_vector.y(), min_vector.z());
+					Eigen::Vector3d v3 = transform * max_vector;
 
 					box.cv_box = cv::RotatedRect(
 						cv::Point2f(v1.x(), v1.y()),
@@ -924,9 +924,9 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 						cv::Point2f(v3.x(), v3.y())
 					);
 
-					box.box = Eigen::AlignedBox3f(
-						Eigen::Vector3f(box.cv_box.center.x - box.cv_box.size.width / 2, box.cv_box.center.y - box.cv_box.size.height / 2, min_vector.z()),
-						Eigen::Vector3f(box.cv_box.center.x + box.cv_box.size.width / 2, box.cv_box.center.y + box.cv_box.size.height / 2, max_vector.z()));
+					box.box = Eigen::AlignedBox3d(
+						Eigen::Vector3d(box.cv_box.center.x - box.cv_box.size.width / 2, box.cv_box.center.y - box.cv_box.size.height / 2, min_vector.z()),
+						Eigen::Vector3d(box.cv_box.center.x + box.cv_box.size.width / 2, box.cv_box.center.y + box.cv_box.size.height / 2, max_vector.z()));
 
 					/*
 					LOG(INFO) << box.cv_box.angle / 180. * M_PI;
@@ -998,25 +998,25 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			float focus_z = z + focus_z_corner;
 
 			std::vector corner_points{
-				Eigen::Vector3f(xmin - view_distance, ymin - view_distance, z),
-				Eigen::Vector3f(xmax + view_distance, ymin - view_distance, z),
-				Eigen::Vector3f(xmax + view_distance, ymax + view_distance, z),
-				Eigen::Vector3f(xmin - view_distance, ymax + view_distance, z),
-				Eigen::Vector3f(xmin - view_distance, ymin - view_distance, z)
+				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z),
+				Eigen::Vector3d(xmax + view_distance, ymin - view_distance, z),
+				Eigen::Vector3d(xmax + view_distance, ymax + view_distance, z),
+				Eigen::Vector3d(xmin - view_distance, ymax + view_distance, z),
+				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z)
 			};
 			std::vector focus_points{
-				Eigen::Vector3f(xmin, ymin, focus_z),
-				Eigen::Vector3f(xmax, ymin, focus_z),
-				Eigen::Vector3f(xmax, ymax, focus_z),
-				Eigen::Vector3f(xmin, ymax, focus_z),
-				Eigen::Vector3f(xmin, ymin, focus_z)
+				Eigen::Vector3d(xmin, ymin, focus_z),
+				Eigen::Vector3d(xmax, ymin, focus_z),
+				Eigen::Vector3d(xmax, ymax, focus_z),
+				Eigen::Vector3d(xmin, ymax, focus_z),
+				Eigen::Vector3d(xmin, ymin, focus_z)
 			};
 
-			Eigen::Vector3f focus_point;
+			Eigen::Vector3d focus_point;
 			for(int i_edge = 0;i_edge < corner_points.size()-1;++i_edge)
 			{
-				Eigen::Vector3f cur_pos = corner_points[i_edge];
-				Eigen::Vector3f next_direction = (corner_points[i_edge+1]-corner_points[i_edge]).normalized();
+				Eigen::Vector3d cur_pos = corner_points[i_edge];
+				Eigen::Vector3d next_direction = (corner_points[i_edge+1]-corner_points[i_edge]).normalized();
 				while(true)
 				{
 					if(item_trajectory.size()==0 || (focus_points[i_edge]-cur_pos).normalized().dot(next_direction)>0) // Start corner
@@ -1040,7 +1040,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 					}
 					else // Normal
 					{
-						focus_point = cur_pos+(Eigen::Vector3f(0.f,0.f,1.f).cross(next_direction)) * view_distance;
+						focus_point = cur_pos+(Eigen::Vector3d(0.f,0.f,1.f).cross(next_direction)) * view_distance;
 						focus_point.z() -= view_distance / std::sqrt(3);
 						item_trajectory.emplace_back(cur_pos, focus_point);
 						cur_pos += next_direction * horizontal_step;
@@ -1056,19 +1056,19 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			//{
 			//	if(i==0)
 			//	{
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance, view_distance, focus_z_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, view_distance, focus_z_corner);
 			//		item_trajectory.emplace_back(cur_pos, focus_point);
 			//		cur_pos[0] += horizontal_step;
 			//	}
 			//	else if (i == 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance / 2, view_distance, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance / 2, view_distance, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[0] += horizontal_step;
 			//	}
 			//	else if (i >= delta - 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance / 2, view_distance, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance / 2, view_distance, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
@@ -1076,7 +1076,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			//	}
 			//	else
 			//	{
-			//		focus_point = cur_pos + Eigen::Vector3f(0, view_distance, focus_z_corner_normal);
+			//		focus_point = cur_pos + Eigen::Vector3d(0, view_distance, focus_z_corner_normal);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
@@ -1088,28 +1088,28 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
 			//for (int i = 0; i < delta; ++i) {
 			//	if (i == 0) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance, view_distance, focus_z_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, view_distance, focus_z_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[1] += horizontal_step;
 			//	}
 			//	else if (i == 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance, view_distance /2, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, view_distance /2, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[1] += horizontal_step;
 			//	}
 			//	else if (i >= delta - 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance, -view_distance / 2, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, -view_distance / 2, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[1] += horizontal_step;
 			//	}
 			//	else {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance, 0, focus_z_corner_normal);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, 0, focus_z_corner_normal);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
@@ -1121,28 +1121,28 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
 			//for (int i = 0; i < delta; ++i) {
 			//	if (i == 0) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance, -view_distance, focus_z_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, -view_distance, focus_z_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[0] -= horizontal_step;
 			//	}
 			//	else if (i == 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(-view_distance /2, -view_distance, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance /2, -view_distance, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[0] -= horizontal_step;
 			//	}
 			//	else if (i >= delta - 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance / 2, -view_distance, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance / 2, -view_distance, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[0] -= horizontal_step;
 			//	}
 			//	else {
-			//		focus_point = cur_pos + Eigen::Vector3f(0, -view_distance, focus_z_corner_normal);
+			//		focus_point = cur_pos + Eigen::Vector3d(0, -view_distance, focus_z_corner_normal);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
@@ -1154,28 +1154,28 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
 			//for (int i = 0; i <  delta; ++i) {
 			//	if (i == 0) {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance, -view_distance, focus_z_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, -view_distance, focus_z_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[1] -= horizontal_step;
 			//	}
 			//	else if (i == 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance, -view_distance /2, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, -view_distance /2, focus_z_second_corner);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
 			//		cur_pos[1] -= horizontal_step;
 			//	}
 			//	else if (i >= delta - 1) {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance, view_distance /2, focus_z_second_corner);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, view_distance /2, focus_z_second_corner);
 			//		//item_trajectory.emplace_back(
 			//		//	cur_pos, focus_point
 			//		//);
 			//		cur_pos[1] -= horizontal_step;
 			//	}
 			//	else {
-			//		focus_point = cur_pos + Eigen::Vector3f(view_distance, 0, focus_z_corner_normal);
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, 0, focus_z_corner_normal);
 			//		item_trajectory.emplace_back(
 			//			cur_pos, focus_point
 			//		);
@@ -1202,9 +1202,9 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			}
 		}
 
-		Eigen::Isometry3f transform = Eigen::Isometry3f::Identity();
+		Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
 		transform.translate(v_buildings[id_building].bounding_box_3d.box.center());
-		transform.rotate(Eigen::AngleAxisf(v_buildings[id_building].bounding_box_3d.cv_box.angle/180.f*M_PI, Eigen::Vector3f::UnitZ()));
+		transform.rotate(Eigen::AngleAxisf(v_buildings[id_building].bounding_box_3d.cv_box.angle/180.f*M_PI, Eigen::Vector3d::UnitZ()));
 		transform.translate(-v_buildings[id_building].bounding_box_3d.box.center());
 		for (int i=0;i< item_trajectory.size();++i)
 		{

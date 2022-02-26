@@ -18,19 +18,19 @@ public:
 	std::vector<cv::Vec3b> region_status;
 	std::vector<cv::Vec3b> region_viz_color;
 
-	Eigen::Vector3f m_map_start;
-	Eigen::Vector3f m_map_end;
+	Eigen::Vector3d m_map_start;
+	Eigen::Vector3d m_map_end;
 
-	Polygon_2 m_boundary;
+	Polygon2 m_boundary;
 
-	Next_best_target(const Eigen::Vector3f& v_map_start_mesh, const Eigen::Vector3f& v_map_end_mesh, float v_ccpp_cell_distance) :m_map_start(v_map_start_mesh), m_map_end(v_map_end_mesh)
+	Next_best_target(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh, float v_ccpp_cell_distance) :m_map_start(v_map_start_mesh), m_map_end(v_map_end_mesh)
 	{
 		DISTANCE_THRESHOLD = v_ccpp_cell_distance;
 		m_motion_status = Motion_status::initialization;
 		for (float y = v_map_start_mesh.y(); y < v_map_end_mesh.y(); y += DISTANCE_THRESHOLD)
 			for (float x = v_map_start_mesh.x(); x < v_map_end_mesh.x(); x += DISTANCE_THRESHOLD)
 				sample_points.push_back(CGAL::Point_2<K>(x, y));
-		region_viz_color = get_color_table_bgr();
+		region_viz_color = comutil::get_color_table_bgr();
 		region_status.resize(sample_points.size(), region_viz_color[0]);
 	}
 
@@ -68,8 +68,8 @@ public:
 	int dummy2 = 0;
 	float dummy3 = 0;
 
-	Next_best_target_topology_exploration(const Eigen::Vector3f& v_map_start_mesh, const Eigen::Vector3f& v_map_end_mesh,
-		int v_CCPP_CELL_THRESHOLD, const Polygon_2& v_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg) :CCPP_CELL_THRESHOLD(v_CCPP_CELL_THRESHOLD), m_arg(v_arg),
+	Next_best_target_topology_exploration(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh,
+		int v_CCPP_CELL_THRESHOLD, const Polygon2& v_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg) :CCPP_CELL_THRESHOLD(v_CCPP_CELL_THRESHOLD), m_arg(v_arg),
 		Next_best_target(v_map_start_mesh, v_map_end_mesh, v_ccpp_cell_distance)
 	{
 		//color_reconstruction = region_viz_color[2];
@@ -95,14 +95,14 @@ public:
 		m_current_ccpp_trajectory_id = 0;
 		//region_status[0] = region_viz_color[m_current_color_id];
 
-		//topology.emplace_back(Eigen::Vector2f(m_map_start.x(), m_map_start.y()), 
-		//	Eigen::Vector2f(m_map_start.x()+1, m_map_start.y()+1));
+		//topology.emplace_back(Eigen::Vector2d(m_map_start.x(), m_map_start.y()), 
+		//	Eigen::Vector2d(m_map_start.x()+1, m_map_start.y()+1));
 		//topology_viz_color= get_color_table_bgr();
 	}
 
-	bool get_ccpp_trajectory(const Eigen::Vector3f& v_cur_pos, const Building& v_building, int v_ccpp_threshold)
+	bool get_ccpp_trajectory(const Eigen::Vector3d& v_cur_pos, const Building& v_building, int v_ccpp_threshold)
 	{
-		const Eigen::AlignedBox3f& cur_box_3 = v_building.bounding_box_3d.box;
+		const Eigen::AlignedBox3d& cur_box_3 = v_building.bounding_box_3d.box;
 		// Ensure even
 		Eigen::AlignedBox2f last_topology;
 		Eigen::Vector2i last_map_pos;
@@ -130,14 +130,14 @@ public:
 		float bbox_x = std::min(cur_box_3.max().x() + DISTANCE_THRESHOLD * x_add, m_map_end.x());
 		float bbox_y = std::min(cur_box_3.max().y() + DISTANCE_THRESHOLD * y_add, m_map_end.y());
 
-		Eigen::AlignedBox2f cur_box_2(Eigen::Vector2f(m_map_start.x(), m_map_start.y()),
-			Eigen::Vector2f(bbox_x, bbox_y));
+		Eigen::AlignedBox2f cur_box_2(Eigen::Vector2d(m_map_start.x(), m_map_start.y()),
+			Eigen::Vector2d(bbox_x, bbox_y));
 
-		Eigen::Vector3f next_point = v_building.bounding_box_3d.box.max();
+		Eigen::Vector3d next_point = v_building.bounding_box_3d.box.max();
 
-		Eigen::Vector3f t1 = (v_cur_pos - m_map_start) / DISTANCE_THRESHOLD;
+		Eigen::Vector3d t1 = (v_cur_pos - m_map_start) / DISTANCE_THRESHOLD;
 
-		Eigen::Vector3f t2 = (next_point - m_map_start) / DISTANCE_THRESHOLD;
+		Eigen::Vector3d t2 = (next_point - m_map_start) / DISTANCE_THRESHOLD;
 
 		//Eigen::Vector2i start_pos_on_map(t1.x(), t1.y());
 		Eigen::Vector2i start_pos_on_map = last_map_pos;
@@ -162,12 +162,12 @@ public:
 			const auto& point = sample_points[id_region];
 			int y = (point.y() - m_map_start.y()) / DISTANCE_THRESHOLD;
 			int x = (point.x() - m_map_start.x()) / DISTANCE_THRESHOLD;
-			Eigen::Vector2f pos(point.x(), point.y());
-			if (inside_box(pos, cur_box_2) && region_status[id_region] == color_unobserved) {
+			Eigen::Vector2d pos(point.x(), point.y());
+			if (modeltools::inside_box(pos, cur_box_2) && region_status[id_region] == color_unobserved) {
 				//if (inside_box(pos, cur_box_2)) {
 				bool already_traveled = false;
 				for (const auto& item : topology) {
-					if (inside_box(pos, item))
+					if (modeltools::inside_box(pos, item))
 						already_traveled = true;
 				}
 				if (!already_traveled)
@@ -200,11 +200,11 @@ public:
 		for (const Eigen::Vector2i& item : map_trajectory) {
 			// todo: invert x,y!!!!!!!!!!!!!
 			//viz_ccpp.at<cv::uint8_t>(item.x(), item.y()) = iter_trajectory++ * 255. / map_trajectory.size();
-			Eigen::Vector3f t3 = m_map_start + DISTANCE_THRESHOLD * Eigen::Vector3f(item.y(), item.x(), 0.f);
+			Eigen::Vector3d t3 = m_map_start + DISTANCE_THRESHOLD * Eigen::Vector3d(item.y(), item.x(), 0.f);
 			t3.z() = 100;
 			m_ccpp_trajectory.emplace_back(
 				t3,
-				Eigen::Vector3f(0, 0, -1)
+				Eigen::Vector3d(0, 0, -1)
 			);
 			//if (iter_trajectory < map_trajectory.size())
 			//	dummy3 += (map_trajectory[iter_trajectory] - map_trajectory[iter_trajectory - 1]).norm();
@@ -218,7 +218,7 @@ public:
 		next_point.z() = 100;
 		//m_ccpp_trajectory.emplace_back(
 		//	next_point,
-		//	Eigen::Vector3f(0, 0, -1)
+		//	Eigen::Vector3d(0, 0, -1)
 		//);
 		//cv::imwrite("log/ccpp_map/"+std::to_string(dummy1++) + "_ccpp.png", viz_ccpp);
 		// BUG
@@ -235,11 +235,11 @@ public:
 
 		for (int id_region = 0; id_region < sample_points.size(); ++id_region) {
 			const auto& point = sample_points[id_region];
-			Eigen::Vector2f pos(point.x(), point.y());
+			Eigen::Vector2d pos(point.x(), point.y());
 			if (region_status[id_region] == color_unobserved) {
 				bool already_traveled = false;
 				for (const auto& item : topology) {
-					if (inside_box(pos, item))
+					if (modeltools::inside_box(pos, item))
 						already_traveled = true;
 					if (max_x <= item.max().x() - m_map_start.x())
 					{
@@ -267,25 +267,25 @@ public:
 
 			if (max_x_id != max_y_id && false) // Current traveled is not forming a rectangle 
 			{
-				Eigen::Vector3f max_point(m_map_start.x() + max_x, m_map_start.y() + max_y, 100);
-				fake_building.bounding_box_3d = Eigen::AlignedBox3f(max_point - Eigen::Vector3f(1, 1, 1), max_point);
-				fake_building.trajectory.emplace_back(max_point, Eigen::Vector3f(0, 0, 1));
+				Eigen::Vector3d max_point(m_map_start.x() + max_x, m_map_start.y() + max_y, 100);
+				fake_building.bounding_box_3d = Eigen::AlignedBox3d(max_point - Eigen::Vector3d(1, 1, 1), max_point);
+				fake_building.trajectory.emplace_back(max_point, Eigen::Vector3d(0, 0, 1));
 			}
 			else // Current traveled is forming a rectangle 
 			{
 				max_x = (m_map_start.x() + max_x + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD < m_map_end.x()) ? max_x : (m_map_end.x() - m_map_start.x() - DISTANCE_THRESHOLD * (CCPP_CELL_THRESHOLD + 0.5));
 				max_y = (m_map_start.y() + max_y + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD < m_map_end.y()) ? max_y : (m_map_end.y() - m_map_start.y() - DISTANCE_THRESHOLD * (CCPP_CELL_THRESHOLD + 0.5));
-				Eigen::Vector3f max_point(m_map_start.x() + max_x + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD, m_map_start.y() + max_y + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD, 100);
-				fake_building.bounding_box_3d = Eigen::AlignedBox3f(max_point - Eigen::Vector3f(1, 1, 1), max_point);
-				fake_building.trajectory.emplace_back(max_point, Eigen::Vector3f(0, 0, 1));
+				Eigen::Vector3d max_point(m_map_start.x() + max_x + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD, m_map_start.y() + max_y + DISTANCE_THRESHOLD * CCPP_CELL_THRESHOLD, 100);
+				fake_building.bounding_box_3d = Eigen::AlignedBox3d(max_point - Eigen::Vector3d(1, 1, 1), max_point);
+				fake_building.trajectory.emplace_back(max_point, Eigen::Vector3d(0, 0, 1));
 			}
 		}
 		else // Final check 
 		{
 			m_motion_status = Motion_status::final_check;
 			//Building fake_building;
-			fake_building.bounding_box_3d = Eigen::AlignedBox3f(m_map_end - Eigen::Vector3f(1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5), m_map_end - Eigen::Vector3f(DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5));
-			fake_building.trajectory.emplace_back(m_map_end, Eigen::Vector3f(0, 0, 1));
+			fake_building.bounding_box_3d = Eigen::AlignedBox3d(m_map_end - Eigen::Vector3d(1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5), m_map_end - Eigen::Vector3d(DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5));
+			fake_building.trajectory.emplace_back(m_map_end, Eigen::Vector3d(0, 0, 1));
 		}
 		return fake_building;
 
@@ -358,7 +358,7 @@ public:
 	}
 
 	void update_uncertainty(const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings) override {
-		Eigen::Vector2f cur_point_cgal(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y());
+		Eigen::Vector2d cur_point_cgal(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y());
 		int nearest_region_id = std::min_element(sample_points.begin(), sample_points.end(),
 			[&cur_point_cgal](const CGAL::Point_2<K>& p1, const CGAL::Point_2<K>& p2) {
 				return std::pow(p1.x() - cur_point_cgal.x(), 2) + std::pow(p1.y() - cur_point_cgal.y(), 2) < std::pow(p2.x() - cur_point_cgal.x(), 2) + std::pow(p2.y() - cur_point_cgal.y(), 2);
@@ -374,7 +374,7 @@ public:
 		{
 			bool inside = false;
 			for (auto item : topology)
-				if (inside_box(Eigen::Vector2f(sample_points[nearest_region_id].x(), sample_points[nearest_region_id].y()), item))
+				if (modeltools::inside_box(Eigen::Vector2d(sample_points[nearest_region_id].x(), sample_points[nearest_region_id].y()), item))
 					inside = true;
 
 			if (inside && m_boundary.bounded_side(sample_points[nearest_region_id]) == CGAL::ON_BOUNDED_SIDE)
@@ -382,12 +382,12 @@ public:
 		}
 
 		for (int i_point = 0; i_point < region_status.size(); i_point++) {
-			const Eigen::Vector2f p(sample_points[i_point].x(), sample_points[i_point].y());
+			const Eigen::Vector2d p(sample_points[i_point].x(), sample_points[i_point].y());
 
 			for (const auto& item_building : v_buildings) {
 
-				//Eigen::AlignedBox2f box(Eigen::Vector2f(item_building.bounding_box_3d.min().x(), item_building.bounding_box_3d.min().y()),
-				//	Eigen::Vector2f(item_building.bounding_box_3d.max().x(), item_building.bounding_box_3d.max().y()));
+				//Eigen::AlignedBox2f box(Eigen::Vector2d(item_building.bounding_box_3d.min().x(), item_building.bounding_box_3d.min().y()),
+				//	Eigen::Vector2d(item_building.bounding_box_3d.max().x(), item_building.bounding_box_3d.max().y()));
 				//if (point_box_distance_eigen(p, box) < 20 || inside_box(p, box)) {
 				//if (inside_box(p, box)) {
 					//region_status[i_point] = color_occupied;
@@ -423,16 +423,16 @@ public:
 				}
 			}
 			std::vector<int> untraveled_buildings_inside_exist_region;
-			Eigen::Vector2f cur_point_cgal(m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.x(),
+			Eigen::Vector2d cur_point_cgal(m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.x(),
 				m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.y());
 			for (int i_building = 0; i_building < v_buildings.size(); ++i_building) {
 				if (v_buildings[i_building].is_divide)
 					continue;
 				if (v_buildings[i_building].passed_trajectory.size() == 0) {
-					//int id_nearest_view = v_buildings[i_building].find_nearest_trajectory_2d(Eigen::Vector3f(cur_point_cgal.x(), cur_point_cgal.y(), 0));
-					//Eigen::Vector2f nearest_view(v_buildings[i_building].trajectory[id_nearest_view].first.x(), 
+					//int id_nearest_view = v_buildings[i_building].find_nearest_trajectory_2d(Eigen::Vector3d(cur_point_cgal.x(), cur_point_cgal.y(), 0));
+					//Eigen::Vector2d nearest_view(v_buildings[i_building].trajectory[id_nearest_view].first.x(), 
 					//	v_buildings[i_building].trajectory[id_nearest_view].first.y());
-					Eigen::Vector2f nearest_view(v_buildings[i_building].bounding_box_3d.box.center().x(),
+					Eigen::Vector2d nearest_view(v_buildings[i_building].bounding_box_3d.box.center().x(),
 						v_buildings[i_building].bounding_box_3d.box.center().y());
 
 					if ((nearest_view - cur_point_cgal).norm() < DISTANCE_THRESHOLD / 1.4)
@@ -478,35 +478,35 @@ public:
 					else {
 						auto& item = m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh;
 
-						std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> start_points;
+						std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> start_points;
 
 						start_points.emplace_back(
-							Eigen::Vector3f(
+							Eigen::Vector3d(
 								item.x() - DISTANCE_THRESHOLD * 0.25,
 								item.y(),
 								100),
-							Eigen::Vector3f(1, 0, 0)
+							Eigen::Vector3d(1, 0, 0)
 						);
 						start_points.emplace_back(
-							Eigen::Vector3f(
+							Eigen::Vector3d(
 								item.x() + DISTANCE_THRESHOLD * 0.25,
 								item.y(),
 								100),
-							Eigen::Vector3f(-1, 0, 0)
+							Eigen::Vector3d(-1, 0, 0)
 						);
 						start_points.emplace_back(
-							Eigen::Vector3f(
+							Eigen::Vector3d(
 								item.x(),
 								item.y() + DISTANCE_THRESHOLD * 0.25,
 								100),
-							Eigen::Vector3f(0, -1, 0)
+							Eigen::Vector3d(0, -1, 0)
 						);
 						start_points.emplace_back(
-							Eigen::Vector3f(
+							Eigen::Vector3d(
 								item.x(),
 								item.y() - DISTANCE_THRESHOLD * 0.25,
 								100),
-							Eigen::Vector3f(0, 1, 0)
+							Eigen::Vector3d(0, 1, 0)
 						);
 
 						int nearest_id = std::min_element(start_points.begin(), start_points.end(),
@@ -518,55 +518,55 @@ public:
 								m_exploration_point.emplace(
 									start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 0 * start_points[nearest_id].second,
 									start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 0 * start_points[nearest_id].second +
-									(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3f(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3f(-0.5, -0.5 * 1.732, -std::tan(64.f / 180 * M_PI)).normalized())
+									(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3d(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3d(-0.5, -0.5 * 1.732, -std::tan(64.f / 180 * M_PI)).normalized())
 								);
 							m_exploration_point.emplace(
 								start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 1 * start_points[nearest_id].second,
 								start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 1 * start_points[nearest_id].second +
-								(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3f(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3f(1, 0, -std::tan(64.f / 180 * M_PI)).normalized())
+								(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3d(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3d(1, 0, -std::tan(64.f / 180 * M_PI)).normalized())
 							);
 							if (m_arg["explore_multi_angle"].asBool())
 								m_exploration_point.emplace(
 									start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 2 * start_points[nearest_id].second,
 									start_points[nearest_id].first + DISTANCE_THRESHOLD * 0.25 * 2 * start_points[nearest_id].second +
-									(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3f(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3f(-0.5, 0.5 * 1.732, -std::tan(64.f / 180 * M_PI)).normalized())
+									(m_arg["fix_angle_flag"].asBool() ? Eigen::Vector3d(std::cos(64.f / 180 * M_PI), 0, -std::sin(64.f / 180 * M_PI)) : Eigen::Vector3d(-0.5, 0.5 * 1.732, -std::tan(64.f / 180 * M_PI)).normalized())
 								);
 
 
 							/*m_exploration_point.emplace(
-								Eigen::Vector3f(
+								Eigen::Vector3d(
 									item.x() - DISTANCE_THRESHOLD * 0.3,
 									item.y(),
 									100),
-								Eigen::Vector3f(0, 1, -std::tan(64.f / 180 * M_PI)).normalized()
+								Eigen::Vector3d(0, 1, -std::tan(64.f / 180 * M_PI)).normalized()
 							);
 							m_exploration_point.emplace(
-								Eigen::Vector3f(
+								Eigen::Vector3d(
 									item.x() - DISTANCE_THRESHOLD * 0.1,
 									item.y(),
 									100),
-								Eigen::Vector3f(1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
+								Eigen::Vector3d(1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
 							);
 							m_exploration_point.emplace(
-								Eigen::Vector3f(
+								Eigen::Vector3d(
 									item.x() + DISTANCE_THRESHOLD * 0.1,
 									item.y(),
 									100),
-								Eigen::Vector3f(0, -1, -std::tan(64.f / 180 * M_PI)).normalized()
+								Eigen::Vector3d(0, -1, -std::tan(64.f / 180 * M_PI)).normalized()
 							);
 							m_exploration_point.emplace(
-								Eigen::Vector3f(
+								Eigen::Vector3d(
 									item.x() + DISTANCE_THRESHOLD * 0.3,
 									item.y(),
 									100),
-								Eigen::Vector3f(-1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
+								Eigen::Vector3d(-1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
 							); */
 							//m_exploration_point.emplace(
-							//	Eigen::Vector3f(
+							//	Eigen::Vector3d(
 							//		item.x(),
 							//		item.y(),
 							//		100),
-							//	Eigen::Vector3f(-1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
+							//	Eigen::Vector3d(-1, 0, -std::tan(64.f / 180 * M_PI)).normalized()
 							//);
 							//next_pos = m_ccpp_trajectory[m_current_ccpp_trajectory_id];
 							next_pos = m_exploration_point.front();
@@ -619,8 +619,8 @@ public:
 						bool untraveled = true;
 						for (auto item_passed_trajectory_iter = passed_trajectory.begin(); item_passed_trajectory_iter < passed_trajectory.end(); ++item_passed_trajectory_iter) {
 							auto item_passed_trajectory = *item_passed_trajectory_iter;
-							Eigen::Vector3f vector1 = item_passed_trajectory.direction;
-							Eigen::Vector3f vector2 = item_new_trajectory.direction;
+							Eigen::Vector3d vector1 = item_passed_trajectory.direction;
+							Eigen::Vector3d vector2 = item_new_trajectory.direction;
 							float dot_product = vector1.dot(vector2);
 							if (dot_product > 1)
 								dot_product = 1;
@@ -645,8 +645,8 @@ public:
 						bool untraveled = true;
 						for (auto item_passed_trajectory_iter = passed_trajectory.begin(); item_passed_trajectory_iter < passed_trajectory.end(); ++item_passed_trajectory_iter) {
 							auto item_passed_trajectory = *item_passed_trajectory_iter;
-							Eigen::Vector3f vector1 = item_passed_trajectory.direction;
-							Eigen::Vector3f vector2 = item_new_trajectory.direction;
+							Eigen::Vector3d vector1 = item_passed_trajectory.direction;
+							Eigen::Vector3d vector2 = item_new_trajectory.direction;
 							float dot_product = vector1.dot(vector2);
 							if (dot_product > 1)
 								dot_product = 1;
@@ -746,8 +746,8 @@ public:
 			}
 
 			//const int& cur_building_id = m_current_building_id;
-			//std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> unpassed_trajectory;
-			//std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>>& passed_trajectory = v_buildings[cur_building_id].passed_trajectory;
+			//std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> unpassed_trajectory;
+			//std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>& passed_trajectory = v_buildings[cur_building_id].passed_trajectory;
 			//std::copy_if(v_buildings[cur_building_id].trajectory.begin(), v_buildings[cur_building_id].trajectory.end(),
 			//	std::back_inserter(unpassed_trajectory),
 			//	[&passed_trajectory, v_threshold](const auto& item_new_trajectory) {
@@ -790,7 +790,7 @@ public:
 	cv::Vec3b color_unobserved, color_free, color_occupied;
 	std::vector<bool> already_explored;
 
-	Next_best_target_random_min_distance(const Eigen::Vector3f& v_map_start_mesh, const Eigen::Vector3f& v_map_end_mesh, float v_ccpp_cell_distance)
+	Next_best_target_random_min_distance(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh, float v_ccpp_cell_distance)
 		:Next_best_target(v_map_start_mesh, v_map_end_mesh, v_ccpp_cell_distance) {
 		//color_unobserved = region_viz_color[0];
 		color_free = region_viz_color[1];
@@ -832,16 +832,16 @@ public:
 			[&v_cur_pos, &v_buildings, this](const Next_target& b1, const Next_target& b2) {
 				float distance1, distance2;
 				if (b1.origin_index_in_building_vector != -1) {
-					distance1 = (v_buildings[b1.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
+					distance1 = (v_buildings[b1.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
 				}
 				else {
-					distance1 = (Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2f(sample_points[b1.origin_index_in_untraveled_pointset].x(), sample_points[b1.origin_index_in_untraveled_pointset].y())).norm();
+					distance1 = (Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2d(sample_points[b1.origin_index_in_untraveled_pointset].x(), sample_points[b1.origin_index_in_untraveled_pointset].y())).norm();
 				}
 				if (b2.origin_index_in_building_vector != -1) {
-					distance2 = (v_buildings[b2.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
+					distance2 = (v_buildings[b2.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
 				}
 				else
-					distance2 = (Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2f(sample_points[b2.origin_index_in_untraveled_pointset].x(), sample_points[b2.origin_index_in_untraveled_pointset].y())).norm();
+					distance2 = (Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2d(sample_points[b2.origin_index_in_untraveled_pointset].x(), sample_points[b2.origin_index_in_untraveled_pointset].y())).norm();
 
 				return  distance1 < distance2;
 			}) - untraveled_buildings.begin();
@@ -865,7 +865,7 @@ public:
 
 	void update_uncertainty(const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings) override
 	{
-		Eigen::Vector2f cur_point_cgal(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y());
+		Eigen::Vector2d cur_point_cgal(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y());
 		int nearest_region_id = std::min_element(sample_points.begin(), sample_points.end(),
 			[&cur_point_cgal](const CGAL::Point_2<K>& p1, const CGAL::Point_2<K>& p2) {
 				return std::pow(p1.x() - cur_point_cgal.x(), 2) + std::pow(p1.y() - cur_point_cgal.y(), 2) < std::pow(p2.x() - cur_point_cgal.x(), 2) + std::pow(p2.y() - cur_point_cgal.y(), 2);
@@ -877,10 +877,10 @@ public:
 			}
 
 			/*for (int i_point = 0; i_point < region_status.size(); i_point++) {
-				const Eigen::Vector2f p(sample_points[i_point].x(), sample_points[i_point].y());
+				const Eigen::Vector2d p(sample_points[i_point].x(), sample_points[i_point].y());
 
 				for (const auto& item_building : v_buildings) {
-					Eigen::Vector3f point(p.x(), p.y(), 0.f);
+					Eigen::Vector3d point(p.x(), p.y(), 0.f);
 					if (item_building.bounding_box_3d.inside_2d(point)) {
 						region_status[i_point] = color_occupied;
 						break;
@@ -899,7 +899,7 @@ public:
 
 		if (m_motion_status == Motion_status::exploration) {
 			get_next_target(v_frame_id, v_cur_pos, v_buildings, with_exploration);
-			Eigen::Vector3f next_pos(sample_points[m_current_exploration_id].x(), sample_points[m_current_exploration_id].y(), 100);
+			Eigen::Vector3d next_pos(sample_points[m_current_exploration_id].x(), sample_points[m_current_exploration_id].y(), 100);
 			return MyViewpoint(next_pos, next_pos);
 		}
 		if (m_motion_status == Motion_status::reconstruction) {
@@ -926,8 +926,8 @@ public:
 class Next_best_target_exploration_first :public Next_best_target_topology_exploration
 {
 public:
-	Next_best_target_exploration_first(const Eigen::Vector3f& v_map_start_mesh, const Eigen::Vector3f& v_map_end_mesh,
-		int v_CCPP_CELL_THRESHOLD, const Polygon_2& m_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg)
+	Next_best_target_exploration_first(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh,
+		int v_CCPP_CELL_THRESHOLD, const Polygon2& m_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg)
 		:Next_best_target_topology_exploration(v_map_start_mesh, v_map_end_mesh, v_CCPP_CELL_THRESHOLD, m_boundary, v_ccpp_cell_distance, v_arg)
 	{
 
@@ -957,16 +957,16 @@ public:
 			[&v_cur_pos, &v_buildings, this](const Next_target& b1, const Next_target& b2) {
 				float distance1, distance2;
 				if (b1.origin_index_in_building_vector != -1) {
-					distance1 = (v_buildings[b1.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
+					distance1 = (v_buildings[b1.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
 				}
 				else {
-					distance1 = (Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2f(sample_points[b1.origin_index_in_untraveled_pointset].x(), sample_points[b1.origin_index_in_untraveled_pointset].y())).norm();
+					distance1 = (Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2d(sample_points[b1.origin_index_in_untraveled_pointset].x(), sample_points[b1.origin_index_in_untraveled_pointset].y())).norm();
 				}
 				if (b2.origin_index_in_building_vector != -1) {
-					distance2 = (v_buildings[b2.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
+					distance2 = (v_buildings[b2.origin_index_in_building_vector].bounding_box_3d.box.center().block(0, 0, 2, 1) - Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y())).norm();
 				}
 				else
-					distance2 = (Eigen::Vector2f(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2f(sample_points[b2.origin_index_in_untraveled_pointset].x(), sample_points[b2.origin_index_in_untraveled_pointset].y())).norm();
+					distance2 = (Eigen::Vector2d(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y()) - Eigen::Vector2d(sample_points[b2.origin_index_in_untraveled_pointset].x(), sample_points[b2.origin_index_in_untraveled_pointset].y())).norm();
 
 				return  distance1 < distance2;
 			}) - untraveled_buildings.begin();
@@ -984,17 +984,17 @@ public:
 		if (m_motion_status == Motion_status::initialization) {
 			m_motion_status = Motion_status::exploration;
 			Building fake_building;
-			fake_building.bounding_box_3d = Eigen::AlignedBox3f(m_map_end - Eigen::Vector3f(1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5), m_map_end - Eigen::Vector3f(DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5));
-			fake_building.trajectory.emplace_back(m_map_end, Eigen::Vector3f(0, 0, 1));
+			fake_building.bounding_box_3d = Eigen::AlignedBox3d(m_map_end - Eigen::Vector3d(1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5, 1 + DISTANCE_THRESHOLD * 0.5), m_map_end - Eigen::Vector3d(DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5, DISTANCE_THRESHOLD * 0.5));
+			fake_building.trajectory.emplace_back(m_map_end, Eigen::Vector3d(0, 0, 1));
 			get_ccpp_trajectory(v_cur_pos.pos_mesh, fake_building, 0);
-			next_pos = MyViewpoint(Eigen::Vector3f(0, 0, 100),
-				Eigen::Vector3f(0, 0, 100)+Eigen::Vector3f(1, 0, 0));
+			next_pos = MyViewpoint(Eigen::Vector3d(0, 0, 100),
+				Eigen::Vector3d(0, 0, 100)+Eigen::Vector3d(1, 0, 0));
 			LOG(INFO) << "Initialization target !";
 		}
 		if (m_motion_status == Motion_status::exploration)
 		{
 			std::vector<int> untraveled_buildings_inside_exist_region;
-			Eigen::Vector2f cur_point_cgal(m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.x(),
+			Eigen::Vector2d cur_point_cgal(m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.x(),
 				m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh.y());
 			m_current_ccpp_trajectory_id += 1;
 			if (m_current_ccpp_trajectory_id >= m_ccpp_trajectory.size()) {
@@ -1008,14 +1008,14 @@ public:
 			else {
 				auto& item = m_ccpp_trajectory[m_current_ccpp_trajectory_id].pos_mesh;
 
-				MyViewpoint start_points = MyViewpoint(Eigen::Vector3f(
+				MyViewpoint start_points = MyViewpoint(Eigen::Vector3d(
 					item.x(),
 					item.y(),
 					100),
-					Eigen::Vector3f(
+					Eigen::Vector3d(
 						item.x(),
 						item.y(),
-						100) + Eigen::Vector3f(1, 0, 0));
+						100) + Eigen::Vector3d(1, 0, 0));
 				next_pos = start_points;
 			}
 		}

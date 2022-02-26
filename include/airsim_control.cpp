@@ -60,14 +60,14 @@ std::map<std::string, cv::Mat> Airsim_tools::get_images()
 
 void Airsim_tools::adjust_pose(const Pos_Pack& v_pos_pack){
     Eigen::Quaternionf directionQuaternion;
-    directionQuaternion= Eigen::AngleAxisf(-v_pos_pack.yaw, Eigen::Vector3f::UnitZ())* Eigen::AngleAxisf(
-        -v_pos_pack.pitch, Eigen::Vector3f::UnitY());
+    directionQuaternion =
+        Eigen::AngleAxisf(-v_pos_pack.yaw, Eigen::Vector3f::UnitZ()) *
+        Eigen::AngleAxisf(-v_pos_pack.pitch, Eigen::Vector3f::UnitY());
 
-    m_agent->simSetVehiclePose(msr::airlib::Pose(v_pos_pack.pos_airsim,
-        directionQuaternion
-    ),true);
-    
-    return;
+    m_agent->simSetVehiclePose(
+        msr::airlib::Pose(v_pos_pack.pos_airsim.cast<float>(), directionQuaternion), true
+    );
+   
 }
 
 std::map<cv::Vec3b, std::string> Airsim_tools::reset_color(std::function<bool(std::string)> v_func)
@@ -135,35 +135,39 @@ std::map<cv::Vec3b, std::string> Airsim_tools::reset_color(const std::string& v_
     return color_map;
 }
 
-std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> demo_move_to_next(msr::airlib::MultirotorRpcLibClient& v_agent,
-	const Eigen::Vector3f& v_next_pos_airsim, float angle, const float v_speed, bool is_forward)
+std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> demo_move_to_next(
+    msr::airlib::MultirotorRpcLibClient& v_agent, const Eigen::Vector3d& v_next_pos_airsim,
+    float angle, const float v_speed, bool is_forward)
 {
-    std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> poses;
+    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> poses;
     Pose pose = v_agent.simGetVehiclePose();
     Eigen::Vector3f pos_cur = pose.position;
-	
+    const Eigen::Vector3f nextPos(v_next_pos_airsim.x(), v_next_pos_airsim.y(), v_next_pos_airsim.z());
+
     while (true)
     {
         pose = v_agent.simGetVehiclePose();
         pos_cur = pose.position;
     	
-        Eigen::Vector3f direction = v_next_pos_airsim - pos_cur;
+        Eigen::Vector3f direction = nextPos - pos_cur;
         direction.normalize();
         direction = direction * v_speed;
+
     	if(is_forward)
 			v_agent.moveByVelocityAsync(direction[0], direction[1], direction[2], 20,
 				DrivetrainType::ForwardOnly, YawMode(false, 0));
         else
             v_agent.moveByVelocityAsync(direction[0], direction[1], direction[2], 20);
-
-        Eigen::Vector3f pos_cur = pose.position;
-        if ((pos_cur - v_next_pos_airsim).norm() < 2)
+            
+        pos_cur = pose.position;
+        if ((pos_cur - nextPos).norm() < 2)
         {
             v_agent.rotateToYawAsync(angle);
             break;
         }
-        poses.push_back(std::make_pair(pos_cur, Eigen::Vector3f(0, 0, -1)));
-        override_sleep(0.05);
+        poses.emplace_back(std::make_pair(pos_cur.cast<double>(), Eigen::Vector3d(0, 0, -1)));
+        comutil::override_sleep(0.05);
     }
+
     return poses;
 }
