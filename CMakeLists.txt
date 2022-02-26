@@ -1,15 +1,34 @@
 ﻿# CMakeList.txt : Top-level CMake project file, do global configuration
 
 cmake_minimum_required (VERSION 3.11)
-
 project ("AMarinaioDrone")
+
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+
+if (MSVC)
+    add_compile_options(/W2)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
+set(AIRSIM_ROOT "C:/SSD/GitProject/AirSim")
+INCLUDE_DIRECTORIES("${AIRSIM_ROOT}/AirLib/include")
+
+function (link_airsim arg)
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/deps/rpclib/lib/x64/Debug/rpc.lib")
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/lib/x64/Debug/AirLib.lib")
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/lib/x64/Release/AirLib.lib")
+    target_link_libraries(${ARGV0} PRIVATE "${AIRSIM_ROOT}/AirLib/deps/rpclib/lib/x64/Release/rpc.lib")
+endfunction ()
 
 find_package(Eigen3 CONFIG REQUIRED)
 if (EIGEN3_FOUND)   
 include( ${EIGEN3_USE_FILE} ) 
 endif()
+
+set (CGAL_DATA_DIR "C:/src/CGALDATA")
+
 find_package(Boost REQUIRED filesystem serialization)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(argparse CONFIG REQUIRED)
@@ -39,6 +58,11 @@ endfunction()
 
 FILE(GLOB LIBRARY_FILE "include/*.cpp" "include/*.h")
 add_library(${PROJECT_NAME} ${LIBRARY_FILE})
+
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
+    target_link_options(${PROJECT_NAME} PUBLIC "/FORCE:MULTIPLE")
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
