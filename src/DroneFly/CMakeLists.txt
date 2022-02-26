@@ -4,6 +4,7 @@ PROJECT(DroneFly)
 FILE(GLOB SOURCE_FILE *.cpp *.h)
 find_package(Pangolin CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
+find_package(cpr CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 
@@ -14,3 +15,4 @@ link_airsim(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PRIVATE AMarinaioDrone)
 target_link_libraries(${PROJECT_NAME} PRIVATE general pangolin)
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE cpr::cpr)

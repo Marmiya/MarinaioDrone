@@ -908,7 +908,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 
 					Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
 					transform.translate(item_building.bounding_box_3d.box.center());
-					transform.rotate(Eigen::AngleAxisf(item_building.bounding_box_3d.angle, Eigen::Vector3d::UnitZ()));
+					transform.rotate(Eigen::AngleAxisd(item_building.bounding_box_3d.angle, Eigen::Vector3d::UnitZ()));
 					transform.translate(-item_building.bounding_box_3d.box.center());
 
 					cgaltools::RotatedBox box;
@@ -1204,7 +1204,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 
 		Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
 		transform.translate(v_buildings[id_building].bounding_box_3d.box.center());
-		transform.rotate(Eigen::AngleAxisf(v_buildings[id_building].bounding_box_3d.cv_box.angle/180.f*M_PI, Eigen::Vector3d::UnitZ()));
+		transform.rotate(Eigen::AngleAxisd(v_buildings[id_building].bounding_box_3d.cv_box.angle/180.f*M_PI, Eigen::Vector3d::UnitZ()));
 		transform.translate(-v_buildings[id_building].bounding_box_3d.box.center());
 		for (int i=0;i< item_trajectory.size();++i)
 		{

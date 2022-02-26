@@ -1312,7 +1312,7 @@ namespace modeltools {
 	}
 
 
-	float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2f& v_box) {
+	float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box) {
 		float sqDist = 0.0f;
 		float x = v_pos.x();
 		if (x < v_box.min().x()) sqDist += (v_box.min().x() - x) * (v_box.min().x() - x);
@@ -1325,7 +1325,7 @@ namespace modeltools {
 	}
 
 
-	bool inside_box(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2f& v_box) {
+	bool inside_box(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box) {
 		return v_pos.x() >= v_box.min().x() && v_pos.x() <= v_box.max().x() && v_pos.y() >= v_box.min().y() && v_pos.y() <= v_box.max().y();
 	}
 

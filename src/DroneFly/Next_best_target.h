@@ -44,7 +44,7 @@ public:
 
 class Next_best_target_topology_exploration : public Next_best_target {
 public:
-	std::vector<Eigen::AlignedBox2f> topology;
+	std::vector<Eigen::AlignedBox2d> topology;
 	//std::vector<cv::Vec3b> topology_viz_color;
 	cv::Vec3b color_occupied;
 	cv::Vec3b color_unobserved;
@@ -104,7 +104,7 @@ public:
 	{
 		const Eigen::AlignedBox3d& cur_box_3 = v_building.bounding_box_3d.box;
 		// Ensure even
-		Eigen::AlignedBox2f last_topology;
+		Eigen::AlignedBox2d last_topology;
 		Eigen::Vector2i last_map_pos;
 		int x_add = 0, y_add = 0;
 		if (topology.size() == 0)
@@ -130,7 +130,7 @@ public:
 		float bbox_x = std::min(cur_box_3.max().x() + DISTANCE_THRESHOLD * x_add, m_map_end.x());
 		float bbox_y = std::min(cur_box_3.max().y() + DISTANCE_THRESHOLD * y_add, m_map_end.y());
 
-		Eigen::AlignedBox2f cur_box_2(Eigen::Vector2d(m_map_start.x(), m_map_start.y()),
+		Eigen::AlignedBox2d cur_box_2(Eigen::Vector2d(m_map_start.x(), m_map_start.y()),
 			Eigen::Vector2d(bbox_x, bbox_y));
 
 		Eigen::Vector3d next_point = v_building.bounding_box_3d.box.max();
@@ -386,7 +386,7 @@ public:
 
 			for (const auto& item_building : v_buildings) {
 
-				//Eigen::AlignedBox2f box(Eigen::Vector2d(item_building.bounding_box_3d.min().x(), item_building.bounding_box_3d.min().y()),
+				//Eigen::AlignedBox2d box(Eigen::Vector2d(item_building.bounding_box_3d.min().x(), item_building.bounding_box_3d.min().y()),
 				//	Eigen::Vector2d(item_building.bounding_box_3d.max().x(), item_building.bounding_box_3d.max().y()));
 				//if (point_box_distance_eigen(p, box) < 20 || inside_box(p, box)) {
 				//if (inside_box(p, box)) {

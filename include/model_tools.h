@@ -137,9 +137,9 @@ namespace modeltools{
     PointSet3 sample_points(const Polyhedron3& v_mesh, const int v_num_points);
     PointSet3 sample_points(const std::vector<Triangle3>& v_mesh, const int v_num_points);
 
-    float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2f& v_box);
+    float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box);
 
-    bool inside_box(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2f& v_box);
+    bool inside_box(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box);
 
     SurfaceMesh get_box_mesh(const std::vector<Eigen::AlignedBox3d>& v_boxes);
 
