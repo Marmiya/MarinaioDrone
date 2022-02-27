@@ -3,6 +3,6 @@
     "points": "C:\\SSD\\Marinaio\\Data\\samples\\7K.ply",
     "model": "C:\\SSD\\Marinaio\\Data\\models\\xuexiao_fine.ply",
     "stage": 1,
-   
+    "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\",
     "traj": "C:/Data/combination"
 }

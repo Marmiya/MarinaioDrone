@@ -1213,7 +1213,7 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 			item_trajectory[i].calculate_direction();
 		}
 		
-		if(v_params["with_erosion_flag"].asBool())
+		if(v_params["with_erosion_flag"].asBool()) // 先把这个flag关了
 			item_trajectory = find_short_cut(item_trajectory, v_height_map, safe_distance, v_buildings[id_building], v_tree);
 		else
 			item_trajectory = ensure_safe_trajectory(item_trajectory, v_height_map, safe_distance);

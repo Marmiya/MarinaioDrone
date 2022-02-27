@@ -1,9 +1,12 @@
 {
+    "stage": 0,
+    "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
+
     "with_exploration": false,
     "with_reconstruction": true,
     //Reconstruction Flags
     "with_continuous_height_flag": false,
-    "with_erosion_flag": true,
+    "with_erosion_flag": false,
     "double_flag": true,
     "split_flag": true,
     "cluster_duplicate_flag": true,
@@ -27,12 +30,12 @@
     "heightmap_resolution": 10,
     "heightmap_dilate": 4,
     "cluster_radius": 4,
-    "model_path": "C:/Marinaio/Data/models/szu_north_0422_points.ply", // Do not use
-    "safe_zone_model_path": "C:/Marinaio/Data/models/szu_north_safe_zone.ply",
+    "model_path": "C:\\Marinaio\\Data\\models\\szu_north_0422_points.ply", // Do not use
+    "safe_zone_model_path": "C:\\Marinaio\\Data\\models\\szu_north_safe_zone.ply",
 
     "is_viz": true,
     "is_viz1": false,
-    "is_log": false,
+    "is_log": true,
 
     //
     // These are all unreal coordinates

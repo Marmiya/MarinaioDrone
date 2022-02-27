@@ -467,7 +467,7 @@ public:
 		//}
 		//else
 		//{
-			CGAL::Point_set_3<Point3, Vector3> original_point_cloud;
+			PointSet3 original_point_cloud;
 			std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
 			if (boost::filesystem::is_directory(args["model_path"].asString()))
 			{
@@ -510,7 +510,10 @@ public:
 				}
 				return;
 			}
+
 			CGAL::IO::read_point_set(args["model_path"].asString(), original_point_cloud);
+			LOG(INFO) << "Model reading finished.";
+
 			CGAL::Point_set_3<Point3, Vector3> point_cloud(original_point_cloud);
 			// Delete ground planes
 			{
@@ -1499,8 +1502,8 @@ int main(int argc, char** argv)
 		}
 		catch (const std::runtime_error& err)
 		{
-			std::cout << err.what() << std::endl;
-			std::cout << program;
+			LOG(INFO) << err.what();
+			LOG(INFO) << program;
 			exit(0);
 		}
 
@@ -1513,8 +1516,8 @@ int main(int argc, char** argv)
 		logPath += "/";
 		create_directory(lop);
 
-		std::cout << "Stage: " << STAGE << "\n"
-			<< "Log Path: " << logPath << "\n";
+		LOG(INFO) << "Stage: " << STAGE << "\n";
+		LOG(INFO) << "Log Path: " << logPath << "\n";
 
 		fs::create_directories(logPath + "img");
 		fs::create_directories(logPath + "seg");
@@ -1531,6 +1534,8 @@ int main(int argc, char** argv)
 	bool software_parameter_is_log = args["is_log"].asBool();
 	bool software_parameter_is_viz = args["is_viz"].asBool();
 	FLAGS_stderrthreshold = software_parameter_is_log ? 0 : 2;
+
+	LOG(INFO) << "Log initialization finished.";
 
 	auto viz = new Visualizer;
 	viz->m_uncertainty_map_distance = args["ccpp_cell_distance"].asFloat();
@@ -1581,6 +1586,8 @@ int main(int argc, char** argv)
 		mapper = new Real_mapper(args, airsim_client);
 	else
 		mapper = new Virtual_mapper(args, airsim_client, color_to_mesh_name_map);
+
+	LOG(INFO) << "Mapper initialization finished.";
 
 	// Some global structure
 	bool end = false;
@@ -1677,9 +1684,11 @@ int main(int argc, char** argv)
 		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
 
 		next_best_target->update_uncertainty(current_pos, total_buildings);
+
 		comutil::checkpointTime(t, "Height map", software_parameter_is_log);
 
 		std::vector<MyViewpoint> current_trajectory;
+
 		if (!with_interpolated || (with_interpolated && !is_interpolated))
 		{
 			// Generating trajectory
@@ -1708,6 +1717,7 @@ int main(int argc, char** argv)
 					std::to_string(next_best_target->m_motion_status) % current_building_num % total_buildings.size()).
 				str();
 		}
+
 		comutil::checkpointTime(t, "Generate trajectory", software_parameter_is_log);
 
 		// Statics
