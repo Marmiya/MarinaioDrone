@@ -1540,7 +1540,7 @@ int main(int argc, char** argv)
 	auto viz = new Visualizer;
 	viz->m_uncertainty_map_distance = args["ccpp_cell_distance"].asFloat();
 
-	LOG(INFO) << "Initialization directory, airsim, map converter and reset color";
+	LOG(INFO) << "Initialization of directory, airsim, map converter and resetting color.";
 
 	Airsim_tools* airsim_client;
 	std::map<cv::Vec3b, std::string> color_to_mesh_name_map; // Color (RGB) to mesh name
@@ -1619,16 +1619,18 @@ int main(int argc, char** argv)
 	else
 		throw;
 
-	LOG(INFO) << "Initialize height map";
+	LOG(INFO) << "Initializing height map.";
+
 	modeltools::Height_map runtime_height_map(map_start_mesh, map_end_mesh,
 	                                          args["heightmap_resolution"].asFloat(),
 	                                          args["heightmap_dilate"].asInt()
 	);
 	modeltools::Height_map safezone_height_map = runtime_height_map;
+
 	bool has_safe_zone = args.isMember("safe_zone_model_path");
 	if (has_safe_zone)
 	{
-		LOG(INFO) << "Read safe zone " << args["safe_zone_model_path"].asString();
+		LOG(INFO) << "Read safe zone: " << args["safe_zone_model_path"].asString();
 		CGAL::Point_set_3<Point3, Vector3> safe_zone_point_cloud;
 		CGAL::IO::read_point_set(args["safe_zone_model_path"].asString(), safe_zone_point_cloud);
 		modeltools::Height_map original_height_map(safe_zone_point_cloud, args["heightmap_resolution"].asFloat(),
@@ -1670,17 +1672,19 @@ int main(int argc, char** argv)
 
 	while (!end)
 	{
-		LOG(INFO) << "<<<<<<<<<<<<< Frame " << cur_frame_id << " <<<<<<<<<<<<<";
-
+		LOG(INFO) << ">>>>>>>>>>> Frame " << cur_frame_id << " begin <<<<<<<<<<<";
 		auto t = comutil::recordTime();
+
 		//if(next_best_target->m_motion_status==Motion_status::exploration)
 		mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
+
 		std::vector<RotatedBox> cur_boxes;
 		for (const auto& item : total_buildings)
 			cur_boxes.push_back(item.bounding_box_3d);
 
 		SurfaceMesh cur_mesh = modeltools::get_rotated_box_mesh(cur_boxes);
-		CGAL::IO::write_PLY("test.ply", cur_mesh);
+		CGAL::IO::write_PLY(logPath + "test.ply", cur_mesh);
+
 		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
 
 		next_best_target->update_uncertainty(current_pos, total_buildings);
@@ -1695,27 +1699,34 @@ int main(int argc, char** argv)
 			// Input: Building vectors (std::vector<Building>)
 			// Output: Modified Building.trajectory and return the whole trajectory
 
-			current_trajectory = generate_trajectory(args, total_buildings,
-			                                         args["mapper"].asString() == "gt_mapper"
-				                                         ? runtime_height_map
-				                                         : runtime_height_map,
-			                                         vertical_step, horizontal_step, split_min_distance, tree);
-			LOG(INFO) << "New trajectory ??!";
+			current_trajectory = generate_trajectory(
+				args, total_buildings,
+				runtime_height_map,
+				//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
+				vertical_step, horizontal_step, split_min_distance, tree
+			);
+
+			LOG(INFO) << "New trajectory!";
 
 			// Determine next position
 			{
-				next_viewpoint = next_best_target->determine_next_target(cur_frame_id, current_pos,
-				                                                         total_buildings, with_exploration,
-				                                                         horizontal_step / 2);
+				next_viewpoint = next_best_target->determine_next_target(
+					cur_frame_id, current_pos, total_buildings,
+					with_exploration, horizontal_step / 2
+				);
+
 				LOG(INFO) << "Determine next position ??";
 			}
-			// End
-			if (next_best_target->m_motion_status == done)
-				break;
 
-			LOG(INFO) << (boost::format("Current mode: %s. Building progress: %d/%d") %
-					std::to_string(next_best_target->m_motion_status) % current_building_num % total_buildings.size()).
-				str();
+			// End
+			if (next_best_target->m_motion_status == done) {
+				break;
+			}
+
+			LOG(INFO) <<
+				(boost::format("Current mode: %s. Building progress: %d/%d")
+					% std::to_string(next_best_target->m_motion_status)
+					% current_building_num % total_buildings.size()).str();
 		}
 
 		comutil::checkpointTime(t, "Generate trajectory", software_parameter_is_log);
@@ -1725,11 +1736,12 @@ int main(int argc, char** argv)
 			if (cur_frame_id > 1)
 			{
 				double distance = (next_viewpoint.pos_mesh - current_pos.pos_mesh).norm();
-				if (next_best_target->m_motion_status == exploration || next_best_target->m_motion_status ==
-					final_check)
+				if (next_best_target->m_motion_status == exploration || next_best_target->m_motion_status == final_check) {
 					exploration_length += distance;
-				else
+				}
+				else {
 					reconstruction_length += distance;
+				}
 				max_turn = distance > max_turn ? distance : max_turn;
 			}
 			if (next_best_target->m_current_building_id != building_num_record)
@@ -1762,9 +1774,8 @@ int main(int argc, char** argv)
 			//viz.m_polygon = next_best_target->img_polygon;
 			viz->unlock();
 			//override_sleep(0.1);
-			//debug_img(std::vector<cv::Mat>{height_map.m_map_dilated});
 		}
-		//debug_img(std::vector<cv::Mat>{original_height_map.m_map_dilated});
+		
 		comutil::checkpointTime(t, "Viz", software_parameter_is_log);
 
 		{
@@ -1784,7 +1795,9 @@ int main(int argc, char** argv)
 			}
 			else // Bug here
 			{
-				/*next_direction = direction.normalized();
+				LOG(INFO) << "BUG here!";
+
+				next_direction = direction.normalized();
 				next_pos = current_pos.pos_mesh + next_direction * DRONE_STEP;
 				Eigen::Vector2d next_2D_direction(next_viewpoint.direction.x(), next_viewpoint.direction.y());
 				Eigen::Vector2d current_2D_direction(current_pos.direction.x(), current_pos.direction.y());
@@ -1824,7 +1837,7 @@ int main(int argc, char** argv)
 				}
 				next_direction.z() = -std::sqrt(next_direction.x() * next_direction.x() + next_direction.y() * next_direction.y()) * std::tan(45. / 180 * M_PI);
 				next_direction.normalize();
-				is_interpolated = true;*/
+				is_interpolated = true;
 			}
 
 			total_passed_trajectory.push_back(next_viewpoint);
@@ -1832,29 +1845,35 @@ int main(int argc, char** argv)
 			//std::ofstream pose("D:/test_data/" + std::to_string(cur_frame_id) + ".txt");
 			//pose << next_pos << next_direction_temp;
 			//pose.close();
-			double pitch = -std::atan2f(next_direction[2],
-			                            std::sqrtf(
-				                            next_direction[0] * next_direction[0] + next_direction[1] * next_direction[
-					                            1]));
+
+			double pitch = -std::atan2f(
+				next_direction[2],
+				std::sqrtf(
+					next_direction[0] * next_direction[0] + next_direction[1] * next_direction[1]
+				)
+			);
 			double yaw = std::atan2f(next_direction[1], next_direction[0]);
+
 			current_pos = map_converter.get_pos_pack_from_mesh(next_pos, yaw, pitch);
+
 			cur_frame_id++;
 		}
+
 		comutil::checkpointTime(t, "Find next move", software_parameter_is_log);
-		LOG(INFO) << "<<<<<<<<<<<<< Frame " << cur_frame_id - 1 << " done! <<<<<<<<<<<<<";
-		LOG(INFO) << "";
+
+		LOG(INFO) << "<<<<<<<<<<< Frame " << cur_frame_id - 1 << " finish. >>>>>>>>>>>\n";
 
 		std::vector<RotatedBox> boxes;
-		if (cur_frame_id == 50 || cur_frame_id == 100 || cur_frame_id == 150 || cur_frame_id == 450 || cur_frame_id ==
-			750)
+
+		if (cur_frame_id % 50 == 0)
 		{
 			for (const auto& item : total_buildings)
 				boxes.push_back(item.bounding_box_3d);
 			//SurfaceMesh mesh = get_box_mesh(boxes);
 			SurfaceMesh mesh = modeltools::get_rotated_box_mesh(boxes);
-			CGAL::IO::write_PLY("log/gradually_results/box" + std::to_string(cur_frame_id) + ".ply", mesh);
-			write_normal_path_with_flag(total_passed_trajectory,
-			                            "log/gradually_results/camera_normal_" + std::to_string(cur_frame_id) + ".log");
+
+			CGAL::IO::write_PLY(logPath + "gradually_results/box" + std::to_string(cur_frame_id) + ".ply", mesh);
+			write_normal_path_with_flag(total_passed_trajectory, logPath + "gradually_results/camera_normal_" + std::to_string(cur_frame_id) + ".log");
 		}
 	}
 
@@ -1874,11 +1893,9 @@ int main(int argc, char** argv)
 		{
 			int index = &item - &next_best_target->sample_points[0];
 			viz->m_uncertainty_map.emplace_back(Eigen::Vector2d(item.x(), item.y()),
-			                                    next_best_target->region_status[index]);
+				next_best_target->region_status[index]);
 		}
 		viz->unlock();
-		//override_sleep(100);
-		//debug_img(std::vector<cv::Mat>{height_map.m_map_dilated});
 	}
 	//total_passed_trajectory.pop_back();
 

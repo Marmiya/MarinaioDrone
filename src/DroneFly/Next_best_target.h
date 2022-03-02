@@ -13,7 +13,6 @@ public:
 	int m_current_building_id = -1;
 
 	float DISTANCE_THRESHOLD;
-	//float DISTANCE_THRESHOLD = 30.f;
 	std::vector<CGAL::Point_2<K>> sample_points;
 	std::vector<cv::Vec3b> region_status;
 	std::vector<cv::Vec3b> region_viz_color;

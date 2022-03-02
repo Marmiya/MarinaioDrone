@@ -15,7 +15,8 @@ struct MyViewpoint
 
 	MyViewpoint(){};
 	
-	MyViewpoint(const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point):pos_mesh(v_pos_mesh), focus_point(v_focus_point)
+	MyViewpoint(const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point)
+		:pos_mesh(v_pos_mesh), focus_point(v_focus_point)
 	{
 		calculate_direction();
 	}
