@@ -1672,7 +1672,7 @@ int main(int argc, char** argv)
 
 	while (!end)
 	{
-		LOG(INFO) << ">>>>>>>>>>> Frame " << cur_frame_id << " begin <<<<<<<<<<<";
+		LOG(INFO) << ">>>>>>>>>>> Frame " << cur_frame_id << " begin.  <<<<<<<<<<<";
 		auto t = comutil::recordTime();
 
 		//if(next_best_target->m_motion_status==Motion_status::exploration)
@@ -1715,7 +1715,7 @@ int main(int argc, char** argv)
 					with_exploration, horizontal_step / 2
 				);
 
-				LOG(INFO) << "Determine next position ??";
+				LOG(INFO) << "Determine next position.";
 			}
 
 			// End

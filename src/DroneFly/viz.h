@@ -55,12 +55,15 @@ public:
         glPointSize(1);
     }
 	
-    void draw_line(const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, int sickness=1,const Eigen::Vector4d& v_color = Eigen::Vector4d(1.f, 0.f, 0.f, 1.f))
-	{
+    void draw_line(
+        const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, int sickness = 1,
+        const Eigen::Vector4d& v_color = Eigen::Vector4d(1.f, 0.f, 0.f, 1.f)
+    )
+    {
         glLineWidth(sickness);
         glColor3d(v_color.x(), v_color.y(), v_color.z());
         pangolin::glDrawLine(v_min.x(), v_min.y(), v_min.z(), v_max.x(), v_max.y(), v_max.z());
-	}
+    }
 	
 	void draw_cube(const cgaltools::RotatedBox& box,const Eigen::Vector4d& v_color=Eigen::Vector4d(1.f,0.f,0.f,1.f))
 	{
@@ -156,30 +159,30 @@ public:
     }
 
     void run() {
-        //pangolin::CreateWindowAndBind("Main", 640, 960);
-        pangolin::CreateWindowAndBind("Main", 1600, 960);
-        //pangolin::CreateWindowAndBind("Main", 1280, 960);
+        
+        pangolin::CreateWindowAndBind("Main", 1920, 1080);
+        
         glEnable(GL_DEPTH_TEST);
+
         pangolin::OpenGlRenderState s_cam1(
             pangolin::ProjectionMatrix(640, 480, 420, 420, 320, 240, 0.2, 99999),
             pangolin::ModelViewLookAt(40, 40, 40, 0, 0, 0, pangolin::AxisZ)
         );
 		pangolin::OpenGlRenderState s_cam2(
             pangolin::ProjectionMatrix(1280, 960, 50, 50, 640, 480, 0.2, 99999),
-            //pangolin::ProjectionMatrix(640, 480, 420, 420, 320, 240, 0.2, 99999),
-            // pangolin::ProjectionMatrixOrthographic(-1, 1, -1,1, 0.2, 99999),
-            pangolin::ModelViewLookAt(-250, 1.f, 40.f, -250, 0, 0, pangolin::AxisZ)
+            pangolin::ModelViewLookAt(-250, 1., 40., -250, 0, 0, pangolin::AxisZ)
         );
 		
 
         // Create Interactive View in window
         MyHandler handler1(s_cam1, pangolin::AxisZ);
         MyHandler handler2(s_cam2,pangolin::AxisZ);
+
         pangolin::View& d_cam1 = pangolin::CreateDisplay()
-            .SetBounds(0.0, 1.0, 0.0, 1.0f, -640 / 480.f)
+            .SetBounds(0.0, 1., 0., 1., -640. / 480.)
             .SetHandler(&handler1);
         pangolin::View& d_cam2 = pangolin::CreateDisplay()
-            .SetBounds(0, 1.0f, 1.0f, 1.f, -640 / 480.f)
+            .SetBounds(0, 1., 1., 1., -640. / 480.)
 			.SetHandler(&handler2);
 
         pangolin::Display("multi")
@@ -210,6 +213,7 @@ public:
             //draw_point_cloud(m_points);
         	
             d_cam1.Activate(s_cam1);
+
             //pangolin::glDrawAxis(1000);
             // Render
             //draw_point_cloud(m_points);

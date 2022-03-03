@@ -845,8 +845,11 @@ void cluster_duplicate(
 }
 
 
-std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
-	std::vector<Building>& v_buildings, const modeltools::Height_map& v_height_map, const float v_vertical_step, const float horizontal_step, const float split_min_distance, const Tree& v_tree)
+std::vector<MyViewpoint> generate_trajectory(
+	const Json::Value& v_params, std::vector<Building>& v_buildings,
+	const modeltools::Height_map& v_height_map, const float v_vertical_step,
+	const float horizontal_step, const float split_min_distance, const Tree& v_tree
+)
 {
 	float view_distance = v_params["view_distance"].asFloat();
 	float safe_distance = v_params["safe_distance"].asFloat();
@@ -856,14 +859,14 @@ std::vector<MyViewpoint> generate_trajectory(const Json::Value& v_params,
 	
 	if (v_params["split_flag"].asBool())
 	{
-		for (int i_building = v_buildings.size() - 1;i_building >= 0 ; --i_building)
+		for (int i_building = v_buildings.size() - 1; i_building >= 0; --i_building)
 		{
 			auto& item_building = v_buildings[i_building];
 			if (!item_building.is_changed)
 			{
 				continue;
 			}
-			if(item_building.parent != -1)
+			if (item_building.parent != -1)
 			{
 				continue;
 			}
