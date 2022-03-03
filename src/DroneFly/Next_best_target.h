@@ -396,7 +396,10 @@ public:
 		}
 	}
 
-	MyViewpoint determine_next_target(int v_frame_id, const Pos_Pack& v_cur_pos, std::vector<Building>& v_buildings, bool with_exploration, float v_threshold) override
+	MyViewpoint determine_next_target(
+		int v_frame_id, const Pos_Pack& v_cur_pos, std::vector<Building>& v_buildings,
+		bool with_exploration, float v_threshold
+	) override
 	{
 		bool with_reconstruction = m_arg["with_reconstruction"].asBool();
 

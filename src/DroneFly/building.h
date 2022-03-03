@@ -33,7 +33,7 @@ struct MyViewpoint
 };
 
 struct Building {
-	//Eigen::AlignedBox3d bounding_box_3d;
+	
 	cgaltools::RotatedBox bounding_box_3d;
 	PointSet3 points_camera_space;
 	PointSet3 points_world_space;

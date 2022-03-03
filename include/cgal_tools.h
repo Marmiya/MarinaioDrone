@@ -144,13 +144,13 @@ namespace cgaltools {
 	{
 		cv::RotatedRect cv_box;
 		Eigen::AlignedBox3d box;
-		float angle;
+		double angle;
 		RotatedBox() {};
-		RotatedBox(const Eigen::AlignedBox3d& v_box) :box(v_box), angle(0.f)
+		RotatedBox(const Eigen::AlignedBox3d& v_box) :box(v_box), angle(0.)
 		{
 			cv_box = cv::RotatedRect(cv::Point2f(v_box.center().x(), v_box.center().y()), cv::Size2f(v_box.sizes().x(), v_box.sizes().y()), 0.f);
 		}
-		RotatedBox(const Eigen::AlignedBox3d& v_box, float v_angle_in_degree) :box(v_box), angle(v_angle_in_degree / 180.f * 3.1415926)
+		RotatedBox(const Eigen::AlignedBox3d& v_box, float v_angle_in_degree) :box(v_box), angle(v_angle_in_degree / 180. * 3.1415926)
 		{
 			cv_box = cv::RotatedRect(cv::Point2f(v_box.center().x(), v_box.center().y()), cv::Size2f(v_box.sizes().x(), v_box.sizes().y()), v_angle_in_degree);
 		}

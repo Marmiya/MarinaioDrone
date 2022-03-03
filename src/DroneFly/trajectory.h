@@ -607,7 +607,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 
 std::vector<MyViewpoint> ensure_safe_trajectory(
 	const std::vector<MyViewpoint>& v_trajectory,
-	const modeltools::Height_map& v_height_map,const float v_safe_distance)
+	const modeltools::Height_map& v_height_map, const double v_safe_distance)
 {
 	std::vector<MyViewpoint> safe_trajectory;
 	for (auto item : v_trajectory) {
@@ -851,8 +851,8 @@ std::vector<MyViewpoint> generate_trajectory(
 	const float horizontal_step, const float split_min_distance, const Tree& v_tree
 )
 {
-	float view_distance = v_params["view_distance"].asFloat();
-	float safe_distance = v_params["safe_distance"].asFloat();
+	double view_distance = v_params["view_distance"].asDouble();
+	double safe_distance = v_params["safe_distance"].asDouble();
 	
 	// Split building when it cannot be covered by one round flight
 	std::vector<bool> building_valid_flags(v_buildings.size(), true);
@@ -956,7 +956,9 @@ std::vector<MyViewpoint> generate_trajectory(
 		}), v_buildings.end());
 	
 	std::vector<MyViewpoint> total_trajectory;
-	for (int id_building = 0; id_building < v_buildings.size(); ++id_building) {
+
+	for (int id_building = 0; id_building < v_buildings.size(); ++id_building) 
+	{
 		if(!v_buildings[id_building].is_changed)
 			continue;
 		if(v_buildings[id_building].is_divide)
@@ -966,19 +968,19 @@ std::vector<MyViewpoint> generate_trajectory(
 		}
 		std::vector<MyViewpoint> item_trajectory;
 
-		float xmin = v_buildings[id_building].bounding_box_3d.box.min().x();
-		float ymin = v_buildings[id_building].bounding_box_3d.box.min().y();
-		float zmin = v_buildings[id_building].bounding_box_3d.box.min().z();
-		float xmax = v_buildings[id_building].bounding_box_3d.box.max().x();
-		float ymax = v_buildings[id_building].bounding_box_3d.box.max().y();
-		float zmax = v_buildings[id_building].bounding_box_3d.box.max().z();
+		double xmin = v_buildings[id_building].bounding_box_3d.box.min().x();
+		double ymin = v_buildings[id_building].bounding_box_3d.box.min().y();
+		double zmin = v_buildings[id_building].bounding_box_3d.box.min().z();
+		double xmax = v_buildings[id_building].bounding_box_3d.box.max().x();
+		double ymax = v_buildings[id_building].bounding_box_3d.box.max().y();
+		double zmax = v_buildings[id_building].bounding_box_3d.box.max().z();
 
 		bool double_flag = v_params["double_flag"].asBool();
 
-		float z_up_bounds = view_distance/std::sqrt(3); //Suppose the top view is toward the top end point of the cube, view angle is 30 degree
-		float z_down_bounds = view_distance/std::sqrt(3); //Suppose the bottom view is toward the bottom end point of the cube, view angle is 30 degree
+		double z_up_bounds = view_distance / std::sqrt(3); //Suppose the top view is toward the top end point of the cube, view angle is 30 degree
+		double z_down_bounds = view_distance / std::sqrt(3); //Suppose the bottom view is toward the bottom end point of the cube, view angle is 30 degree
 		// Detect if it needs drop
-		float fake_vertical_step = v_vertical_step; // When num_pass<=2. the vertical_step will be the height / 2
+		double fake_vertical_step = v_vertical_step; // When num_pass<=2. the vertical_step will be the height / 2
 		int num_pass = 1;
 		{
 			if (double_flag) {
@@ -992,13 +994,13 @@ std::vector<MyViewpoint> generate_trajectory(
 			}
 		}
 
-		float focus_z_corner = - view_distance / 3. * std::sqrtf(6.);
-		float focus_z_second_corner = - std::sqrtf(15.) / 6. * view_distance;
-		float focus_z_corner_normal = - std::sqrtf(3.) / 3 * view_distance;
+		double focus_z_corner = - view_distance / 3. * std::sqrt(6.);
+		double focus_z_second_corner = - std::sqrt(15.) / 6. * view_distance;
+		double focus_z_corner_normal = - std::sqrt(3.) / 3 * view_distance;
 		
 		for (int i_pass = 0; i_pass < num_pass; ++i_pass) {
-			float z = std::max(zmax + z_up_bounds - fake_vertical_step * i_pass, z_down_bounds);
-			float focus_z = z + focus_z_corner;
+			double z = std::max(zmax + z_up_bounds - fake_vertical_step * i_pass, z_down_bounds);
+			double focus_z = z + focus_z_corner;
 
 			std::vector corner_points{
 				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z),
@@ -1016,40 +1018,40 @@ std::vector<MyViewpoint> generate_trajectory(
 			};
 
 			Eigen::Vector3d focus_point;
-			for(int i_edge = 0;i_edge < corner_points.size()-1;++i_edge)
+			for (int i_edge = 0; i_edge < corner_points.size() - 1; ++i_edge)
 			{
 				Eigen::Vector3d cur_pos = corner_points[i_edge];
-				Eigen::Vector3d next_direction = (corner_points[i_edge+1]-corner_points[i_edge]).normalized();
-				while(true)
+				Eigen::Vector3d next_direction = (corner_points[i_edge + 1] - corner_points[i_edge]).normalized();
+				while (true)
 				{
-					if(item_trajectory.size()==0 || (focus_points[i_edge]-cur_pos).normalized().dot(next_direction)>0) // Start corner
+					if (item_trajectory.size() == 0 || (focus_points[i_edge] - cur_pos).normalized().dot(next_direction) > 0) // Start corner
 					{
 						focus_point = focus_points[i_edge];
 						item_trajectory.emplace_back(cur_pos, focus_point);
 						cur_pos += next_direction * horizontal_step;
 					}
-					else if((cur_pos-corner_points[i_edge+1]).norm()<horizontal_step) // Last point
+					else if ((cur_pos - corner_points[i_edge + 1]).norm() < horizontal_step) // Last point
 					{
-						cur_pos = corner_points[i_edge+1];
-						focus_point = focus_points[i_edge+1];
+						cur_pos = corner_points[i_edge + 1];
+						focus_point = focus_points[i_edge + 1];
 						item_trajectory.emplace_back(cur_pos, focus_point);
 						break;
 					}
-					else if((focus_points[i_edge+1]-cur_pos).normalized().dot(next_direction)<0) // Last point with direction change
+					else if ((focus_points[i_edge + 1] - cur_pos).normalized().dot(next_direction) < 0) // Last point with direction change
 					{
-						focus_point = focus_points[i_edge+1];
+						focus_point = focus_points[i_edge + 1];
 						item_trajectory.emplace_back(cur_pos, focus_point);
 						cur_pos += next_direction * horizontal_step;
 					}
 					else // Normal
 					{
-						focus_point = cur_pos+(Eigen::Vector3d(0.f,0.f,1.f).cross(next_direction)) * view_distance;
+						focus_point = cur_pos + (Eigen::Vector3d(0.f, 0.f, 1.f).cross(next_direction)) * view_distance;
 						focus_point.z() -= view_distance / std::sqrt(3);
 						item_trajectory.emplace_back(cur_pos, focus_point);
 						cur_pos += next_direction * horizontal_step;
 					}
 				}
-				
+
 			}
 
 			//float delta = (xmax + view_distance - cur_pos.x()) / horizontal_step;
@@ -1185,17 +1187,18 @@ std::vector<MyViewpoint> generate_trajectory(
 			//		cur_pos[1] -= horizontal_step;
 			//	}
 			//}
-			v_buildings[id_building].one_pass_trajectory_num+=item_trajectory.size();
+
+			v_buildings[id_building].one_pass_trajectory_num += item_trajectory.size();
 		}
 
 		if(v_params["with_continuous_height_flag"].asBool() && v_params["double_flag"].asBool())
 		{
-			int num_views = item_trajectory.size();
-			float height_max = zmax + z_up_bounds;
-			float height_min = (zmax + z_up_bounds - z_down_bounds) / num_pass;
+			int num_views = static_cast<int>(item_trajectory.size());
+			double height_max = zmax + z_up_bounds;
+			double height_min = (zmax + z_up_bounds - z_down_bounds) / num_pass;
 
-			float height_delta = height_max - height_min;
-			float height_step = height_delta / num_views;
+			double height_delta = height_max - height_min;
+			double height_step = height_delta / num_views;
 
 			int id = 0; 
 			for (auto& item : item_trajectory)
@@ -1207,9 +1210,10 @@ std::vector<MyViewpoint> generate_trajectory(
 
 		Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
 		transform.translate(v_buildings[id_building].bounding_box_3d.box.center());
-		transform.rotate(Eigen::AngleAxisd(v_buildings[id_building].bounding_box_3d.cv_box.angle/180.f*M_PI, Eigen::Vector3d::UnitZ()));
+		transform.rotate(Eigen::AngleAxisd(v_buildings[id_building].bounding_box_3d.cv_box.angle / 180. * M_PI, Eigen::Vector3d::UnitZ()));
 		transform.translate(-v_buildings[id_building].bounding_box_3d.box.center());
-		for (int i=0;i< item_trajectory.size();++i)
+
+		for (int i = 0; i < item_trajectory.size(); ++i)
 		{
 			item_trajectory[i].pos_mesh = transform * item_trajectory[i].pos_mesh;
 			item_trajectory[i].focus_point = transform * item_trajectory[i].focus_point;
