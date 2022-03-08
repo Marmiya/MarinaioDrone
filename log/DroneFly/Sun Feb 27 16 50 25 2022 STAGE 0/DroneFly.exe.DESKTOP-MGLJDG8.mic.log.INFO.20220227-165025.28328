@@ -1,4 +1,0 @@
-Log file created at: 2022/02/27 16:50:25
-Running on machine: DESKTOP-MGLJDG8
-Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
-I0227 16:50:25.845710 21476 main.cpp:1538] Initialization directory, airsim, map converter and reset color
