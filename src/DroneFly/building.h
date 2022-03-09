@@ -35,6 +35,7 @@ struct MyViewpoint
 struct Building {
 	
 	cgaltools::RotatedBox bounding_box_3d;
+	SurfaceMesh buildingMesh;
 	PointSet3 points_camera_space;
 	PointSet3 points_world_space;
 	CGAL::Bbox_2 bounding_box_2d;

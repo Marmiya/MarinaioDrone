@@ -1408,4 +1408,25 @@ namespace modeltools {
 		f.close();
 		return;
 	}
+
+	bool liftModel(PointSet3& pts)
+	{
+		double lowestPoint = 9999999.;
+		for(const auto& i:pts.points())
+		{
+			lowestPoint = i.z() ? i.z() < lowestPoint : lowestPoint;
+		}
+		if (lowestPoint < 0.)
+		{
+			for (auto& i : pts.points())
+			{
+				i = Point3(i.x(), i.y(), i.z() + ::abs(lowestPoint));
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

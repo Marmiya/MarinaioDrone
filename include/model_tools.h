@@ -148,6 +148,8 @@ namespace modeltools{
     void get_box_mesh_with_colors(const std::vector<Eigen::AlignedBox3d>& v_boxes,
         const std::vector<cv::Vec3b>& v_colors, const std::string& v_name);
 
+    bool liftModel(PointSet3& pts);
+
     class Height_map {
 
     public:

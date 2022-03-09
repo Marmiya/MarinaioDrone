@@ -57,7 +57,7 @@ public:
 	
     void draw_line(
         const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, int sickness = 1,
-        const Eigen::Vector4d& v_color = Eigen::Vector4d(1.f, 0.f, 0.f, 1.f)
+        const Eigen::Vector4d& v_color = Eigen::Vector4d(1., 0., 0., 1.)
     )
     {
         glLineWidth(sickness);
@@ -65,7 +65,7 @@ public:
         pangolin::glDrawLine(v_min.x(), v_min.y(), v_min.z(), v_max.x(), v_max.y(), v_max.z());
     }
 	
-	void draw_cube(const cgaltools::RotatedBox& box,const Eigen::Vector4d& v_color=Eigen::Vector4d(1.f,0.f,0.f,1.f))
+	void draw_cube(const cgaltools::RotatedBox& box,const Eigen::Vector4d& v_color=Eigen::Vector4d(1.,0.,0.,1.))
 	{
         cv::Point2f points[4];
         box.cv_box.points(points);
@@ -160,7 +160,7 @@ public:
 
     void run() {
         
-        pangolin::CreateWindowAndBind("Main", 1920, 1080);
+        pangolin::CreateWindowAndBind("DFP", 1920, 1080);
         
         glEnable(GL_DEPTH_TEST);
 
@@ -195,7 +195,7 @@ public:
 		
         while (!pangolin::ShouldQuit()) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glClearColor(0.56f, 0.56f, 0.56f, 1);
+            glClearColor(0.56, 0.56, 0.56, 1);
 
             lock();
             d_cam2.Activate(s_cam2);
@@ -203,7 +203,10 @@ public:
                 const Eigen::Vector2d& position = item_tile.first;
                 const cv::Vec3b& item_color = item_tile.second;
                 Eigen::Vector4d color;
-                color = Eigen::Vector4d((float)item_color[2] / 255.f, (float)item_color[1] / 255.f, (float)item_color[0] / 255.f, 1);
+                color = Eigen::Vector4d(
+                    static_cast<double>(item_color[2] / 255.), static_cast<double>(item_color[1] / 255.),
+                    static_cast<double>(item_color[0] / 255.), 1
+                );
 
                 draw_cube(Eigen::AlignedBox3d(Eigen::Vector3d(position.x() - m_uncertainty_map_distance / 2, position.y() - m_uncertainty_map_distance / 2, -1),
                     Eigen::Vector3d(position.x() + m_uncertainty_map_distance / 2, position.y() + m_uncertainty_map_distance / 2, 1)), color);
@@ -226,19 +229,19 @@ public:
                 int index = &item_building - &m_buildings[0];
                 if(m_current_building == index)
 	                draw_cube(item_building.bounding_box_3d,
-	                    Eigen::Vector4d(1.f, 0.f, 0.f, 1.f));
-                else if(item_building.passed_trajectory.size()!=0)
+	                    Eigen::Vector4d(1., 0., 0., 1.));
+                else if(!item_building.passed_trajectory.empty())
                     draw_cube(item_building.bounding_box_3d,
-                        Eigen::Vector4d(1.f, 1.f, 1.f, 1.f));
+                        Eigen::Vector4d(1., 1., 1., 1.));
                 else
                     draw_cube(item_building.bounding_box_3d,
-                        Eigen::Vector4d(0.5f, .5f, .5f, .5f));
+                        Eigen::Vector4d(0.5, .5, .5, .5));
             }
 
         	//View points
             for (const auto& item_trajectory : m_trajectories) {
-                draw_cube(Eigen::AlignedBox3d(item_trajectory.pos_mesh - Eigen::Vector3d(1.f, 1.f, 1.f), item_trajectory.pos_mesh + Eigen::Vector3d(1.f, 1.f, 1.f)),
-                    Eigen::Vector4d(0.f, 1.f, 0.f, 1.f));
+                draw_cube(Eigen::AlignedBox3d(item_trajectory.pos_mesh - Eigen::Vector3d(1., 1., 1.), item_trajectory.pos_mesh + Eigen::Vector3d(1., 1., 1.)),
+                    Eigen::Vector4d(0., 1., 0., 1.));
                 Eigen::Vector3d look_at = item_trajectory.pos_mesh + item_trajectory.direction * 10;
                 draw_line(item_trajectory.pos_mesh, look_at,2,Eigen::Vector4d(0,1,0,1));
             }
@@ -250,8 +253,8 @@ public:
                 if (item_trajectory.is_towards_reconstruction == true)
                     color = Eigen::Vector4d( 23./255, 73./255, 179./255, 1);
                 
-                //draw_cube(Eigen::AlignedBox3d(item_trajectory.first - Eigen::Vector3d(1.f, 1.f, 1.f), item_trajectory.first + Eigen::Vector3d(1.f, 1.f, 1.f)),
-                //    Eigen::Vector4d(0.f, 1.f, 0.f, 1.f));
+                //draw_cube(Eigen::AlignedBox3d(item_trajectory.first - Eigen::Vector3d(1., 1., 1.), item_trajectory.first + Eigen::Vector3d(1., 1., 1.)),
+                //    Eigen::Vector4d(0., 1., 0., 1.));
                 glColor3d(color.x(), color.y(), color.z());
             	if(index >=1)
                     pangolin::glDrawLine(item_trajectory.pos_mesh[0], item_trajectory.pos_mesh[1], item_trajectory.pos_mesh[2],
@@ -261,8 +264,8 @@ public:
             }
         	
         	// Current Position and orientation
-            draw_cube(Eigen::AlignedBox3d(m_pos - Eigen::Vector3d(4.f, 4.f, 4.f), m_pos + Eigen::Vector3d(4.f, 4.f, 4.f)),
-                Eigen::Vector4d(1.f, 0.f, 0.f, 1.f));
+            draw_cube(Eigen::AlignedBox3d(m_pos - Eigen::Vector3d(4., 4., 4.), m_pos + Eigen::Vector3d(4., 4., 4.)),
+                Eigen::Vector4d(1., 0., 0., 1.));
             Eigen::Vector3d look_at = m_pos + m_direction * 20;
             draw_line(m_pos, look_at, 2, Eigen::Vector4d(0, 1, 0, 1));
         	
@@ -271,7 +274,7 @@ public:
                 const Eigen::Vector2d& position= item_tile.first;
                 const cv::Vec3b& item_color = item_tile.second;
                 Eigen::Vector4d color;
-                color = Eigen::Vector4d((float)item_color[2]/255.f, (float)item_color[1] / 255.f, (float)item_color[0] / 255.f, 1);
+                color = Eigen::Vector4d((float)item_color[2]/255., (float)item_color[1] / 255., (float)item_color[0] / 255., 1);
 
                 draw_cube(Eigen::AlignedBox3d(Eigen::Vector3d(position.x() - m_uncertainty_map_distance/2, position.y() - m_uncertainty_map_distance / 2, -1),
                     Eigen::Vector3d(position.x() + m_uncertainty_map_distance / 2, position.y() + m_uncertainty_map_distance / 2, 1)), color);

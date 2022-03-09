@@ -467,7 +467,7 @@ public:
 		//}
 		//else
 		//{
-			PointSet3 original_point_cloud;
+			PointSet3 original_point_cloud(true);
 			std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
 			if (boost::filesystem::is_directory(args["model_path"].asString()))
 			{
@@ -515,6 +515,10 @@ public:
 			LOG(INFO) << "Model reading finished.";
 
 			CGAL::Point_set_3<Point3, Vector3> point_cloud(original_point_cloud);
+			if (modeltools::liftModel(point_cloud))
+			{
+				CGAL::IO::write_point_set(args["tlogpath"].asString() + "liftedPTS.ply", point_cloud);
+			}
 			// Delete ground planes
 			{
 				for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
@@ -525,7 +529,7 @@ public:
 
 				point_cloud.collect_garbage();
 			}
-			CGAL::IO::write_point_set("points_without_plane.ply", point_cloud);
+			CGAL::IO::write_point_set(args["tlogpath"].asString() + "points_without_plane.ply", point_cloud);
 			// Cluster building
 			std::size_t nb_clusters;
 			{
@@ -539,12 +543,9 @@ public:
 				                                            adjacencies(std::back_inserter(adjacencies)));
 				m_buildings_target.resize(nb_clusters);
 
-				PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).
-				                                                         first;
-				PointSet3::Property_map<unsigned char> green = point_cloud
-				                                               .add_property_map<unsigned char>("green", 0).first;
-				PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).
-				                                                          first;
+				PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
+				PointSet3::Property_map<unsigned char> green = point_cloud.add_property_map<unsigned char>("green", 0).first;
+				PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
 				for (PointSet3::Index idx : point_cloud)
 				{
 					// One color per cluster
@@ -555,16 +556,36 @@ public:
 					blue[idx] = rand.get_int(64, 192);
 
 					Building& current_building = m_buildings_target[cluster_id];
-					current_building.points_world_space.insert(point_cloud.point(idx));
+					current_building.points_world_space.add_normal_map();
+					current_building.points_world_space.insert(point_cloud.point(idx), point_cloud.normal(idx));
 				}
 			}
-			for (int i_building_1 = 0; i_building_1 < m_buildings_target.size(); ++i_building_1)
+			for (int i = 0; i < m_buildings_target.size(); ++i)
 			{
-				//m_buildings_target[i_building_1].bounding_box_3d = get_bounding_box(m_buildings_target[i_building_1].points_world_space);
-				m_buildings_target[i_building_1].bounding_box_3d = cgaltools::get_bounding_box_rotated(
-					m_buildings_target[i_building_1].points_world_space);
-				m_buildings_target[i_building_1].bounding_box_3d.box.min().z() -= args["HEIGHT_CLIP"].asFloat();
-				m_buildings_target[i_building_1].boxes.push_back(m_buildings_target[i_building_1].bounding_box_3d);
+				m_buildings_target[i].bounding_box_3d = cgaltools::get_bounding_box_rotated(
+					m_buildings_target[i].points_world_space);
+				m_buildings_target[i].boxes.push_back(m_buildings_target[i].bounding_box_3d);
+				PointSet3 tpts(true);
+				tpts = m_buildings_target[i].points_world_space;
+
+				// Compute average spacing using neighborhood of 6 points
+				double spacing = CGAL::compute_average_spacing<CGAL::Sequential_tag>(tpts, 3);
+				// Simplify using a grid of size 2 * average spacing
+				tpts.remove(
+					grid_simplify_point_set(
+						tpts, 2. * spacing, CGAL::parameters::point_map(tpts.point_map())
+					), tpts.end()
+				);
+
+				std::cout << tpts.number_of_removed_points()
+					<< " point(s) removed after simplification." << std::endl;
+				tpts.collect_garbage();
+
+				CGAL::poisson_surface_reconstruction_delaunay
+				(tpts.begin(), tpts.end(), tpts.point_map(), tpts.normal_map(),
+					m_buildings_target[i].buildingMesh, spacing);
+				CGAL::IO::write_PLY(args["tlogpath"].asString() + std::to_string(i) + "mesh.ply", m_buildings_target[i].buildingMesh);
+
 			}
 
 			for (int i_building_1 = m_buildings_target.size() - 1; i_building_1 >= 0; --i_building_1)
@@ -600,7 +621,7 @@ public:
 	                   const Pos_Pack& v_current_pos,
 	                   const int v_cur_frame_id, modeltools::Height_map& v_height_map) override
 	{
-		if (v_buildings.size() == 0)
+		if (v_buildings.empty())
 		{
 			v_buildings = m_buildings_target;
 			for (auto& item_building : m_buildings_safe_place)
@@ -1530,7 +1551,7 @@ int main(int argc, char** argv)
 		FLAGS_stderrthreshold = 0;
 		FLAGS_log_dir = (lop).string();
 	}
-
+	args["tlogpath"] = logPath;
 	bool software_parameter_is_log = args["is_log"].asBool();
 	bool software_parameter_is_viz = args["is_viz"].asBool();
 	FLAGS_stderrthreshold = software_parameter_is_log ? 0 : 2;
