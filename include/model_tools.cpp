@@ -1412,9 +1412,9 @@ namespace modeltools {
 	bool liftModel(PointSet3& pts)
 	{
 		double lowestPoint = 9999999.;
-		for(const auto& i:pts.points())
+		for (const Point3& i : pts.points())
 		{
-			lowestPoint = i.z() ? i.z() < lowestPoint : lowestPoint;
+			lowestPoint = i.z() < lowestPoint ? i.z() : lowestPoint;
 		}
 		if (lowestPoint < 0.)
 		{

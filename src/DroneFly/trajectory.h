@@ -1246,6 +1246,407 @@ std::vector<MyViewpoint> generate_trajectory(
 	}
 	return total_trajectory;
 }
+std::vector<MyViewpoint> generate_trajectory_tg(
+	const Json::Value& v_params, std::vector<Building>& v_buildings,
+	const modeltools::Height_map& v_height_map, const float v_vertical_step,
+	const float horizontal_step, const float split_min_distance, const Tree& v_tree
+)
+{
+	double view_distance = v_params["view_distance"].asDouble();
+	double safe_distance = v_params["safe_distance"].asDouble();
+
+	// Split building when it cannot be covered by one round flight
+	std::vector<bool> building_valid_flags(v_buildings.size(), true);
+
+	if (v_params["split_flag"].asBool())
+	{
+		for (int i_building = v_buildings.size() - 1; i_building >= 0; --i_building)
+		{
+			auto& item_building = v_buildings[i_building];
+			if (!item_building.is_changed)
+			{
+				continue;
+			}
+			if (item_building.parent != -1)
+			{
+				continue;
+			}
+			int split_width_num = int((item_building.bounding_box_3d.box.max().x() - item_building.bounding_box_3d.box.min().x()) / split_min_distance);
+			int split_length_num = int((item_building.bounding_box_3d.box.max().y() - item_building.bounding_box_3d.box.min().y()) / split_min_distance);
+			split_width_num += 1;
+			split_length_num += 1;
+			if (split_width_num < 1)
+				split_width_num = 1;
+			if (split_length_num < 1)
+				split_length_num = 1;
+			Building temp_building(item_building);
+			if (split_width_num <= 1 && split_length_num <= 1) //Do not need to split
+				continue;
+
+			// Delete the exist split building
+			for (int i_building2 = v_buildings.size() - 1; i_building2 >= 0; --i_building2)
+				if (v_buildings[i_building2].parent == i_building)
+					building_valid_flags[i_building2] = false;
+
+
+			item_building.is_divide = true;
+			temp_building.parent = i_building;
+			Eigen::Vector3d min_vector, max_vector;
+			for (int i = 0; i < split_width_num; i++)
+			{
+				max_vector[2] = item_building.bounding_box_3d.box.max().z();
+				min_vector[2] = item_building.bounding_box_3d.box.min().z();
+				min_vector[0] = item_building.bounding_box_3d.box.min().x() + i * split_min_distance;
+				max_vector[0] = item_building.bounding_box_3d.box.min().x() + (i + 1) * split_min_distance;
+				if (i == split_width_num - 1)
+					max_vector[0] = item_building.bounding_box_3d.box.max().x();
+
+
+
+				for (int j = 0; j < split_length_num; j++)
+				{
+					min_vector[1] = item_building.bounding_box_3d.box.min().y() + j * split_min_distance;
+					max_vector[1] = item_building.bounding_box_3d.box.min().y() + (j + 1) * split_min_distance;
+					if (j == split_length_num - 1)
+						max_vector[1] = item_building.bounding_box_3d.box.max().y();
+
+					Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
+					transform.translate(item_building.bounding_box_3d.box.center());
+					transform.rotate(Eigen::AngleAxisd(item_building.bounding_box_3d.angle, Eigen::Vector3d::UnitZ()));
+					transform.translate(-item_building.bounding_box_3d.box.center());
+
+					cgaltools::RotatedBox box;
+					box.angle = item_building.bounding_box_3d.angle;
+
+					Eigen::Vector3d v1 = transform * min_vector;
+					Eigen::Vector3d v2 = transform * Eigen::Vector3d(max_vector.x(), min_vector.y(), min_vector.z());
+					Eigen::Vector3d v3 = transform * max_vector;
+
+					box.cv_box = cv::RotatedRect(
+						cv::Point2f(v1.x(), v1.y()),
+						cv::Point2f(v2.x(), v2.y()),
+						cv::Point2f(v3.x(), v3.y())
+					);
+
+					box.box = Eigen::AlignedBox3d(
+						Eigen::Vector3d(box.cv_box.center.x - box.cv_box.size.width / 2, box.cv_box.center.y - box.cv_box.size.height / 2, min_vector.z()),
+						Eigen::Vector3d(box.cv_box.center.x + box.cv_box.size.width / 2, box.cv_box.center.y + box.cv_box.size.height / 2, max_vector.z()));
+
+					/*
+					LOG(INFO) << box.cv_box.angle / 180. * M_PI;
+					LOG(INFO) << box.angle;
+					LOG(INFO) << item_building.bounding_box_3d.angle;
+					LOG(INFO) << item_building.bounding_box_3d.cv_box.angle / 180. * M_PI;
+					*/
+
+					temp_building.bounding_box_3d = box;
+					v_buildings.push_back(temp_building);
+				}
+			}
+		}
+	}
+
+	// BUG Temporal solution. Do not sure
+	v_buildings.erase(std::remove_if(v_buildings.begin(), v_buildings.end(), [&building_valid_flags, &v_buildings](const auto& building)
+		{
+			int idx = &building - &(v_buildings[0]);
+			if (idx >= building_valid_flags.size())
+				return false;
+			else
+				return !building_valid_flags[idx];
+		}), v_buildings.end());
+
+	std::vector<MyViewpoint> total_trajectory;
+
+	for (int id_building = 0; id_building < v_buildings.size(); ++id_building)
+	{
+		if (!v_buildings[id_building].is_changed)
+			continue;
+		if (v_buildings[id_building].is_divide)
+		{
+			v_buildings[id_building].is_changed = false;
+			continue;
+		}
+		std::vector<MyViewpoint> item_trajectory;
+
+		double xmin = v_buildings[id_building].bounding_box_3d.box.min().x();
+		double ymin = v_buildings[id_building].bounding_box_3d.box.min().y();
+		double zmin = v_buildings[id_building].bounding_box_3d.box.min().z();
+		double xmax = v_buildings[id_building].bounding_box_3d.box.max().x();
+		double ymax = v_buildings[id_building].bounding_box_3d.box.max().y();
+		double zmax = v_buildings[id_building].bounding_box_3d.box.max().z();
+
+		bool double_flag = v_params["double_flag"].asBool();
+
+		double z_up_bounds = view_distance / std::sqrt(3); //Suppose the top view is toward the top end point of the cube, view angle is 30 degree
+		double z_down_bounds = view_distance / std::sqrt(3); //Suppose the bottom view is toward the bottom end point of the cube, view angle is 30 degree
+		// Detect if it needs drop
+		double fake_vertical_step = v_vertical_step; // When num_pass<=2. the vertical_step will be the height / 2
+		int num_pass = 1;
+		{
+			if (double_flag) {
+				num_pass = (zmax + z_up_bounds - z_down_bounds) / v_vertical_step;
+				num_pass += 1; // Cell the division
+				//if (num_pass <=1)
+				//{
+				//	num_pass = 2;
+				//	fake_vertical_step = (zmax + z_up_bounds) / 2;
+				//}
+			}
+		}
+
+		double focus_z_corner = -view_distance / 3. * std::sqrt(6.);
+		double focus_z_second_corner = -std::sqrt(15.) / 6. * view_distance;
+		double focus_z_corner_normal = -std::sqrt(3.) / 3 * view_distance;
+
+		for (int i_pass = 0; i_pass < num_pass; ++i_pass) {
+			double z = std::max(zmax + z_up_bounds - fake_vertical_step * i_pass, z_down_bounds);
+			double focus_z = z + focus_z_corner;
+
+			std::vector corner_points{
+				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z),
+				Eigen::Vector3d(xmax + view_distance, ymin - view_distance, z),
+				Eigen::Vector3d(xmax + view_distance, ymax + view_distance, z),
+				Eigen::Vector3d(xmin - view_distance, ymax + view_distance, z),
+				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z)
+			};
+			std::vector focus_points{
+				Eigen::Vector3d(xmin, ymin, focus_z),
+				Eigen::Vector3d(xmax, ymin, focus_z),
+				Eigen::Vector3d(xmax, ymax, focus_z),
+				Eigen::Vector3d(xmin, ymax, focus_z),
+				Eigen::Vector3d(xmin, ymin, focus_z)
+			};
+
+			Eigen::Vector3d focus_point;
+			for (int i_edge = 0; i_edge < corner_points.size() - 1; ++i_edge)
+			{
+				Eigen::Vector3d cur_pos = corner_points[i_edge];
+				Eigen::Vector3d next_direction = (corner_points[i_edge + 1] - corner_points[i_edge]).normalized();
+				while (true)
+				{
+					if (item_trajectory.size() == 0 || (focus_points[i_edge] - cur_pos).normalized().dot(next_direction) > 0) // Start corner
+					{
+						focus_point = focus_points[i_edge];
+						item_trajectory.emplace_back(cur_pos, focus_point);
+						cur_pos += next_direction * horizontal_step;
+					}
+					else if ((cur_pos - corner_points[i_edge + 1]).norm() < horizontal_step) // Last point
+					{
+						cur_pos = corner_points[i_edge + 1];
+						focus_point = focus_points[i_edge + 1];
+						item_trajectory.emplace_back(cur_pos, focus_point);
+						break;
+					}
+					else if ((focus_points[i_edge + 1] - cur_pos).normalized().dot(next_direction) < 0) // Last point with direction change
+					{
+						focus_point = focus_points[i_edge + 1];
+						item_trajectory.emplace_back(cur_pos, focus_point);
+						cur_pos += next_direction * horizontal_step;
+					}
+					else // Normal
+					{
+						focus_point = cur_pos + (Eigen::Vector3d(0.f, 0.f, 1.f).cross(next_direction)) * view_distance;
+						focus_point.z() -= view_distance / std::sqrt(3);
+						item_trajectory.emplace_back(cur_pos, focus_point);
+						cur_pos += next_direction * horizontal_step;
+					}
+				}
+
+			}
+
+			//float delta = (xmax + view_distance - cur_pos.x()) / horizontal_step;
+			//delta = delta > 4 ? delta : 4.1;
+			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
+			//for (int i = 0; i <  delta ;++i)
+			//{
+			//	if(i==0)
+			//	{
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, view_distance, focus_z_corner);
+			//		item_trajectory.emplace_back(cur_pos, focus_point);
+			//		cur_pos[0] += horizontal_step;
+			//	}
+			//	else if (i == 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance / 2, view_distance, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] += horizontal_step;
+			//	}
+			//	else if (i >= delta - 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance / 2, view_distance, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] += horizontal_step;
+			//	}
+			//	else
+			//	{
+			//		focus_point = cur_pos + Eigen::Vector3d(0, view_distance, focus_z_corner_normal);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] += horizontal_step;
+			//	}
+			//}
+			//delta = (ymax + view_distance - cur_pos.y()) / horizontal_step;
+			//delta = delta > 4 ? delta : 4.1;
+			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
+			//for (int i = 0; i < delta; ++i) {
+			//	if (i == 0) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, view_distance, focus_z_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] += horizontal_step;
+			//	}
+			//	else if (i == 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, view_distance /2, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] += horizontal_step;
+			//	}
+			//	else if (i >= delta - 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, -view_distance / 2, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] += horizontal_step;
+			//	}
+			//	else {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, 0, focus_z_corner_normal);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] += horizontal_step;
+			//	}
+			//}
+			//delta = (cur_pos.x() - (xmin - view_distance)) / horizontal_step;
+			//delta = delta > 4 ? delta : 4.1;
+			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
+			//for (int i = 0; i < delta; ++i) {
+			//	if (i == 0) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance, -view_distance, focus_z_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] -= horizontal_step;
+			//	}
+			//	else if (i == 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(-view_distance /2, -view_distance, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] -= horizontal_step;
+			//	}
+			//	else if (i >= delta - 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance / 2, -view_distance, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] -= horizontal_step;
+			//	}
+			//	else {
+			//		focus_point = cur_pos + Eigen::Vector3d(0, -view_distance, focus_z_corner_normal);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[0] -= horizontal_step;
+			//	}
+			//}
+			//delta = (cur_pos.y() - (ymin - view_distance)) / horizontal_step;
+			//delta = delta > 4 ? delta : 4.1;
+			//v_buildings[id_building].one_pass_trajectory_num += int(delta);
+			//for (int i = 0; i <  delta; ++i) {
+			//	if (i == 0) {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, -view_distance, focus_z_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] -= horizontal_step;
+			//	}
+			//	else if (i == 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, -view_distance /2, focus_z_second_corner);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] -= horizontal_step;
+			//	}
+			//	else if (i >= delta - 1) {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, view_distance /2, focus_z_second_corner);
+			//		//item_trajectory.emplace_back(
+			//		//	cur_pos, focus_point
+			//		//);
+			//		cur_pos[1] -= horizontal_step;
+			//	}
+			//	else {
+			//		focus_point = cur_pos + Eigen::Vector3d(view_distance, 0, focus_z_corner_normal);
+			//		item_trajectory.emplace_back(
+			//			cur_pos, focus_point
+			//		);
+			//		cur_pos[1] -= horizontal_step;
+			//	}
+			//}
+
+			v_buildings[id_building].one_pass_trajectory_num += item_trajectory.size();
+		}
+
+		if (v_params["with_continuous_height_flag"].asBool() && v_params["double_flag"].asBool())
+		{
+			int num_views = static_cast<int>(item_trajectory.size());
+			double height_max = zmax + z_up_bounds;
+			double height_min = (zmax + z_up_bounds - z_down_bounds) / num_pass;
+
+			double height_delta = height_max - height_min;
+			double height_step = height_delta / num_views;
+
+			int id = 0;
+			for (auto& item : item_trajectory)
+			{
+				item.pos_mesh.z() = std::max(height_max - id * height_step, z_down_bounds);
+				++id;
+			}
+		}
+
+		Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
+		transform.translate(v_buildings[id_building].bounding_box_3d.box.center());
+		transform.rotate(Eigen::AngleAxisd(v_buildings[id_building].bounding_box_3d.cv_box.angle / 180. * M_PI, Eigen::Vector3d::UnitZ()));
+		transform.translate(-v_buildings[id_building].bounding_box_3d.box.center());
+
+		for (int i = 0; i < item_trajectory.size(); ++i)
+		{
+			item_trajectory[i].pos_mesh = transform * item_trajectory[i].pos_mesh;
+			item_trajectory[i].focus_point = transform * item_trajectory[i].focus_point;
+			item_trajectory[i].calculate_direction();
+		}
+
+		if (v_params["with_erosion_flag"].asBool()) // 先把这个flag关了
+			item_trajectory = find_short_cut(item_trajectory, v_height_map, safe_distance, v_buildings[id_building], v_tree);
+		else
+			item_trajectory = ensure_safe_trajectory(item_trajectory, v_height_map, safe_distance);
+
+		if (v_params.isMember("z_down_bounds"))
+		{
+			for (int i = 0; i < item_trajectory.size(); ++i)
+			{
+				if (item_trajectory[i].pos_mesh.z() < v_params["z_down_bounds"].asFloat())
+				{
+					item_trajectory[i].pos_mesh.z() = v_params["z_down_bounds"].asFloat();
+					item_trajectory[i].calculate_direction();
+				}
+			}
+		}
+
+		if (v_params["cluster_duplicate_flag"].asBool())
+			cluster_duplicate(item_trajectory, v_params["vertical_overlap"].asFloat(), v_params["fov"].asFloat(), view_distance);
+
+		v_buildings[id_building].trajectory = item_trajectory;
+		total_trajectory.insert(total_trajectory.end(), item_trajectory.begin(), item_trajectory.end());
+		v_buildings[id_building].is_changed = false;
+	}
+	return total_trajectory;
+}
 
 void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
 {

@@ -9,6 +9,7 @@ find_package(cpr CONFIG REQUIRED)
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ../../include)
+target_link_options(${PROJECT_NAME} PUBLIC "/FORCE:MULTIPLE")
 
 link_general(${PROJECT_NAME})
 link_airsim(${PROJECT_NAME})
