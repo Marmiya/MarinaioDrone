@@ -1422,6 +1422,7 @@ namespace modeltools {
 			{
 				i = Point3(i.x(), i.y(), i.z() + ::abs(lowestPoint));
 			}
+			std::cout << "LIFT model: " << lowestPoint << "\n";
 			return true;
 		}
 		else

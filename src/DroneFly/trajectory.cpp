@@ -307,6 +307,24 @@ perform_ccpp(
 	return trajectory;
 }
 
+bool
+ifNeighbouring(
+	const Building& a, const Building& b, const double& threshold
+)
+{
+	for (const auto& i : a.buildingMesh.points())
+	{
+		for (const auto& j : b.buildingMesh.points())
+		{
+			//LOG(INFO) << std::sqrt(CGAL::squared_distance(i, j));
+			if (std::sqrt(CGAL::squared_distance(i, j)) < threshold)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 std::vector<MyViewpoint> generate_trajectory_tg(
 	const Json::Value& v_params, std::vector<Building>& v_buildings,
@@ -327,11 +345,12 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		for (size_t i = 0; i < v_buildings.size(); i++)
 		{
 			bool find = false;
-			for (size_t j = 0; j < v_buildings.size(); j++)
+			for (size_t j = i + 1; j < v_buildings.size(); j++)
 			{
 				if (ifNeighbouring(v_buildings.at(i), v_buildings.at(j), 2 * safe_distance))
 				{
 					find = true;
+					existNbrg = true;
 					na = i, nb = j;
 					break;
 				}
@@ -354,18 +373,18 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			c.bounding_box_3d = cgaltools::get_bounding_box_rotated(c.points_world_space);
 			c.boxes.push_back(c.bounding_box_3d);
 			v_buildings.erase(v_buildings.begin() + na);
-			v_buildings.erase(v_buildings.begin() + nb);
+			v_buildings.erase(v_buildings.begin() + nb - 1);
 			v_buildings.push_back(c);
 		}
 	}
-	/*
+	
 	for (size_t i = 0; i < v_buildings.size(); i++)
 	{
 		Building& curbuilding = v_buildings.at(i);
 		double maxZ = curbuilding.bounding_box_3d.box.max().z();
 		double maxFlyZ = maxZ + 15.;
 		CGAL::Polygon_mesh_slicer<SurfaceMesh, K> slicer(curbuilding.buildingMesh);
-
+		
 		std::vector<double> sliceZ;
 		double cursliceZ = safe_height;
 		while (true)
@@ -384,25 +403,27 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 				cursliceZ += v_vertical_step;
 			}
 		}
+		
 		Polylines slices;
 		for (const auto& i : sliceZ)
 		{
 			slicer(K::Plane_3(0, 0, 1, i), std::back_inserter(slices));
+			LOG(INFO) << i <<"    " << slices.size();
 		}
 		std::vector<Polygon2> ploygons;
 		PointSet3 slicesPts;
 		for (const auto& i : slices)
 		{
-			PointSet2 tpts2;
+			std::vector<Point2> tpts2;
 			for (const auto& j : i)
 			{
 				tpts2.push_back(std::move(Point2(j.x(),j.y())));
 				slicesPts.insert(j);
 			}
-			ploygons.push_back(Polygon2(tpts2.points_begin(), tpts2.points_end()));
+			ploygons.push_back(Polygon2(tpts2.begin(), tpts2.end()));
 		}
 		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_slicesPts.ply", slicesPts);
-	}*/
+	}
 
 
 
@@ -559,24 +580,6 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	}
 	*/
 	return total_trajectory;
-}
-
-bool
-ifNeighbouring(
-	const Building& a, const Building& b, const double& threshold
-)
-{
-	for (const auto& i : a.buildingMesh.points())
-	{
-		for (const auto& j : b.buildingMesh.points())
-		{
-			if (std::sqrt(CGAL::squared_distance(i, j)) < threshold)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 std::vector<MyViewpoint>

@@ -10,6 +10,7 @@
 #include "common_util.h"
 #include "building.h"
 #include "map_util.h"
+#include <glog/logging.h>
 
 struct Trajectory_params
 {
