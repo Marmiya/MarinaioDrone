@@ -213,7 +213,10 @@ void explore(const cv::Mat& v_map, const cv::Mat& distance_map, const cv::Mat& o
 	}
 }
 
-std::vector<Eigen::Vector2i> perform_ccpp(const cv::Mat& ccpp_map, const Eigen::Vector2i& v_start_point, const Eigen::Vector2i& v_goal, float weight = 1)
+std::vector<Eigen::Vector2i>
+perform_ccpp(
+	const cv::Mat& ccpp_map, const Eigen::Vector2i& v_start_point, const Eigen::Vector2i& v_goal, float weight
+)
 {
 	cv::Mat v_map(ccpp_map.rows + 2, ccpp_map.cols + 2, CV_32SC1);
 	for (int i = 0; i < v_map.rows; i++)

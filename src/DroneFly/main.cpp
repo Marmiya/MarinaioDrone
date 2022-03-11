@@ -17,7 +17,7 @@
 #include "airsim_control.h"
 #include "metrics.h"
 #include "trajectory.h"
-#include "Next_best_target.h"
+#include "next_best_target.h"
 #include "common_util.h"
 #include <opencv2/features2d.hpp>
 
