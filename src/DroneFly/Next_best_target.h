@@ -40,7 +40,6 @@ public:
 	virtual MyViewpoint determine_next_target(int v_frame_id, const Pos_Pack& v_cur_pos, std::vector<Building>& v_buildings, bool with_exploration, float v_threshold) = 0;
 };
 
-
 class Next_best_target_topology_exploration : public Next_best_target {
 public:
 	std::vector<Eigen::AlignedBox2d> topology;
@@ -50,8 +49,6 @@ public:
 	cv::Vec3b color_reconstruction;
 	Json::Value m_arg;
 
-	//const int CCPP_CELL_THRESHOLD = 50;
-	//const int CCPP_CELL_THRESHOLD = 70;
 	int CCPP_CELL_THRESHOLD;
 	int rotation_status = 0;
 	//const int CCPP_CELL_THRESHOLD = 10;
@@ -62,18 +59,16 @@ public:
 	std::vector<MyViewpoint> m_ccpp_trajectory;
 	std::queue<MyViewpoint> m_exploration_point;
 
-	float memory_y = -1.f;
+	double memory_y = -1.;
 	int dummy1 = 0;
 	int dummy2 = 0;
-	float dummy3 = 0;
+	double dummy3 = 0;
 
-	Next_best_target_topology_exploration(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh,
-		int v_CCPP_CELL_THRESHOLD, const Polygon2& v_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg) :CCPP_CELL_THRESHOLD(v_CCPP_CELL_THRESHOLD), m_arg(v_arg),
-		Next_best_target(v_map_start_mesh, v_map_end_mesh, v_ccpp_cell_distance)
+	Next_best_target_topology_exploration(
+		const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh,
+		int v_CCPP_CELL_THRESHOLD, const Polygon2& v_boundary, float v_ccpp_cell_distance, const Json::Value& v_arg
+	) :CCPP_CELL_THRESHOLD(v_CCPP_CELL_THRESHOLD), m_arg(v_arg), Next_best_target(v_map_start_mesh, v_map_end_mesh, v_ccpp_cell_distance)
 	{
-		//color_reconstruction = region_viz_color[2];
-		//color_occupied = region_viz_color[1];
-		//color_unobserved = region_viz_color[0];
 		color_reconstruction = cv::Vec3b(0, 255, 0);
 		color_occupied = cv::Vec3b(0, 255, 0);
 		color_unobserved = cv::Vec3b(205, 205, 209);

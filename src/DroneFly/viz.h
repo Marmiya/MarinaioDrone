@@ -333,7 +333,7 @@ public:
 
         s_cam = pangolin::OpenGlRenderState(
             pangolin::ProjectionMatrix(1920, 1080, 800, 450, 800, 450, 1, 99999),
-            pangolin::ModelViewLookAt(40, 40, 40, 0, 0, 0, pangolin::AxisZ)
+            pangolin::ModelViewLookAt(300, -700, 200, 400, -800, 100, pangolin::AxisZ)
         );
 
 

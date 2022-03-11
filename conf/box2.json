@@ -20,6 +20,7 @@
     // Reconstruction parameters
     "view_distance": 60,
     "safe_distance": 25,
+    "safe_height":10,
     "vertical_overlap": 0.6,
     "horizontal_overlap": 0.6,
     "split_overlap": 0.3,
@@ -27,7 +28,7 @@
 
     "fov": 37,
 
-    "HEIGHT_CLIP": 0, // Effect the clustering of the buildings. Do not important here, we manually select a good point cloud for clustering
+    "HEIGHT_CLIP": 0, 
     "MERGED_THRESHOLD": -1,
     "SPLIT_THRESHOLD": 100,
     "heightmap_resolution": 10,
@@ -51,7 +52,7 @@
     "MAP_START_UNREAL_Y": 80000.0,
     "MAP_START_UNREAL_Z": 20000.0,
     "MAP_END_UNREAL_X": 80000.0,
-    "MAP_END_UNREAL_Y": 150000.0,
+    "MAP_END_UNREAL_Y": 120000.0,
     "MAP_END_UNREAL_Z": -10000.0,
     "DRONE_STEP": 10,
     "CCPP_CELL_THRESHOLD": 5,

@@ -1477,32 +1477,35 @@ public:
 	}
 };
 
-void calculate_trajectory_intrinsic(const Json::Value& v_args, float& horizontal_step, float& vertical_step,
-                                    float& split_min_distance)
+void calculate_trajectory_intrinsic(
+	const Json::Value& v_args, double& horizontal_step,
+	double& vertical_step, double& split_min_distance
+)
 {
-	float view_distance = v_args["view_distance"].asFloat();
-	horizontal_step = view_distance * std::tanf(v_args["fov"].asFloat() / 180. * M_PI / 2) * 2 * (1. - v_args[
-		"horizontal_overlap"].asFloat());
-	float vertical_reception_field;
+	double view_distance = v_args["view_distance"].asDouble();
+	horizontal_step = view_distance *
+		std::tan(v_args["fov"].asDouble() / 180. * M_PI / 2) * 2 * (1. - v_args["horizontal_overlap"].asDouble());
+
+	double vertical_reception_field;
 	if (v_args["fov"].asFloat() < 60) // If pitch is fixed at 30 degree, then the threshold here is 90-30=60
 	{
-		float total_part = std::tan((30 + v_args["fov"].asFloat() / 2) / 180. * M_PI) * view_distance;
-		float first_part = std::tan((30 - v_args["fov"].asFloat() / 2) / 180. * M_PI) * view_distance;
+		double total_part = std::tan((30 + v_args["fov"].asDouble() / 2) / 180. * M_PI) * view_distance;
+		double first_part = std::tan((30 - v_args["fov"].asDouble() / 2) / 180. * M_PI) * view_distance;
 		vertical_reception_field = total_part - first_part;
 	}
 	else
 	{
-		float second_part = std::tan((30 + v_args["fov"].asFloat() / 2) / 180. * M_PI) * view_distance;
-		float first_part = std::tan((v_args["fov"].asFloat() / 2 - 30) / 180. * M_PI) * view_distance;
+		double second_part = std::tan((30 + v_args["fov"].asDouble() / 2) / 180. * M_PI) * view_distance;
+		double first_part = std::tan((v_args["fov"].asFloat() / 2 - 30) / 180. * M_PI) * view_distance;
 		vertical_reception_field = first_part + second_part;
 	}
 	if (v_args.isMember("ratio"))
-		vertical_reception_field = vertical_reception_field / v_args["ratio"].asFloat();
-	vertical_step = vertical_reception_field * (1 - v_args["vertical_overlap"].asFloat());
+		vertical_reception_field = vertical_reception_field / v_args["ratio"].asDouble();
+	vertical_step = vertical_reception_field * (1 - v_args["vertical_overlap"].asDouble());
 	//split_min_distance = (160 - 2 * view_distance) / (1 + v_args["split_overlap"].asFloat()); // 160 is the max view distance. Any point away from this distance is condidered to be a bad observation
 	//float duplicate_part = (160 - view_distance) * (1 - v_args["split_overlap"].asFloat());
 	//split_min_distance = (160 - duplicate_part - view_distance) * 2 + duplicate_part ;
-	split_min_distance = 2 * (std::sqrt(3) - 1) * view_distance - v_args["split_overlap"].asFloat() * (std::sqrt(3) - 1)
+	split_min_distance = 2 * (std::sqrt(3) - 1) * view_distance - v_args["split_overlap"].asDouble() * (std::sqrt(3) - 1)
 		* view_distance; // std::sqrt(3) is the cot(30), 30 is the view angle
 	LOG(INFO) << boost::format("Horizontal step:%f; Vertical step:%f; Split step:%f") % horizontal_step % vertical_step
 		% split_min_distance;
@@ -1687,7 +1690,7 @@ int main(int argc, char** argv)
 	if (!with_exploration && !with_reconstruction)
 		throw;
 
-	float vertical_step = 0, horizontal_step = 0, split_min_distance = 0; // Calculated trajectory intrinsic
+	double vertical_step = 0., horizontal_step = 0., split_min_distance = 0.; // Calculated trajectory intrinsic
 	calculate_trajectory_intrinsic(args, horizontal_step, vertical_step, split_min_distance);
 
 	std::vector<Building> total_buildings; // Map result
@@ -1731,7 +1734,6 @@ int main(int argc, char** argv)
 			tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
 
 			next_best_target->update_uncertainty(current_pos, total_buildings);
-			
 
 			comutil::checkpointTime(t, "Height map", software_parameter_is_log);
 
@@ -1743,24 +1745,14 @@ int main(int argc, char** argv)
 				// Input: Building vectors (std::vector<Building>)
 				// Output: Modified Building.trajectory and return the whole trajectory
 
-				if (targetFlag)
-				{
-					current_trajectory = generate_trajectory_tg(
-						args, total_buildings,
-						runtime_height_map,
-						//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
-						vertical_step, horizontal_step, split_min_distance, tree
-					);
-				}
-				else
-				{
-					current_trajectory = generate_trajectory(
-						args, total_buildings,
-						runtime_height_map,
-						//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
-						vertical_step, horizontal_step, split_min_distance, tree
-					);
-				}
+				
+				current_trajectory = generate_trajectory_tg(
+					args, total_buildings,
+					runtime_height_map,
+					//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
+					vertical_step, horizontal_step, split_min_distance, tree
+				);
+				
 
 				LOG(INFO) << "New trajectory!";
 
@@ -1897,10 +1889,6 @@ int main(int argc, char** argv)
 				}
 
 				total_passed_trajectory.push_back(next_viewpoint);
-
-				//std::ofstream pose("D:/test_data/" + std::to_string(cur_frame_id) + ".txt");
-				//pose << next_pos << next_direction_temp;
-				//pose.close();
 
 				double pitch = -std::atan2f(
 					next_direction[2],
@@ -2079,24 +2067,12 @@ int main(int argc, char** argv)
 				// Input: Building vectors (std::vector<Building>)
 				// Output: Modified Building.trajectory and return the whole trajectory
 
-				if (targetFlag)
-				{
-					current_trajectory = generate_trajectory_tg(
-						args, total_buildings,
-						runtime_height_map,
-						//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
-						vertical_step, horizontal_step, split_min_distance, tree
-					);
-				}
-				else
-				{
-					current_trajectory = generate_trajectory(
-						args, total_buildings,
-						runtime_height_map,
-						//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
-						vertical_step, horizontal_step, split_min_distance, tree
-					);
-				}
+				current_trajectory = generate_trajectory(
+					args, total_buildings,
+					runtime_height_map,
+					//args["mapper"].asString() == "gt_mapper" ? runtime_height_map : runtime_height_map,
+					vertical_step, horizontal_step, split_min_distance, tree
+				);
 
 				LOG(INFO) << "New trajectory!";
 

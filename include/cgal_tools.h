@@ -21,6 +21,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h>
+#include <CGAL/Polygon_mesh_slicer.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/poisson_surface_reconstruction.h>
 #include <CGAL/property_map.h>
@@ -57,7 +58,6 @@ using Tetrahedron3 = K::Tetrahedron_3;
 using Triangle3 = K::Triangle_3;
 using Vector3 = K::Vector_3;
 using PointSet3 = CGAL::Point_set_3<Point3, Vector3>;
-// For intersection_tools.h
 using Primitive = CGAL::AABB_face_graph_triangle_primitive<SurfaceMesh, CGAL::Default, CGAL::Tag_false>;
 using AABB_Traits = CGAL::AABB_traits<K, Primitive>;
 using Tree = CGAL::AABB_tree<AABB_Traits>;
@@ -65,6 +65,8 @@ using Primitive_id = Tree::Primitive_id;
 using KDTreeTraits = CGAL::Search_traits_3<K>;
 using Neighbor_search = CGAL::Orthogonal_k_neighbor_search<KDTreeTraits>;
 using KDTree = Neighbor_search::Tree;
+using Polyline_type = std::vector<Point3>;
+using Polylines = std::list<Polyline_type>;
 
 namespace cgaltools {
 
