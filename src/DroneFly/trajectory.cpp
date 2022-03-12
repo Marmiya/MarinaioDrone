@@ -384,7 +384,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		double maxZ = curbuilding.bounding_box_3d.box.max().z();
 		double maxFlyZ = maxZ + 15.;
 		CGAL::Polygon_mesh_slicer<SurfaceMesh, K> slicer(curbuilding.buildingMesh);
-		
+
 		std::vector<double> sliceZ;
 		double cursliceZ = safe_height;
 		while (true)
@@ -404,24 +404,25 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			}
 		}
 		
-		Polylines slices;
-		for (const auto& i : sliceZ)
-		{
-			slicer(K::Plane_3(0, 0, 1, i), std::back_inserter(slices));
-			LOG(INFO) << i <<"    " << slices.size();
-		}
 		std::vector<Polygon2> ploygons;
 		PointSet3 slicesPts;
-		for (const auto& i : slices)
+		for (const auto& i : sliceZ)
 		{
+			Polylines slices;
+			slicer(Plane3(0, 0, 1, -i), std::back_inserter(slices));
+
 			std::vector<Point2> tpts2;
-			for (const auto& j : i)
+			for (const auto& j : slices)
 			{
-				tpts2.push_back(std::move(Point2(j.x(),j.y())));
-				slicesPts.insert(j);
+				for (const auto& i : j) 
+				{
+					tpts2.push_back(std::move(Point2(i.x(), i.y())));
+					slicesPts.insert(i);
+				}
 			}
 			ploygons.push_back(Polygon2(tpts2.begin(), tpts2.end()));
 		}
+
 		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_slicesPts.ply", slicesPts);
 	}
 
