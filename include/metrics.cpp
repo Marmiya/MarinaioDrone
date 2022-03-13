@@ -9,7 +9,7 @@ std::vector<Eigen::Vector3d> sample_points_on_sphere(const int v_vertical_number
 	for (int i = 0; i < v_vertical_number; ++i)
 	{
 		double theta = i * theta_interval;
-		int m = std::max(std::floor(v_vertical_number * std::sin(theta)), 1.);
+		int m = static_cast<int>(std::max(std::floor(v_vertical_number * std::sin(theta)), 1.));
 		double fi_interval = 2 * M_PI / m;
 		for (int j = 0; j < m; ++j)
 		{
@@ -558,8 +558,8 @@ double compute_reconstructability_lalala(const std::vector<Viewpoint>& v_viewpoi
 
 	// Log
 	if (v_log_txt) {
-		int resolution_x = v_intrinsic_matrix(0, 2) * 2;
-		int resolution_y = v_intrinsic_matrix(1, 2) * 2;
+		int resolution_x = static_cast<int>(v_intrinsic_matrix(0, 2) * 2);
+		int resolution_y = static_cast<int>(v_intrinsic_matrix(1, 2) * 2);
 
 		std::string out_str = "";
 		out_str += std::to_string(viewpoints_after_reduce_redundancy.size()) + "\n";

@@ -192,11 +192,11 @@ namespace modeltools {
 		using namespace cgaltools;
 		PointSet3 t;
 		double dis = std::sqrt(CGAL::squared_distance(base, survey));
-		size_t num = dis / 6;
+		size_t num = static_cast<size_t>(dis / 6);
 		double ratio = 6 / dis;
 		Vector3 vec = Vector3(base, survey);
 		for (size_t i = 0; i <= num; i++) {
-			t.insert(base + ratio * vec * i);
+			t.insert(base + ratio * vec * static_cast<double>(i));
 		}
 		return t;
 	}
@@ -832,16 +832,16 @@ namespace modeltools {
 				tinyobj::index_t idx1 = shapes[s].mesh.indices[index_offset + 1];
 				tinyobj::index_t idx2 = shapes[s].mesh.indices[index_offset + 2];
 
-				float vertex0[3] = { attrib.vertices[3 * idx0.vertex_index + 0] ,attrib.vertices[3 * idx0.vertex_index + 1] ,attrib.vertices[3 * idx0.vertex_index + 2] };
-				float vertex1[3] = { attrib.vertices[3 * idx1.vertex_index + 0] ,attrib.vertices[3 * idx1.vertex_index + 1] ,attrib.vertices[3 * idx1.vertex_index + 2] };
-				float vertex2[3] = { attrib.vertices[3 * idx2.vertex_index + 0] ,attrib.vertices[3 * idx2.vertex_index + 1] ,attrib.vertices[3 * idx2.vertex_index + 2] };
+				double vertex0[3] = { attrib.vertices[3 * idx0.vertex_index + 0] ,attrib.vertices[3 * idx0.vertex_index + 1] ,attrib.vertices[3 * idx0.vertex_index + 2] };
+				double vertex1[3] = { attrib.vertices[3 * idx1.vertex_index + 0] ,attrib.vertices[3 * idx1.vertex_index + 1] ,attrib.vertices[3 * idx1.vertex_index + 2] };
+				double vertex2[3] = { attrib.vertices[3 * idx2.vertex_index + 0] ,attrib.vertices[3 * idx2.vertex_index + 1] ,attrib.vertices[3 * idx2.vertex_index + 2] };
 
-				int xmin_item = (std::min({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution;
-				int ymin_item = (std::min({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution;
-				int xmax_item = (std::max({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution;
-				int ymax_item = (std::max({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution;
+				int xmin_item = static_cast<int>((std::min({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution);
+				int ymin_item = static_cast<int>((std::min({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution);
+				int xmax_item = static_cast<int>((std::max({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution);
+				int ymax_item = static_cast<int>((std::max({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution);
 
-				typedef CGAL::Simple_cartesian<int> K;
+				typedef CGAL::Simple_cartesian<double> K;
 				CGAL::Triangle_2<K> t1(
 					CGAL::Point_2<K>((vertex0[ref_axis1] - min_box[ref_axis1]) / resolution, (vertex0[ref_axis2] - min_box[ref_axis2]) / resolution),
 					CGAL::Point_2<K>((vertex1[ref_axis1] - min_box[ref_axis1]) / resolution, (vertex1[ref_axis2] - min_box[ref_axis2]) / resolution),
@@ -931,8 +931,8 @@ namespace modeltools {
 				std::min_element(buildings[building_idx].xs.begin(), buildings[building_idx].xs.end()));
 			int y_center = *std::max_element(buildings[building_idx].ys.begin(), buildings[building_idx].ys.end()) + (*
 				std::min_element(buildings[building_idx].ys.begin(), buildings[building_idx].ys.end()));
-			x_center = x_center / 2 * resolution + min_box[ref_axis1];
-			y_center = y_center / 2 * resolution + min_box[ref_axis2];
+			x_center = static_cast<int>(x_center / 2 * resolution + min_box[ref_axis1]);
+			y_center = static_cast<int>(y_center / 2 * resolution + min_box[ref_axis2]);
 
 			std::map<Eigen::VectorXf, int> vertex_already_assigned;
 
@@ -1289,7 +1289,7 @@ namespace modeltools {
 			float area = CGAL::Polygon_mesh_processing::face_area(it_face, v_mesh);
 
 			float face_samples = area * point_per_area;
-			uint num_face_samples = face_samples;
+			uint num_face_samples = static_cast<uint>(face_samples);
 
 			if (dist(gen) < (face_samples - static_cast<float>(num_face_samples))) {
 				num_face_samples += 1;

@@ -15,11 +15,11 @@
 #include <CGAL/approximated_offset_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/cluster_point_set.h>
-#include <CGAL/draw_polygon_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/grid_simplify_point_set.h>
 #include <CGAL/Plane_3.h>
+#include <CGAL/point_generators_2.h>
 #include <CGAL/Point_set_2.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Polygon_2.h>
@@ -30,6 +30,7 @@
 #include <CGAL/poisson_surface_reconstruction.h>
 #include <CGAL/property_map.h>
 #include <CGAL/Random.h>
+#include <CGAL/random_selection.h>
 #include <CGAL/Surface_mesh/Surface_mesh.h>
 
 #include <opencv2/opencv.hpp>

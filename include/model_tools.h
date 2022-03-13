@@ -257,10 +257,10 @@ namespace modeltools{
             auto xmax_point = std::max_element(points, points + 4, [](const cv::Point2f& item1, const cv::Point2f& item2) {return item1.x < item2.x; });
             auto ymax_point = std::max_element(points, points + 4, [](const cv::Point2f& item1, const cv::Point2f& item2) {return item1.y < item2.y; });
 
-            int xmin = ((*xmin_point).x - m_start[0]) / m_resolution;
-            int ymin = ((*ymin_point).y - m_start[1]) / m_resolution;
-            int xmax = ((*xmax_point).x - m_start[0]) / m_resolution + 1;
-            int ymax = ((*ymax_point).y - m_start[1]) / m_resolution + 1;
+            int xmin = static_cast<int>(((*xmin_point).x - m_start[0]) / m_resolution);
+            int ymin = static_cast<int>(((*ymin_point).y - m_start[1]) / m_resolution);
+            int xmax = static_cast<int>(((*xmax_point).x - m_start[0]) / m_resolution + 1);
+            int ymax = static_cast<int>(((*ymax_point).y - m_start[1]) / m_resolution + 1);
             xmin = std::max(xmin, 0);
             xmax = std::min(xmax, m_map.cols - 1);
             ymin = std::max(ymin, 0);
