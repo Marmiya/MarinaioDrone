@@ -1,25 +1,19 @@
 #include <argparse/argparse.hpp>
 #include <cpr/cpr.h>
-
 #include <glog/logging.h>
 #include <boost/format.hpp>
-#include <CGAL/cluster_point_set.h>
-#include <CGAL/Boolean_set_operations_2.h>
 #include <json/reader.h>
-#include <algorithm>
 #include <regex>
+#include <opencv2/features2d.hpp>
 
-#include "model_tools.h"
 #include "intersection_tools.h"
 #include "map_util.h"
-#include "viz.h"
-#include "building.h"
 #include "airsim_control.h"
 #include "metrics.h"
-#include "trajectory.h"
+
+#include "viz.h"
 #include "next_best_target.h"
-#include "common_util.h"
-#include <opencv2/features2d.hpp>
+
 
 using RotatedBox = cgaltools::RotatedBox;
 

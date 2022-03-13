@@ -1,11 +1,9 @@
 #pragma once
 
-#include "map_util.h"
-#include "building.h"
-#include "cgal_tools.h"
-#include "common_util.h"
 #include <glog/logging.h>
 
+#include "map_util.h"
+#include "building.h"
 #include "trajectory.h"
 
 enum Motion_status { initialization, exploration, reconstruction, done, final_check, reconstruction_in_exploration };

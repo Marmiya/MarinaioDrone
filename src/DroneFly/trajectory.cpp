@@ -1,4 +1,5 @@
 #include "trajectory.h"
+#include <CGAL/draw_polygon_2.h>
 
 void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
 {
@@ -421,6 +422,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 				}
 			}
 			ploygons.push_back(Polygon2(tpts2.begin(), tpts2.end()));
+			CGAL::draw(ploygons.back());
 		}
 
 		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_slicesPts.ply", slicesPts);

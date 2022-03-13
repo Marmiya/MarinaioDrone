@@ -2,12 +2,9 @@
 #include <eigen3/Eigen/Dense>
 #include <vector>
 #include <unordered_set>
-#include <iostream>
-#include <fstream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "common_util.h"
 #include "building.h"
 #include "map_util.h"
 #include <glog/logging.h>

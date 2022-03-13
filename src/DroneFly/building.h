@@ -1,8 +1,5 @@
 #pragma once
 #include "model_tools.h"
-#include <CGAL/point_generators_2.h>
-#include <CGAL/algorithm.h>
-#include <CGAL/random_selection.h>
 
 struct MyViewpoint
 {
@@ -28,7 +25,6 @@ struct MyViewpoint
 			180. / M_PI;
 		yaw = std::atan2f(direction[1], direction[0]) * 180. / M_PI;
 	}
-
 	
 };
 

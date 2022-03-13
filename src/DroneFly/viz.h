@@ -7,20 +7,12 @@
 #include <thread>
 #include <mutex>
 
-#include "model_tools.h"
 #include "building.h"
-#include "cgal_tools.h"
 
 
 struct PANGOLIN_EXPORT MyHandler : pangolin::Handler3D {
     MyHandler(pangolin::OpenGlRenderState& cam_state, pangolin::AxisDirection enforce_up = pangolin::AxisNone, float trans_scale = 0.01f, float zoom_fraction = PANGO_DFLT_HANDLER3D_ZF) :
         Handler3D(cam_state, enforce_up, trans_scale, zoom_fraction){}
-    //void Mouse(pangolin::View&, pangolin::MouseButton button, int x, int y, bool pressed, int button_state)
-    //{
-	    
-    //}
-    //void MouseMotion(pangolin::View&, int x, int y, int button_state);
-
 };
 
 enum class RenderMode { uv = 0, tex, color, normal, matcap, vertex, num_modes };
