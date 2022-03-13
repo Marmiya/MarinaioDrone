@@ -8,9 +8,6 @@
 #include <queue>
 #include <fstream>
 #include <random>
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include <corecrt_math_defines.h>
 
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>

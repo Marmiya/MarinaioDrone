@@ -1,6 +1,12 @@
 #ifndef COMMON_UTIL
 #define COMMON_UTIL
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
+#include <cmath>
+#include <corecrt_math_defines.h>
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -61,7 +67,7 @@ namespace comutil {
 	void debug_img(std::vector<cv::Mat>& vImgs);
 
     // Sleep x second.
-    void override_sleep(float seconds);
+    void override_sleep(double seconds);
     std::vector<cv::Vec3b> get_color_table_bgr();
     std::vector<cv::Vec3b> get_color_table_bgr2();
 

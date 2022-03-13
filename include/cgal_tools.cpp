@@ -455,7 +455,7 @@ namespace cgaltools {
             seg->visit();
 
             Point3 base = seg->getSeg().vertex(0);
-            Point3 far = seg->getSeg().vertex(1);
+            Point3 farp = seg->getSeg().vertex(1);
             int onIntersection = 0, lastIntersection = 0;
             std::vector<std::pair<Point3, std::shared_ptr<SegmentLN>>> intersections;
 
@@ -510,12 +510,12 @@ namespace cgaltools {
                 if (seg->ifvisited() == 1) {
                     if (fd > sd) {
                         profile->setNext(std::make_shared<SegmentLN>(
-                            Segment3(intersections.begin()->first, far)));
+                            Segment3(intersections.begin()->first, farp)));
 
                     }
                     else {
                         profile->setNext(std::make_shared<SegmentLN>(
-                            Segment3((intersections.begin() + 1)->first, far)));
+                            Segment3((intersections.begin() + 1)->first, farp)));
 
                     }
                     seg = seg->getNext();

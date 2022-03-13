@@ -5,13 +5,17 @@
 
 #include <tuple>
 #include <iostream>
-#include <corecrt_math.h>
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <corecrt_math_defines.h>
 
 #include <boost/core/swap.hpp>
 
 #include <CGAL/AABB_tree.h>
 #include <CGAL/approximated_offset_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/cluster_point_set.h>
+#include <CGAL/draw_polygon_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/grid_simplify_point_set.h>

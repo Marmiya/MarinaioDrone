@@ -32,10 +32,10 @@ void writeItem_1216(const std::string& vPath, const std::vector<CGAL::Bbox_2> bu
 		addTextNode(doc, objectElement, "difficult", 0);
 
 		XMLElement* bndElement = doc.NewElement("bndbox");
-		addTextNode(doc, bndElement, "xmin", item.xmin());
-		addTextNode(doc, bndElement, "ymin", item.ymin());
-		addTextNode(doc, bndElement, "xmax", item.xmax());
-		addTextNode(doc, bndElement, "ymax", item.ymax());
+		addTextNode(doc, bndElement, "xmin", static_cast<int>(item.xmin()));
+		addTextNode(doc, bndElement, "ymin", static_cast<int>(item.ymin()));
+		addTextNode(doc, bndElement, "xmax", static_cast<int>(item.xmax()));
+		addTextNode(doc, bndElement, "ymax", static_cast<int>(item.ymax()));
 
 		objectElement->InsertEndChild(bndElement);
 		root->InsertEndChild(objectElement);
@@ -93,7 +93,7 @@ std::vector<cv::Rect> getBoundingBoxes(const std::vector<cv::Point>& pixel_point
 				}
 				else
 				{
-					label[y][x] = min_label;
+					label[y][x] = static_cast<int>(min_label);
 					// Merge Neighbor relation
 					for (int i = 0; i < neighbors.size(); i++)
 					{

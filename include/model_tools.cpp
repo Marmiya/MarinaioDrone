@@ -250,7 +250,7 @@ namespace modeltools {
 			fprintf(fp, "Ks %f %f %f\n", mat.specular[0], mat.specular[1], mat.specular[2]);
 			fprintf(fp, "Kt %f %f %f\n", mat.transmittance[0], mat.specular[1], mat.specular[2]);
 			fprintf(fp, "Ke %f %f %f\n", mat.emission[0], mat.emission[1], mat.emission[2]);
-			fprintf(fp, "d %f\n", 1);
+			fprintf(fp, "d %f\n", 1.);
 			fprintf(fp, "Ns %f\n", mat.shininess);
 			fprintf(fp, "Ni %f\n", mat.ior);
 			fprintf(fp, "illum %d\n", mat.illum);
@@ -322,7 +322,7 @@ namespace modeltools {
 
 			if (shapes[i].name.empty())
 			{
-				fprintf(fp, "g %s\n", std::to_string(i));
+				fprintf(fp, "g %s\n", std::to_string(i).c_str());
 			}
 			else
 			{
@@ -707,8 +707,11 @@ namespace modeltools {
 					{
 						const tinyobj::index_t& ref = shape.mesh.indices[k + l];
 						// v0/t0/vn0
-						fprintf(fp, " %d/%d/%d", ref.vertex_index + 1 + vertex_already_assigned,
-							ref.texcoord_index + 1 + tex_already_assigned, ref.normal_index + 1 + vertex_already_assigned);
+						fprintf(fp, " %d/%d/%d",
+							static_cast<int>(ref.vertex_index + 1 + vertex_already_assigned),
+							static_cast<int>(ref.texcoord_index + 1 + tex_already_assigned),
+							static_cast<int>(ref.normal_index + 1 + vertex_already_assigned)
+						);
 					}
 					fprintf(fp, "\n");
 				}
