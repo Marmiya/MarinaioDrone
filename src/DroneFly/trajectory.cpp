@@ -336,6 +336,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	const double view_distance = v_params["view_distance"].asDouble();
 	const double safe_distance = v_params["safe_distance"].asDouble();
 	const double safe_height = v_params["safe_height"].asDouble();
+	const double viewLengthStep = v_params["view_length_step"].asDouble();
 
 	std::vector<MyViewpoint> total_trajectory;
 
@@ -405,33 +406,151 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			}
 		}
 		
-		std::vector<Polygon2> ploygons;
+		std::vector<std::vector<Polygon2>> slicesPloygons;
 		PointSet3 slicesPts;
-		for (const auto& i : sliceZ)
+//#pragma omp parallel for
+		for (int i = 0; i < sliceZ.size(); i++)
 		{
+			std::vector<Polygon2> tplgs;
 			Polylines slices;
-			slicer(Plane3(0, 0, 1, -i), std::back_inserter(slices));
-
-			std::vector<Point2> tpts2;
+			slicer(Plane3(0, 0, 1, -sliceZ.at(i)), std::back_inserter(slices));
+			
 			for (const auto& j : slices)
 			{
-				for (const auto& i : j) 
+				std::vector<Point2> tpts2;
+				for (const auto& i : j)
 				{
-					tpts2.push_back(std::move(Point2(i.x(), i.y())));
+					tpts2.push_back(Point2(i.x(), i.y()));
 					slicesPts.insert(i);
 				}
+				
+				Polygon2 plg(tpts2.begin(), tpts2.end());
+				if (plg.area() > v_params["ignore_are"].asDouble()) {
+					tplgs.push_back(plg);
+				}
 			}
-			ploygons.push_back(Polygon2(tpts2.begin(), tpts2.end()));
-			CGAL::draw(ploygons.back());
+			slicesPloygons.push_back(tplgs);
 		}
-
 		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_slicesPts.ply", slicesPts);
+
+		PointSet3 viewpts;
+
+		for (int slice_i = 0; slice_i < sliceZ.size(); slice_i++)
+		{
+			std::vector<Polygon2> tplgs(slicesPloygons.at(slice_i).size());
+			const double z = sliceZ.at(slice_i);
+
+			for (auto& j : slicesPloygons.at(slice_i))
+			{
+				int ptsSize = static_cast<int>(j.size());
+				
+				std::vector<double> sumx(ptsSize);
+				std::vector<double> sumy(ptsSize);
+#pragma omp parallel for
+				for (int i = 0; i < ptsSize; i++)
+				{
+					sumx[i] = j.vertex(i).x();
+					sumy[i] = j.vertex(i).y();
+				}
+				Point2 centerPt(
+					std::reduce(sumx.begin(), sumx.end()) / static_cast<double>(ptsSize),
+					std::reduce(sumy.begin(), sumy.end()) / static_cast<double>(ptsSize)
+				);
+
+				std::vector<Point2> outerPts;
+
+				for (int idxp = 0; idxp < ptsSize; idxp++)
+				{
+					const Point2 tp = j.vertex(idxp);
+					Point2 lastp, nextp;
+					if (idxp == 0)
+					{
+						lastp = j.vertex(ptsSize - 1);
+						nextp = j.vertex(idxp + 1);
+					}
+					else if (idxp == ptsSize - 1)
+					{
+						lastp = j.vertex(idxp - 1);
+						nextp = j.vertex(0);
+					}
+					else
+					{
+						lastp = j.vertex(idxp - 1);
+						nextp = j.vertex(idxp + 1);
+					}
+					const Vector2 lastDirection = tp - lastp;
+					const Vector2 nextDirection = tp - nextp;
+					Vector2 direction = lastDirection + nextDirection;
+					direction = direction / std::sqrt(direction.squared_length());
+					if (direction * (centerPt - tp) > 0.)
+					{
+						direction = -direction;
+					}
+
+					double viewLength = safe_distance;
+					Point2 newp = tp + direction * viewLength;
+
+					while (viewLength < view_distance)
+					{
+						if (std::sqrt(v_tree.squared_distance(Point3(newp.x(), newp.y(), z))) < safe_distance)
+						{
+							viewLength += viewLengthStep;
+							newp = newp + direction * viewLengthStep;
+							//LOG(INFO) << viewLength;
+						}
+						else
+						{
+							break;
+						}
+					}
+					// todo: need a follow-up process.
+					if (viewLength < view_distance)
+					{
+						outerPts.push_back(newp);
+						viewpts.insert(Point3(newp.x(), newp.y(), z));
+					}
+				}
+
+				LOG(INFO) << outerPts.size();
+				tplgs.emplace_back(outerPts.begin(), outerPts.end());
+			}
+
+			if (tplgs.size() > 1) {
+				CGAL::Polygon_with_holes_2<K> sumPolygon;
+				while (tplgs.size() > 1)
+				{
+					std::vector<Point2> localpts;
+					CGAL::join(*tplgs.begin(), *(tplgs.begin() + 1), sumPolygon);
+					tplgs.erase(tplgs.begin(), tplgs.begin() + 2);
+					if (sumPolygon.has_holes())
+					{
+						LOG(INFO) << "At least a hole exists.";
+					}
+					else {
+						for (const auto& i : sumPolygon.outer_boundary())
+						{
+							localpts.push_back(i);
+						}
+						tplgs.emplace_back(localpts.begin(), localpts.end());
+					}
+				}
+			}
+			else
+			{
+				
+			}
+			//CGAL::draw(*tplgs.begin());
+			
+			
+		}
+		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + "_viewPts.ply", viewpts);
+
 	}
 
-
-
-
 	/*
+
+
+
 	for (int id_building = 0; id_building < v_buildings.size(); ++id_building)
 	{
 

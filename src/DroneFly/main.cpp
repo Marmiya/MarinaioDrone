@@ -315,316 +315,172 @@ public:
 	std::vector<Building> m_buildings_target;
 	std::vector<Building> m_buildings_safe_place;
 
-	GT_mapper(const Json::Value& args): Mapper(args)
+	GT_mapper(const Json::Value& args) : Mapper(args)
 	{
-		//if constexpr (false)
-		//{
-		//	m_buildings_target.resize(3);
-		//	m_buildings_target[0].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(130 * 4 - 10, 130 * 6 - 10, 0),
-		//		Eigen::Vector3d(130 * 4 + 10, 130 * 6 + 10, 50)
-		//	));
-		//	m_buildings_target[1].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(130 * 8 - 10, 130 * 3 - 10, 0),
-		//		Eigen::Vector3d(130 * 8 + 10, 130 * 3 + 10, 50)
-		//	));
-		//	m_buildings_target[2].bounding_box_3d = RotatedBox(Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(130 * 6 - 10, 130 * 1 - 10, 0),
-		//		Eigen::Vector3d(130 * 6 + 10, 130 * 1 + 10, 50)
-		//	));
-		//
-		//
-		//	for (int cluster_id = 0; cluster_id < m_buildings_target.size(); ++cluster_id)
-		//	{
-		//		Building& current_building = m_buildings_target[cluster_id];
-		//		current_building.boxes.push_back(current_building.bounding_box_3d);
-		//	}
-		//	m_buildings_safe_place = m_buildings_target;
-		//}
-		//if constexpr (false) // Huiwen Building
-		//{
-		//	m_buildings_target.resize(6);
-		//	m_buildings_target[0].bounding_box_3d.cv_box = cv::RotatedRect(
-		//		cv::Point2f(-128, 62),
-		//		cv::Point2f(-128, 20),
-		//		cv::Point2f(6, 20)
-		//	);
-		//	auto cv_box = m_buildings_target[0].bounding_box_3d.cv_box;
-		//	m_buildings_target[0].bounding_box_3d.box = Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(cv_box.center.x - cv_box.size.width / 2, cv_box.center.y - cv_box.size.height / 2, 5),
-		//		Eigen::Vector3d(cv_box.center.x + cv_box.size.width / 2, cv_box.center.y + cv_box.size.height / 2, 38)
-		//	);
-		//	m_buildings_target[0].bounding_box_3d.angle = 0.;
-		//	m_buildings_target[1].bounding_box_3d.cv_box = cv::RotatedRect(
-		//		cv::Point2f(-10.5951f, 31.6572f),
-		//		cv::Point2f(84.9932f, -39.2679f),
-		//		cv::Point2f(94.7782f, -26.0804f)
-		//	);
-		//	cv_box = m_buildings_target[1].bounding_box_3d.cv_box;
-		//	m_buildings_target[1].bounding_box_3d.angle = cv_box.angle / 180. * M_PI;
-		//	m_buildings_target[1].bounding_box_3d.box = Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(cv_box.center.x - cv_box.size.width / 2, cv_box.center.y - cv_box.size.height / 2, 5),
-		//		Eigen::Vector3d(cv_box.center.x + cv_box.size.width / 2, cv_box.center.y + cv_box.size.height / 2, 38)
-		//	);
-		//	m_buildings_target[2].bounding_box_3d.cv_box = cv::RotatedRect(
-		//		cv::Point2f(78, -14),
-		//		cv::Point2f(93, 6),
-		//		cv::Point2f(109, -6)
-		//	);
-		//	cv_box = m_buildings_target[2].bounding_box_3d.cv_box;
-		//	m_buildings_target[2].bounding_box_3d.angle = cv_box.angle / 180. * M_PI;
-		//	m_buildings_target[2].bounding_box_3d.box = Eigen::AlignedBox3d(
-		//		Eigen::Vector3d(cv_box.center.x - cv_box.size.width / 2, cv_box.center.y - cv_box.size.height / 2, 5),
-		//		Eigen::Vector3d(cv_box.center.x + cv_box.size.width / 2, cv_box.center.y + cv_box.size.height / 2, 38)
-		//	);
-		//	m_buildings_target[3].bounding_box_3d = RotatedBox(
-		//		Eigen::AlignedBox3d(
-		//			Eigen::Vector3d(-60, 80, 5),
-		//			Eigen::Vector3d(73, 135, 37)
-		//		), 3
-		//	);
-		//	m_buildings_target[4].bounding_box_3d = RotatedBox(
-		//		Eigen::AlignedBox3d(
-		//			Eigen::Vector3d(34, 17, 5),
-		//			Eigen::Vector3d(137, 66, 34)
-		//		), -36.
-		//	);
-		//	m_buildings_target[5].bounding_box_3d = RotatedBox(
-		//		Eigen::AlignedBox3d(
-		//			Eigen::Vector3d(102, 64, 5),
-		//			Eigen::Vector3d(174, 108, 70)
-		//		), -37.
-		//	);
-		//
-		//
-		//	for (int cluster_id = 0; cluster_id < m_buildings_target.size(); ++cluster_id)
-		//	{
-		//		Building& current_building = m_buildings_target[cluster_id];
-		//		current_building.boxes.push_back(current_building.bounding_box_3d);
-		//	}
-		//	m_buildings_safe_place = m_buildings_target;
-		//}
-		//else if constexpr (false)
-		//{
-		//	m_buildings_target.resize(2);
-		//	m_buildings_target[0].bounding_box_3d = RotatedBox(
-		//		Eigen::AlignedBox3d(
-		//			Eigen::Vector3d(486, -978, 3),
-		//			Eigen::Vector3d(647, -914, 48)
-		//		), 49
-		//	);
-		//	m_buildings_target[1].bounding_box_3d = RotatedBox(
-		//		Eigen::AlignedBox3d(
-		//			Eigen::Vector3d(609, -884, 3),
-		//			Eigen::Vector3d(742, -830, 25)
-		//		), 0
-		//	);
-		//
-		//
-		//	for (int cluster_id = 0; cluster_id < m_buildings_target.size(); ++cluster_id)
-		//	{
-		//		Building& current_building = m_buildings_target[cluster_id];
-		//		current_building.boxes.push_back(current_building.bounding_box_3d);
-		//	}
-		//	m_buildings_safe_place = m_buildings_target;
-		//}
-		//else if constexpr (false)
-		//{
-		//	tinyobj::attrib_t attr;
-		//	std::vector<tinyobj::shape_t> shapes;
-		//	std::vector<tinyobj::material_t> mtl;
-		//	std::tie(attr, shapes, mtl) = modeltools::load_obj(args["model_path"].asString());
-        //
-		//	m_buildings_target.resize(shapes.size());
-		//	for (int cluster_id = 0; cluster_id < shapes.size(); ++cluster_id)
-		//	{
-		//		Building& current_building = m_buildings_target[cluster_id];
-		//		size_t index_offset = 0;
-		//		for (int i_face = 0; i_face < shapes[cluster_id].mesh.num_face_vertices.size(); ++i_face)
-		//		{
-		//			for (int i_vertice = 0; i_vertice < shapes[cluster_id].mesh.num_face_vertices[i_face]; ++i_vertice)
-		//			{
-		//				tinyobj::index_t idx = shapes[cluster_id].mesh.indices[index_offset + i_vertice];
-        //
-		//				current_building.points_world_space.insert(Point3(
-		//					attr.vertices[3 * idx.vertex_index + 0],
-		//					attr.vertices[3 * idx.vertex_index + 1],
-		//					attr.vertices[3 * idx.vertex_index + 2]
-		//				));
-		//			}
-		//			index_offset += shapes[cluster_id].mesh.num_face_vertices[i_face];
-		//		}
-		//		current_building.bounding_box_3d = cgaltools::get_bounding_box(current_building.points_world_space);
-		//		current_building.boxes.push_back(current_building.bounding_box_3d);
-		//	}
-		//	m_buildings_safe_place = m_buildings_target;
-		//}
-		//else
-		//{
-			PointSet3 original_point_cloud(true);
-			std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
-			if (boost::filesystem::is_directory(args["model_path"].asString()))
-			{
-				boost::filesystem::directory_iterator end_iter;
-				for (fs::directory_iterator iter(args["model_path"].asString()); iter != end_iter; ++iter)
-				{
-					CGAL::Point_set_3<Point3, Vector3> pc_item;
-					CGAL::IO::read_point_set(iter->path().string(), pc_item);
-					pcs.push_back(pc_item);
-				}
-				//CGAL::read_ply_point_set(std::ifstream("D:\\datasets\\Realcity\\Shenzhen\\sample_500000.ply", std::ios::binary), original_point_cloud);
-				//CGAL::Point_set_3<Point_3, Vector_3> point_cloud(original_point_cloud);
 
-				m_buildings_safe_place.resize(pcs.size());
-				for (int cluster_id = 0; cluster_id < pcs.size(); ++cluster_id)
+		PointSet3 original_point_cloud(true);
+		std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
+		if (boost::filesystem::is_directory(args["model_path"].asString()))
+		{
+			boost::filesystem::directory_iterator end_iter;
+			for (fs::directory_iterator iter(args["model_path"].asString()); iter != end_iter; ++iter)
+			{
+				CGAL::Point_set_3<Point3, Vector3> pc_item;
+				CGAL::IO::read_point_set(iter->path().string(), pc_item);
+				pcs.push_back(pc_item);
+			}
+			//CGAL::read_ply_point_set(std::ifstream("D:\\datasets\\Realcity\\Shenzhen\\sample_500000.ply", std::ios::binary), original_point_cloud);
+			//CGAL::Point_set_3<Point_3, Vector_3> point_cloud(original_point_cloud);
+
+			m_buildings_safe_place.resize(pcs.size());
+			for (int cluster_id = 0; cluster_id < pcs.size(); ++cluster_id)
+			{
+				Building& current_building = m_buildings_safe_place[cluster_id];
+				bool add_as_target = true;
+				for (PointSet3::Index idx : pcs[cluster_id])
 				{
-					Building& current_building = m_buildings_safe_place[cluster_id];
-					bool add_as_target = true;
-					for (PointSet3::Index idx : pcs[cluster_id])
+					current_building.points_world_space.insert(pcs[cluster_id].point(idx));
+					Point2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
+					if (m_boundary.size() > 0)
 					{
-						current_building.points_world_space.insert(pcs[cluster_id].point(idx));
-						Point2 p(pcs[cluster_id].point(idx).x(), pcs[cluster_id].point(idx).y());
-						if (m_boundary.size() > 0)
-						{
-							for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end();
-							     ++iter_segment)
-								if (CGAL::squared_distance(p, *iter_segment) < 00 * 00)
-									add_as_target = false;
-							if (m_boundary.bounded_side(p) != CGAL::ON_BOUNDED_SIDE)
+						for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end();
+							++iter_segment)
+							if (CGAL::squared_distance(p, *iter_segment) < 00 * 00)
 								add_as_target = false;
-						}
-					}
-					//current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
-					current_building.bounding_box_3d = cgaltools::get_bounding_box_rotated(
-						current_building.points_world_space);
-					current_building.boxes.push_back(current_building.bounding_box_3d);
-
-					if (add_as_target)
-						m_buildings_target.push_back(current_building);
-				}
-				return;
-			}
-
-			CGAL::IO::read_point_set(args["model_path"].asString(), original_point_cloud);
-			LOG(INFO) << "Model reading finished.";
-
-			CGAL::Point_set_3<Point3, Vector3> point_cloud(original_point_cloud);
-			if (modeltools::liftModel(point_cloud))
-			{
-				CGAL::IO::write_point_set(args["tlogpath"].asString() + "liftedPTS.ply", point_cloud);
-				if (args["ori_lift"].asBool()) {
-					SurfaceMesh msh = modeltools::read_model(args["obj_path"].asString());
-					double lowestPoint = 9999999.;
-					for (const auto& i : msh.points())
-					{
-						lowestPoint = i.z() < lowestPoint ? i.z() : lowestPoint;
-					}
-					LOG(INFO) << "LOWEST point: " << lowestPoint;
-					for (auto& i : msh.points())
-					{
-						i = Point3(i.x(), i.y(), i.z() + ::abs(lowestPoint));
-					}
-					CGAL::IO::write_PLY(args["obj_path"].asString(), msh);
-				}
-				
-			}
-			// Delete ground planes
-			{
-				for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
-				{
-					if (point_cloud.point(idx).z() < args["HEIGHT_CLIP"].asFloat())
-						point_cloud.remove(idx);
-				}
-
-				point_cloud.collect_garbage();
-			}
-			CGAL::IO::write_point_set(args["tlogpath"].asString() + "points_without_plane.ply", point_cloud);
-			// Cluster building
-			std::size_t nb_clusters;
-			{
-				PointSet3::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
-
-				std::vector<std::pair<std::size_t, std::size_t>> adjacencies;
-
-				nb_clusters = cluster_point_set(point_cloud, cluster_map,
-				                                point_cloud.parameters().neighbor_radius(
-					                                            args["cluster_radius"].asFloat()).
-				                                            adjacencies(std::back_inserter(adjacencies)));
-				m_buildings_target.resize(nb_clusters);
-
-				PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
-				PointSet3::Property_map<unsigned char> green = point_cloud.add_property_map<unsigned char>("green", 0).first;
-				PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
-				for (PointSet3::Index idx : point_cloud)
-				{
-					// One color per cluster
-					int cluster_id = cluster_map[idx];
-					CGAL::Random rand(cluster_id);
-					red[idx] = rand.get_int(64, 192);
-					green[idx] = rand.get_int(64, 192);
-					blue[idx] = rand.get_int(64, 192);
-
-					Building& current_building = m_buildings_target[cluster_id];
-					current_building.points_world_space.add_normal_map();
-					current_building.points_world_space.insert(point_cloud.point(idx), point_cloud.normal(idx));
-				}
-			}
-			for (int i = 0; i < m_buildings_target.size(); ++i)
-			{
-				m_buildings_target[i].bounding_box_3d = cgaltools::get_bounding_box_rotated(
-					m_buildings_target[i].points_world_space);
-				m_buildings_target[i].boxes.push_back(m_buildings_target[i].bounding_box_3d);
-				PointSet3 tpts(true);
-				tpts = m_buildings_target[i].points_world_space;
-
-				// Compute average spacing using neighborhood of 6 points
-				double spacing = CGAL::compute_average_spacing<CGAL::Sequential_tag>(tpts, 3);
-				// Simplify using a grid of size 2 * average spacing
-				if (args["simplify"].asBool()) {
-					tpts.remove(
-						grid_simplify_point_set(
-							tpts, 2. * spacing, CGAL::parameters::point_map(tpts.point_map())
-						), tpts.end()
-					);
-
-					std::cout << tpts.number_of_removed_points()
-						<< " point(s) removed after simplification." << std::endl;
-					tpts.collect_garbage();
-				}
-				CGAL::poisson_surface_reconstruction_delaunay
-				(tpts.begin(), tpts.end(), tpts.point_map(), tpts.normal_map(),
-					m_buildings_target[i].buildingMesh, spacing);
-				CGAL::IO::write_PLY(args["tlogpath"].asString() + std::to_string(i) + "mesh.ply", m_buildings_target[i].buildingMesh);
-
-			}
-
-			for (int i_building_1 = m_buildings_target.size() - 1; i_building_1 >= 0; --i_building_1)
-			{
-				cv::Point2f points[4];
-				m_buildings_target[i_building_1].bounding_box_3d.cv_box.points(points);
-
-				if (m_boundary.size() > 0)
-				{
-					bool should_delete = false;
-					for (int i_point = 0; i_point < 4; ++i_point)
-					{
-						Point2 p(points[i_point].x, points[i_point].y);
-						for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++
-						     iter_segment)
-							//if (CGAL::squared_distance(p, *iter_segment) < args["safe_distance"].asFloat() * args["safe_distance"].asFloat() * 2)
-							if (CGAL::squared_distance(p, *iter_segment) < 0)
-								should_delete = true;
 						if (m_boundary.bounded_side(p) != CGAL::ON_BOUNDED_SIDE)
-							should_delete = true;
+							add_as_target = false;
 					}
-					if (should_delete)
-						m_buildings_target.erase(m_buildings_target.begin() + i_building_1);
 				}
+				//current_building.bounding_box_3d = get_bounding_box(current_building.points_world_space);
+				current_building.bounding_box_3d = cgaltools::get_bounding_box_rotated(
+					current_building.points_world_space);
+				current_building.boxes.push_back(current_building.bounding_box_3d);
+
+				if (add_as_target)
+					m_buildings_target.push_back(current_building);
+			}
+			return;
+		}
+
+		CGAL::IO::read_point_set(args["model_path"].asString(), original_point_cloud);
+		LOG(INFO) << "Model reading finished.";
+
+		PointSet3 point_cloud(original_point_cloud);
+		if (modeltools::liftModel(point_cloud))
+		{
+			CGAL::IO::write_point_set(args["tlogpath"].asString() + "liftedPTS.ply", point_cloud);
+			if (args["ori_lift"].asBool()) {
+				SurfaceMesh msh = modeltools::read_model(args["obj_path"].asString());
+				double lowestPoint = 9999999.;
+				for (const auto& i : msh.points())
+				{
+					lowestPoint = i.z() < lowestPoint ? i.z() : lowestPoint;
+				}
+				LOG(INFO) << "LOWEST point: " << lowestPoint;
+				for (auto& i : msh.points())
+				{
+					i = Point3(i.x(), i.y(), i.z() + ::abs(lowestPoint));
+				}
+				CGAL::IO::write_PLY(args["obj_path"].asString(), msh);
 			}
 
+		}
+		// Delete ground planes
+		{
+			for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
+			{
+				if (point_cloud.point(idx).z() < args["HEIGHT_CLIP"].asFloat())
+					point_cloud.remove(idx);
+			}
 
-			m_buildings_safe_place = m_buildings_target;
-		//}
+			point_cloud.collect_garbage();
+		}
+		CGAL::IO::write_point_set(args["tlogpath"].asString() + "points_without_plane.ply", point_cloud);
+		// Cluster building
+		std::size_t nb_clusters;
+		{
+			PointSet3::Property_map<int> cluster_map = point_cloud.add_property_map<int>("cluster", -1).first;
+
+			std::vector<std::pair<std::size_t, std::size_t>> adjacencies;
+
+			nb_clusters = cluster_point_set(point_cloud, cluster_map,
+				point_cloud.parameters().neighbor_radius(
+					args["cluster_radius"].asFloat()).
+				adjacencies(std::back_inserter(adjacencies)));
+			m_buildings_target.resize(nb_clusters);
+
+			PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
+			PointSet3::Property_map<unsigned char> green = point_cloud.add_property_map<unsigned char>("green", 0).first;
+			PointSet3::Property_map<unsigned char> blue = point_cloud.add_property_map<unsigned char>("blue", 0).first;
+			for (PointSet3::Index idx : point_cloud)
+			{
+				// One color per cluster
+				int cluster_id = cluster_map[idx];
+				CGAL::Random rand(cluster_id);
+				red[idx] = rand.get_int(64, 192);
+				green[idx] = rand.get_int(64, 192);
+				blue[idx] = rand.get_int(64, 192);
+
+				Building& current_building = m_buildings_target[cluster_id];
+				current_building.points_world_space.add_normal_map();
+				current_building.points_world_space.insert(point_cloud.point(idx), point_cloud.normal(idx));
+			}
+		}
+#pragma omp parallel for
+		for (int i = 0; i < m_buildings_target.size(); ++i)
+		{
+			m_buildings_target[i].bounding_box_3d = cgaltools::get_bounding_box_rotated(
+				m_buildings_target[i].points_world_space);
+			m_buildings_target[i].boxes.push_back(m_buildings_target[i].bounding_box_3d);
+			PointSet3 tpts(true);
+			tpts = m_buildings_target[i].points_world_space;
+
+			double spacing = CGAL::compute_average_spacing<CGAL::Sequential_tag>(tpts, 6);
+
+			if (args["simplify"].asBool()) {
+				tpts.remove(
+					grid_simplify_point_set(
+						tpts, spacing, CGAL::parameters::point_map(tpts.point_map())
+					), tpts.end()
+				);
+
+				std::cout << tpts.number_of_removed_points()
+					<< " point(s) removed after simplification." << std::endl;
+				tpts.collect_garbage();
+			}
+			CGAL::poisson_surface_reconstruction_delaunay
+			(tpts.begin(), tpts.end(), tpts.point_map(), tpts.normal_map(),
+				m_buildings_target[i].buildingMesh, spacing);
+			CGAL::IO::write_PLY(args["tlogpath"].asString() + std::to_string(i) + "mesh.ply", m_buildings_target[i].buildingMesh);
+
+		}
+
+		for (int i_building_1 = m_buildings_target.size() - 1; i_building_1 >= 0; --i_building_1)
+		{
+			cv::Point2f points[4];
+			m_buildings_target[i_building_1].bounding_box_3d.cv_box.points(points);
+
+			if (m_boundary.size() > 0)
+			{
+				bool should_delete = false;
+				for (int i_point = 0; i_point < 4; ++i_point)
+				{
+					Point2 p(points[i_point].x, points[i_point].y);
+					for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end(); ++
+						iter_segment)
+						//if (CGAL::squared_distance(p, *iter_segment) < args["safe_distance"].asFloat() * args["safe_distance"].asFloat() * 2)
+						if (CGAL::squared_distance(p, *iter_segment) < 0)
+							should_delete = true;
+					if (m_boundary.bounded_side(p) != CGAL::ON_BOUNDED_SIDE)
+						should_delete = true;
+				}
+				if (should_delete)
+					m_buildings_target.erase(m_buildings_target.begin() + i_building_1);
+			}
+		}
+
+
+		m_buildings_safe_place = m_buildings_target;
 	}
 
 	void get_buildings(std::vector<Building>& v_buildings,

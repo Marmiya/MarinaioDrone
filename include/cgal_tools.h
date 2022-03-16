@@ -17,6 +17,7 @@
 #include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/grid_simplify_point_set.h>
 #include <CGAL/Plane_3.h>
 #include <CGAL/point_generators_2.h>
@@ -61,6 +62,7 @@ using Segment3 = K::Segment_3;
 using SurfaceMesh = CGAL::Surface_mesh<K::Point_3>;
 using Tetrahedron3 = K::Tetrahedron_3;
 using Triangle3 = K::Triangle_3;
+using Vector2 = K::Vector_2;
 using Vector3 = K::Vector_3;
 using PointSet3 = CGAL::Point_set_3<Point3, Vector3>;
 using Primitive = CGAL::AABB_face_graph_triangle_primitive<SurfaceMesh, CGAL::Default, CGAL::Tag_false>;
