@@ -29,7 +29,11 @@ namespace modeltools{
 
     Polygon2 safeExpansionAny(
         std::vector<cgaltools::SegmentLN>, double);
-    
+
+    // Scaling the input polygon to its safe distance polygon.
+    // The input polygon must be simple.
+    Polygon2 expansion(const Polygon2& plg, double safeDis);
+
     //It's wrong now. Just a interpolation process.
     PointSet3 CCPP(Point3, Point3);
 

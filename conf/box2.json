@@ -22,8 +22,8 @@
     // Reconstruction parameters
     "view_distance": 60,
     "safe_distance": 25,
-    "safe_height":10,
-    "view_length_step":5,
+    "safe_height": 16,
+    //"view_length_step": 5,
     "vertical_overlap": 0.6,
     "horizontal_overlap": 0.6,
     "split_overlap": 0.3,

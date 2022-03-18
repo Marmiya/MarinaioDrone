@@ -17,6 +17,7 @@
 #include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/intersections.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/grid_simplify_point_set.h>
 #include <CGAL/Plane_3.h>
@@ -58,7 +59,9 @@ using PointSet2 = CGAL::Point_set_2<Point2>;
 using Point3 = K::Point_3;
 using Polyhedron3 = CGAL::Polyhedron_3<K>;
 using Ray3 = K::Ray_3;
+using Segment2 = K::Segment_2;
 using Segment3 = K::Segment_3;
+using Direction2 = K::Direction_2;
 using SurfaceMesh = CGAL::Surface_mesh<K::Point_3>;
 using Tetrahedron3 = K::Tetrahedron_3;
 using Triangle3 = K::Triangle_3;

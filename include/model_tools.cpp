@@ -188,6 +188,79 @@ namespace modeltools {
 		return plys.front();
 	}
 
+	Polygon2 expansion(const Polygon2& plg, double safeDis)
+	{
+		if (plg.is_empty())
+		{
+			throw;
+		}
+
+		std::vector<Point2> opts;
+
+		int sz = static_cast<int>(plg.size());
+		
+		for (int i = 1; i < sz - 1; i++)
+		{
+			Point2 curp = plg.vertex(i);
+			Segment2 curEdge = plg.edge(i);
+			Segment2 lastEdge = plg.edge(i - 1);
+
+			Vector2 curDir = curEdge.direction().to_vector();
+			curDir = curDir / std::sqrt(curDir.squared_length());
+			Vector2 lastDir = -lastEdge.direction().to_vector();
+			lastDir = lastDir / std::sqrt(lastDir.squared_length());
+			const double cosv = curDir * lastDir;
+			const double arcv_2 = std::acos(cosv) / 2.;
+			const double rotationVec = M_PI + arcv_2;
+			double vertexMovdis = safeDis / std::sin(arcv_2);
+			double curx = curDir.x();
+			double cury = curDir.y();
+			double newvx = std::cos(rotationVec) * curx - std::sin(rotationVec) * cury;
+			double newvy = std::sin(rotationVec) * curx + std::cos(rotationVec) * cury;
+			Point2 newp(curp.x() + newvx * vertexMovdis, curp.y() + newvy * vertexMovdis);
+			opts.push_back(newp);
+		}
+		std::vector<Point2> finalpts;
+		Polygon2 oplg(opts.begin(), opts.end());
+		int plgsz = static_cast<int>(oplg.size());
+		for (int i = 0; i < plgsz - 2;)
+		{
+			finalpts.push_back(oplg.vertex(i));
+			Segment2 tseg = oplg.edge(i);
+			bool ifIntersection = false;
+			Point2 intersectionp;
+			int diff = 1;
+			for (auto j = oplg.edges_begin() + i + 2; j < oplg.edges_end() - 1; ++j)
+			{
+				const auto result = CGAL::intersection(*j, tseg);
+				if(result)
+				{
+					if (const Point2* s = boost::get<Point2>(&*result)) {
+						intersectionp = *boost::get<Point2>(&*result);
+						if (intersectionp != tseg.vertex(0)) {
+							ifIntersection = true;
+							diff += static_cast<int>(j - oplg.edges_begin()) - i;
+							break;
+						}
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
+			if (ifIntersection)
+			{
+				finalpts.push_back(intersectionp);
+			}
+			i += diff;
+		}
+		finalpts.push_back(plg.vertex(plgsz - 2));
+		
+
+		return Polygon2(finalpts.begin(), finalpts.end());
+	}
+
 	PointSet3 CCPP(Point3 base, Point3 survey) {
 		using namespace cgaltools;
 		PointSet3 t;
