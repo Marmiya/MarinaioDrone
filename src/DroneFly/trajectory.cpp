@@ -383,6 +383,9 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	for (size_t i = 0; i < v_buildings.size(); i++)
 	{
 		LOG(INFO) << "Deal with " << i << " Target.";
+
+		std::vector<MyViewpoint> item_trajectory;
+
 		Building& curbuilding = v_buildings.at(i);
 		double maxZ = curbuilding.bounding_box_3d.box.max().z();
 		double maxFlyZ = maxZ + 15.;
@@ -451,194 +454,107 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		{
 			std::vector<Polygon2> tplgs;
 			const double z = sliceZ.at(slice_i);
-			
+
 			for (auto& j : slicesPloygons.at(slice_i))
 			{
 				tplgs.push_back(modeltools::expansion(j, safe_distance));
 			}
 			
 			if (tplgs.size() > 1) {
-				CGAL::Polygon_with_holes_2<K> sumPolygon;
-
+				
 				while (tplgs.size() > 1)
 				{
 					std::vector<Point2> localpts;
-					CGAL::join(*tplgs.begin(), *(tplgs.begin() + 1), sumPolygon);
 					
-					// todo: need follow-up process.
-					if (sumPolygon.has_holes())
+					if (!CGAL::do_intersect(tplgs.front(), tplgs.back()))
 					{
-						LOG(INFO) << "Target index: " << i << ". Height: " << z << " . At least a hole exists.";
-					}
-					
-					if (sumPolygon.outer_boundary().is_empty())
-					{
-						LOG(INFO) << "Target index: " << i << ". Height: " << z << " . unbounded.";
-						for (const auto& i : *tplgs.begin())
+						
+						LOG(INFO) << "Target index: " << i << ". Height: " << z << " . no intersection.";
+						for (const auto& i : tplgs.front())
 						{
 							localpts.push_back(i);
 						}
-						for (const auto& i : *(tplgs.begin() + 1))
+						for (const auto& i : tplgs.back())
 						{
 							localpts.push_back(i);
 						}
 					}
 					else {
-					
+						CGAL::Polygon_with_holes_2<K> sumPolygon;
+						CGAL::join(tplgs.front(), tplgs.back(), sumPolygon);
+
+						// todo: need follow-up process.
+						if (sumPolygon.has_holes())
+						{
+							LOG(INFO) << "Target index: " << i << ". Height: " << z << " . At least a hole exists.";
+						}
+						else
+						{
+							LOG(INFO) << "Target index: " << i << ". Height: " << z << " . No hole exists.";
+						}
 						for (const auto& i : sumPolygon.outer_boundary())
 						{
 							localpts.push_back(i);
 						}
 					}
+
 					tplgs.emplace_back(localpts.begin(), localpts.end());
-					tplgs.erase(tplgs.begin(), tplgs.begin() + 2);
+					tplgs.erase(tplgs.begin());
+					tplgs.erase(tplgs.end() - 1);
 					tplgs.shrink_to_fit();
 				}
+			}
+			else
+			{
+				LOG(INFO) << "Target index: " << i << ". Height: " << z << " . solo.";
 			}
 			
 			for (const auto& i : tplgs.front())
 			{
-				viewpts.insert(Point3(i.x(), i.y(), z));
+				Point3 tp(i.x(), i.y(), z);
+				if (v_tree.squared_distance(tp) > safe_distance)
+				{
+					Point2 focus_point = slicesPloygons.at(slice_i).front().vertex(0);
+					double shortestDis = CGAL::squared_distance(i, focus_point);
+					for (auto& j : slicesPloygons.at(slice_i))
+					{
+						for (const auto& k : j)
+						{
+							double tDis = CGAL::squared_distance(k, i);
+							if (tDis < shortestDis)
+							{
+								shortestDis = tDis;
+								focus_point = k;
+							}
+						}
+					}
+					viewpts.insert(tp);
+					item_trajectory.emplace_back(cgaltools::cgal_point_2_eigen(tp), Eigen::Vector3d(focus_point.x(), focus_point.y(), z));
+				}
 			}
-			CGAL::draw(tplgs.front());
+			//CGAL::draw(tplgs.front());
 
 		}
 		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_viewPts.ply", viewpts);
 
-	}
+		v_buildings[i].one_pass_trajectory_num += item_trajectory.size();
 
-	
-
-
-	for (int id_building = 0; id_building < v_buildings.size(); ++id_building)
-	{
-
-		std::vector<MyViewpoint> item_trajectory;
-
-		double xmin = v_buildings[id_building].bounding_box_3d.box.min().x();
-		double ymin = v_buildings[id_building].bounding_box_3d.box.min().y();
-		double zmin = v_buildings[id_building].bounding_box_3d.box.min().z();
-		double xmax = v_buildings[id_building].bounding_box_3d.box.max().x();
-		double ymax = v_buildings[id_building].bounding_box_3d.box.max().y();
-		double zmax = v_buildings[id_building].bounding_box_3d.box.max().z();
-
-		bool double_flag = v_params["double_flag"].asBool();
-
-		double z_up_bounds = view_distance / std::sqrt(3); //Suppose the top view is toward the top end point of the cube, view angle is 30 degree
-		double z_down_bounds = view_distance / std::sqrt(3); //Suppose the bottom view is toward the bottom end point of the cube, view angle is 30 degree
-		// Detect if it needs drop
-		double fake_vertical_step = v_vertical_step; // When num_pass<=2. the vertical_step will be the height / 2
-		int num_pass = 1;
-		{
-			if (double_flag) {
-				num_pass = (zmax + z_up_bounds - z_down_bounds) / v_vertical_step;
-				num_pass += 1; // Cell the division
-				//if (num_pass <=1)
-				//{
-				//	num_pass = 2;
-				//	fake_vertical_step = (zmax + z_up_bounds) / 2;
-				//}
-			}
-		}
-
-		double focus_z_corner = -view_distance / 3. * std::sqrt(6.);
-		double focus_z_second_corner = -std::sqrt(15.) / 6. * view_distance;
-		double focus_z_corner_normal = -std::sqrt(3.) / 3 * view_distance;
-
-		for (int i_pass = 0; i_pass < num_pass; ++i_pass) {
-			double z = std::max(zmax + z_up_bounds - fake_vertical_step * i_pass, z_down_bounds);
-			double focus_z = z + focus_z_corner;
-
-			std::vector corner_points{
-				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z),
-				Eigen::Vector3d(xmax + view_distance, ymin - view_distance, z),
-				Eigen::Vector3d(xmax + view_distance, ymax + view_distance, z),
-				Eigen::Vector3d(xmin - view_distance, ymax + view_distance, z),
-				Eigen::Vector3d(xmin - view_distance, ymin - view_distance, z)
-			};
-			std::vector focus_points{
-				Eigen::Vector3d(xmin, ymin, focus_z),
-				Eigen::Vector3d(xmax, ymin, focus_z),
-				Eigen::Vector3d(xmax, ymax, focus_z),
-				Eigen::Vector3d(xmin, ymax, focus_z),
-				Eigen::Vector3d(xmin, ymin, focus_z)
-			};
-
-			Eigen::Vector3d focus_point;
-			for (int i_edge = 0; i_edge < corner_points.size() - 1; ++i_edge)
-			{
-				Eigen::Vector3d cur_pos = corner_points[i_edge];
-				Eigen::Vector3d next_direction = (corner_points[i_edge + 1] - corner_points[i_edge]).normalized();
-				while (true)
-				{
-					if (item_trajectory.size() == 0 || (focus_points[i_edge] - cur_pos).normalized().dot(next_direction) > 0) // Start corner
-					{
-						focus_point = focus_points[i_edge];
-						item_trajectory.emplace_back(cur_pos, focus_point);
-						cur_pos += next_direction * horizontal_step;
-					}
-					else if ((cur_pos - corner_points[i_edge + 1]).norm() < horizontal_step) // Last point
-					{
-						cur_pos = corner_points[i_edge + 1];
-						focus_point = focus_points[i_edge + 1];
-						item_trajectory.emplace_back(cur_pos, focus_point);
-						break;
-					}
-					else if ((focus_points[i_edge + 1] - cur_pos).normalized().dot(next_direction) < 0) // Last point with direction change
-					{
-						focus_point = focus_points[i_edge + 1];
-						item_trajectory.emplace_back(cur_pos, focus_point);
-						cur_pos += next_direction * horizontal_step;
-					}
-					else // Normal
-					{
-						focus_point = cur_pos + (Eigen::Vector3d(0.f, 0.f, 1.f).cross(next_direction)) * view_distance;
-						focus_point.z() -= view_distance / std::sqrt(3);
-						item_trajectory.emplace_back(cur_pos, focus_point);
-						cur_pos += next_direction * horizontal_step;
-					}
-				}
-
-			}
-
-
-
-			v_buildings[id_building].one_pass_trajectory_num += item_trajectory.size();
-		}
-
-		if (v_params["with_continuous_height_flag"].asBool() && v_params["double_flag"].asBool())
-		{
-			int num_views = static_cast<int>(item_trajectory.size());
-			double height_max = zmax + z_up_bounds;
-			double height_min = (zmax + z_up_bounds - z_down_bounds) / num_pass;
-
-			double height_delta = height_max - height_min;
-			double height_step = height_delta / num_views;
-
-			int id = 0;
-			for (auto& item : item_trajectory)
-			{
-				item.pos_mesh.z() = std::max(height_max - id * height_step, z_down_bounds);
-				++id;
-			}
-		}
-
-		Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
-		transform.translate(v_buildings[id_building].bounding_box_3d.box.center());
-		transform.rotate(Eigen::AngleAxisd(v_buildings[id_building].bounding_box_3d.cv_box.angle / 180. * M_PI, Eigen::Vector3d::UnitZ()));
-		transform.translate(-v_buildings[id_building].bounding_box_3d.box.center());
+		/*Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
+		transform.translate(v_buildings[i].bounding_box_3d.box.center());
+		transform.rotate(Eigen::AngleAxisd(v_buildings[i].bounding_box_3d.cv_box.angle / 180. * M_PI, Eigen::Vector3d::UnitZ()));
+		transform.translate(-v_buildings[i].bounding_box_3d.box.center());
 
 		for (int i = 0; i < item_trajectory.size(); ++i)
 		{
 			item_trajectory[i].pos_mesh = transform * item_trajectory[i].pos_mesh;
 			item_trajectory[i].focus_point = transform * item_trajectory[i].focus_point;
 			item_trajectory[i].calculate_direction();
-		}
+		}*/
 
-		if (v_params["with_erosion_flag"].asBool()) // 先把这个flag关了
-			item_trajectory = find_short_cut(item_trajectory, v_height_map, safe_distance, v_buildings[id_building], v_tree);
-		else
-			item_trajectory = ensure_safe_trajectory(item_trajectory, v_height_map, safe_distance);
+		//if (v_params["with_erosion_flag"].asBool())
+		//	item_trajectory = find_short_cut(item_trajectory, v_height_map, safe_distance, v_buildings[id_building], v_tree);
+		//else
+			//item_trajectory = ensure_safe_trajectory(item_trajectory, v_height_map, safe_distance);
 
 		if (v_params.isMember("z_down_bounds"))
 		{
@@ -655,9 +571,9 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		if (v_params["cluster_duplicate_flag"].asBool())
 			cluster_duplicate(item_trajectory, v_params["vertical_overlap"].asFloat(), v_params["fov"].asFloat(), view_distance);
 
-		v_buildings[id_building].trajectory = item_trajectory;
+		v_buildings[i].trajectory = item_trajectory;
 		total_trajectory.insert(total_trajectory.end(), item_trajectory.begin(), item_trajectory.end());
-		v_buildings[id_building].is_changed = false;
+		v_buildings[i].is_changed = false;
 	}
 	
 	return total_trajectory;

@@ -10,7 +10,7 @@ struct MyViewpoint
 	float yaw;   //forwards->x, towards right -> +yaw
 	bool is_towards_reconstruction;
 
-	MyViewpoint(){};
+	MyViewpoint() = default;
 	
 	MyViewpoint(const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point)
 		:pos_mesh(v_pos_mesh), focus_point(v_focus_point)

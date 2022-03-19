@@ -220,45 +220,53 @@ namespace modeltools {
 			Point2 newp(curp.x() + newvx * vertexMovdis, curp.y() + newvy * vertexMovdis);
 			opts.push_back(newp);
 		}
-		std::vector<Point2> finalpts;
+		
 		Polygon2 oplg(opts.begin(), opts.end());
-		int plgsz = static_cast<int>(oplg.size());
-		for (int i = 0; i < plgsz - 2;)
+
+		while (true)
 		{
-			finalpts.push_back(oplg.vertex(i));
-			Segment2 tseg = oplg.edge(i);
-			bool ifIntersection = false;
-			Point2 intersectionp;
-			int diff = 1;
-			for (auto j = oplg.edges_begin() + i + 2; j < oplg.edges_end() - 1; ++j)
+			int plgsz = static_cast<int>(oplg.size());
+			std::vector<Point2> finalpts;
+			for (int i = 0; i < plgsz - 2;)
 			{
-				const auto result = CGAL::intersection(*j, tseg);
-				if(result)
+				finalpts.push_back(oplg.vertex(i));
+				Segment2 tseg = oplg.edge(i);
+				bool ifIntersection = false;
+				Point2 intersectionp;
+				int diff = 1;
+				for (auto j = oplg.edges_begin() + i + 2; j < oplg.edges_end() - 1; ++j)
 				{
-					if (const Point2* s = boost::get<Point2>(&*result)) {
-						intersectionp = *boost::get<Point2>(&*result);
-						if (intersectionp != tseg.vertex(0)) {
-							ifIntersection = true;
-							diff += static_cast<int>(j - oplg.edges_begin()) - i;
-							break;
+					const auto result = CGAL::intersection(*j, tseg);
+					if (result)
+					{
+						if (const Point2* s = boost::get<Point2>(&*result)) {
+							intersectionp = *boost::get<Point2>(&*result);
+							if (intersectionp != tseg.vertex(0)) {
+								ifIntersection = true;
+								diff += static_cast<int>(j - oplg.edges_begin()) - i;
+								break;
+							}
+						}
+						else
+						{
+							throw;
 						}
 					}
-					else
-					{
-						throw;
-					}
 				}
+				if (ifIntersection)
+				{
+					finalpts.push_back(intersectionp);
+				}
+				i += diff;
 			}
-			if (ifIntersection)
+			finalpts.push_back(oplg.vertex(plgsz - 2));
+			oplg = Polygon2(finalpts.begin(), finalpts.end());
+			if (finalpts.size() == plgsz - 1)
 			{
-				finalpts.push_back(intersectionp);
+				break;
 			}
-			i += diff;
 		}
-		finalpts.push_back(plg.vertex(plgsz - 2));
-		
-
-		return Polygon2(finalpts.begin(), finalpts.end());
+		return oplg;
 	}
 
 	PointSet3 CCPP(Point3 base, Point3 survey) {
