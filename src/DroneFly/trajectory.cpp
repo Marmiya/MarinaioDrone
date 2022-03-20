@@ -428,7 +428,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 				}
 				
 				Polygon2 plg(tpts2.begin(), tpts2.end());
-				if (plg.area() > v_params["ignore_are"].asDouble()) {
+				if (plg.area() > v_params["ignore_area"].asDouble()) {
 					tplgs.push_back(plg);
 				}
 			}

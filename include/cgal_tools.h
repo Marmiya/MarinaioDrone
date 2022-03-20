@@ -16,7 +16,6 @@
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/grid_simplify_point_set.h>
@@ -40,14 +39,17 @@
 #include <Eigen/src/Geometry/AlignedBox.h>
 #include <tiny_obj_loader.h>
 
-// For intersection_tools.h
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
-#include <CGAL/Point_set_3.h>
 
+#include <CGAL/Shape_detection/Efficient_RANSAC.h>
+#include <CGAL/Shape_detection/Region_growing/Region_growing.h>
+#include <CGAL/Shape_detection/Region_growing/Region_growing_on_point_set.h>
+#include <CGAL/Polygonal_surface_reconstruction.h>
+#include <CGAL/SCIP_mixed_integer_program_traits.h>
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 
@@ -77,6 +79,54 @@ using Neighbor_search = CGAL::Orthogonal_k_neighbor_search<KDTreeTraits>;
 using KDTree = Neighbor_search::Tree;
 using Polyline_type = std::vector<Point3>;
 using Polylines = std::list<Polyline_type>;
+
+using PNI = boost::tuple<Point3, Vector3, int>;
+using Point_vector = std::vector<PNI>;
+using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
+using Normal_map = CGAL::Nth_of_tuple_property_map<1, PNI>;
+using Plane_index_map = CGAL::Nth_of_tuple_property_map<2, PNI>;
+using Traits = CGAL::Shape_detection::Efficient_RANSAC_traits<K, Point_vector, Point_map, Normal_map>;
+using Efficient_ransac = CGAL::Shape_detection::Efficient_RANSAC<Traits>;
+using Plane = CGAL::Shape_detection::Plane<Traits>;
+using Point_to_shape_index_map = CGAL::Shape_detection::Point_to_shape_index_map<Traits>;
+using Polygonal_surface_reconstruction = CGAL::Polygonal_surface_reconstruction<K>;
+using MIP_Solver = CGAL::SCIP_mixed_integer_program_traits<double>;
+
+typedef K::FT       FT;
+typedef CGAL::Shape_detection::Point_set::
+Sphere_neighbor_query<K, Point_vector, Point_map> Neighbor_query;
+typedef CGAL::Shape_detection::Point_set::
+Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map> Region_type;
+typedef CGAL::Shape_detection::
+Region_growing<Point_vector, Neighbor_query, Region_type> Region_growing;
+
+class Index_map {
+public:
+	using key_type = std::size_t;
+	using value_type = int;
+	using reference = value_type;
+	using category = boost::readable_property_map_tag;
+	Index_map() { }
+	template<typename PointRange>
+	Index_map(const PointRange& points,
+		const std::vector< std::vector<std::size_t> >& regions)
+		: m_indices(new std::vector<int>(points.size(), -1))
+	{
+		for (std::size_t i = 0; i < regions.size(); ++i)
+			for (const std::size_t idx : regions[i])
+				(*m_indices)[idx] = static_cast<int>(i);
+	}
+	inline friend value_type get(const Index_map& index_map,
+		const key_type key)
+	{
+		const auto& indices = *(index_map.m_indices);
+		return indices[key];
+	}
+private:
+	std::shared_ptr< std::vector<int> > m_indices;
+};
+
+
 
 namespace cgaltools {
 

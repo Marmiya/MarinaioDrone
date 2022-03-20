@@ -389,7 +389,7 @@ public:
 		{
 			for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
 			{
-				if (point_cloud.point(idx).z() < args["HEIGHT_CLIP"].asFloat())
+				if (point_cloud.point(idx).z() <= args["HEIGHT_CLIP"].asDouble())
 					point_cloud.remove(idx);
 			}
 
@@ -1397,7 +1397,7 @@ int main(int argc, char** argv)
 			exit(0);
 		}
 
-		int STAGE = args["stage"].asInt();
+		int STAGE = args["target_flag"].asBool() ? 1 : 0;
 		logPath = args["logPath"].asString();
 		auto logt = comutil::timeToString(std::chrono::system_clock::now());
 
