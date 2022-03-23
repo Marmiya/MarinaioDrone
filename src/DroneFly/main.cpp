@@ -317,7 +317,6 @@ public:
 
 	GT_mapper(const Json::Value& args) : Mapper(args)
 	{
-
 		PointSet3 original_point_cloud(true);
 		std::vector<CGAL::Point_set_3<Point3, Vector3>> pcs;
 		if (boost::filesystem::is_directory(args["model_path"].asString()))
@@ -386,15 +385,15 @@ public:
 
 		}
 		// Delete ground planes
-		{
-			for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
-			{
-				if (point_cloud.point(idx).z() <= args["HEIGHT_CLIP"].asDouble())
-					point_cloud.remove(idx);
-			}
-
-			point_cloud.collect_garbage();
+		
+		for (int idx = point_cloud.size() - 1; idx >= 0; idx--)
+		{			
+			if (point_cloud.point(idx).z() <= args["HEIGHT_CLIP"].asDouble())
+				point_cloud.remove(idx);
 		}
+		
+		point_cloud.collect_garbage();
+		
 		CGAL::IO::write_point_set(args["tlogpath"].asString() + "points_without_plane.ply", point_cloud);
 		// Cluster building
 		std::size_t nb_clusters;
@@ -405,9 +404,11 @@ public:
 
 			nb_clusters = cluster_point_set(point_cloud, cluster_map,
 				point_cloud.parameters().neighbor_radius(
-					args["cluster_radius"].asFloat()).
+					args["cluster_radius"].asDouble()).
 				adjacencies(std::back_inserter(adjacencies)));
+
 			m_buildings_target.resize(nb_clusters);
+			LOG(INFO) << "Clustering num: " << nb_clusters;
 
 			PointSet3::Property_map<unsigned char> red = point_cloud.add_property_map<unsigned char>("red", 0).first;
 			PointSet3::Property_map<unsigned char> green = point_cloud.add_property_map<unsigned char>("green", 0).first;
@@ -470,9 +471,14 @@ public:
 						iter_segment)
 						//if (CGAL::squared_distance(p, *iter_segment) < args["safe_distance"].asFloat() * args["safe_distance"].asFloat() * 2)
 						if (CGAL::squared_distance(p, *iter_segment) < 0)
+						{
 							should_delete = true;
+						}
+					
 					if (m_boundary.bounded_side(p) != CGAL::ON_BOUNDED_SIDE)
+					{
 						should_delete = true;
+					}
 				}
 				if (should_delete)
 					m_buildings_target.erase(m_buildings_target.begin() + i_building_1);
@@ -1572,6 +1578,7 @@ int main(int argc, char** argv)
 
 			//if(next_best_target->m_motion_status==Motion_status::exploration)
 			mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
+			LOG(INFO) << "Buildings' num: " << total_buildings.size();
 
 			std::vector<SurfaceMesh> SMs;
 			SurfaceMesh cur_mesh;

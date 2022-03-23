@@ -124,8 +124,8 @@ public:
 			//next_point.y() += 2 * DISTANCE_THRESHOLD;
 		}
 
-		cv::Mat ccpp_map((m_map_end.y() - m_map_start.y()) / DISTANCE_THRESHOLD,
-			(m_map_end.x() - m_map_start.x()) / DISTANCE_THRESHOLD,
+		cv::Mat ccpp_map(std::abs((m_map_end.y() - m_map_start.y())) / DISTANCE_THRESHOLD,
+			std::abs((m_map_end.x() - m_map_start.x())) / DISTANCE_THRESHOLD,
 			CV_8UC1, cv::Scalar(0));
 		int num_ccpp_cell = 0;
 		for (int id_region = 0; id_region < sample_points.size(); ++id_region) {

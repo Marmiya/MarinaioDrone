@@ -1,10 +1,10 @@
 {
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
-    "target_flag":false,
+    "target_flag":true,
     "simplify":false,
     "ori_lift":false,
     "polygon_clustering_dis": 10,
-    "ignore_are":100,
+    "ignore_area":100,
 
     "with_exploration": false,
     "with_reconstruction": true,
@@ -30,7 +30,7 @@
 
     "fov": 37,
 
-    "HEIGHT_CLIP": 0, 
+    "HEIGHT_CLIP": 5, 
     "MERGED_THRESHOLD": -1,
     "SPLIT_THRESHOLD": 100,
     "heightmap_resolution": 10,
@@ -50,11 +50,11 @@
     "START_X": 300.0,
     "START_Y": -700.0,
     "START_Z": 200.0,
-    "MAP_START_UNREAL_X": 30000.0,
-    "MAP_START_UNREAL_Y": 70000.0,
+    "MAP_START_UNREAL_X": 100000.0,
+    "MAP_START_UNREAL_Y": 120000.0,
     "MAP_START_UNREAL_Z": 20000.0,
-    "MAP_END_UNREAL_X": 100000.0,
-    "MAP_END_UNREAL_Y": 120000.0,
+    "MAP_END_UNREAL_X": -100000.0,
+    "MAP_END_UNREAL_Y": -120000.0,
     "MAP_END_UNREAL_Z": -10000.0,
     "DRONE_STEP": 10,
     "CCPP_CELL_THRESHOLD": 5,

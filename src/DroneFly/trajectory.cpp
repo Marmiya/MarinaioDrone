@@ -379,7 +379,8 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			v_buildings.push_back(c);
 		}
 	}
-	
+
+	LOG(INFO) << "Totally " << v_buildings.size() << " target(s).";
 	for (size_t i = 0; i < v_buildings.size(); i++)
 	{
 		LOG(INFO) << "Deal with " << i << " Target.";
@@ -452,6 +453,10 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 
 		for (int slice_i = 0; slice_i < sliceZ.size(); slice_i++)
 		{
+			if (slicesPloygons.at(slice_i).empty())
+			{
+				break;
+			}
 			std::vector<Polygon2> tplgs;
 			const double z = sliceZ.at(slice_i);
 

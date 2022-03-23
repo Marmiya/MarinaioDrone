@@ -32,6 +32,7 @@
 #include <CGAL/property_map.h>
 #include <CGAL/Random.h>
 #include <CGAL/random_selection.h>
+#include <CGAL/IO/read_points.h>
 #include <CGAL/Surface_mesh/Surface_mesh.h>
 
 #include <opencv2/opencv.hpp>
@@ -92,13 +93,10 @@ using Point_to_shape_index_map = CGAL::Shape_detection::Point_to_shape_index_map
 using Polygonal_surface_reconstruction = CGAL::Polygonal_surface_reconstruction<K>;
 using MIP_Solver = CGAL::SCIP_mixed_integer_program_traits<double>;
 
-typedef K::FT       FT;
-typedef CGAL::Shape_detection::Point_set::
-Sphere_neighbor_query<K, Point_vector, Point_map> Neighbor_query;
-typedef CGAL::Shape_detection::Point_set::
-Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map> Region_type;
-typedef CGAL::Shape_detection::
-Region_growing<Point_vector, Neighbor_query, Region_type> Region_growing;
+using FT = K::FT;
+using Neighbor_query = CGAL::Shape_detection::Point_set::Sphere_neighbor_query<K, Point_vector, Point_map>;
+using Region_type = CGAL::Shape_detection::Point_set::Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map>;
+using Region_growing = CGAL::Shape_detection::Region_growing<Point_vector, Neighbor_query, Region_type>;
 
 class Index_map {
 public:

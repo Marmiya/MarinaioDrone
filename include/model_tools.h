@@ -209,11 +209,16 @@ namespace modeltools{
         }
 
         Height_map(const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, const float v_resolution, int v_dilate, float v_default_height = -610610.610610)
-            :m_resolution(v_resolution), m_start(v_min), m_dilate(v_dilate), m_default_height(v_default_height) {
+            :m_resolution(v_resolution), m_start(v_min), m_dilate(v_dilate), m_default_height(v_default_height)
+    	{
             Eigen::Vector3d delta = (v_max - m_start) / m_resolution;
-            m_map = cv::Mat((int)delta[1] + 1, (int)delta[0] + 1, CV_32FC1);
+            const int r = std::abs(static_cast<int>(delta[1]) + 1);
+            const int c = std::abs(static_cast<int>(delta[0]) + 1);
+            m_map = cv::Mat(r, c, CV_32FC1);
+            //m_map = cv::Mat(39, 39, CV_32FC1);
             m_map.setTo(m_default_height);
-            m_map_dilated = cv::Mat((int)delta[1] + 1, (int)delta[0] + 1, CV_32FC1);
+
+            m_map_dilated = cv::Mat(r, c, CV_32FC1);
             m_map_dilated.setTo(m_default_height);
         }
 
