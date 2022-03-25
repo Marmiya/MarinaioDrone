@@ -1,6 +1,7 @@
 {
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
-    "target_flag": true,
+    "stage": 2,
+    
     "simplify": false,
     "ori_lift": false,
     "polygon_clustering_dis": 10,

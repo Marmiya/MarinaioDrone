@@ -222,28 +222,29 @@ namespace modeltools {
 		}
 		
 		Polygon2 oplg(opts.begin(), opts.end());
-
+		
 		while (true)
 		{
 			int plgsz = static_cast<int>(oplg.size());
 			std::vector<Point2> finalpts;
-			for (int i = 0; i < plgsz - 2;)
+			for (int i = 0; i < plgsz;)
 			{
 				finalpts.push_back(oplg.vertex(i));
 				Segment2 tseg = oplg.edge(i);
 				bool ifIntersection = false;
 				Point2 intersectionp;
 				int diff = 1;
-				for (auto j = oplg.edges_begin() + i + 2; j < oplg.edges_end() - 1; ++j)
+				for (auto j = i + 1; j < plgsz; ++j)
 				{
-					const auto result = CGAL::intersection(*j, tseg);
+					const auto result = CGAL::intersection(oplg.edge(j), tseg);
 					if (result)
 					{
 						if (const Point2* s = boost::get<Point2>(&*result)) {
 							intersectionp = *boost::get<Point2>(&*result);
-							if (intersectionp != tseg.vertex(0)) {
+							if (intersectionp != tseg.vertex(0) && intersectionp != tseg.vertex(1)) 
+							{
 								ifIntersection = true;
-								diff += static_cast<int>(j - oplg.edges_begin()) - i;
+								diff += j - i;
 								break;
 							}
 						}
@@ -259,9 +260,9 @@ namespace modeltools {
 				}
 				i += diff;
 			}
-			finalpts.push_back(oplg.vertex(plgsz - 2));
+			
 			oplg = Polygon2(finalpts.begin(), finalpts.end());
-			if (finalpts.size() == plgsz - 1)
+			if (finalpts.size() == plgsz)
 			{
 				break;
 			}

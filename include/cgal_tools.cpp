@@ -225,6 +225,106 @@ namespace cgaltools {
 
     }
 
+    inline double area(const Point3& p1, const Point3& p2, const Point3& p3)
+    {
+        return 0.5 * CGAL::sqrt(CGAL::squared_distance(p1, p2)) * CGAL::sqrt(CGAL::squared_distance(Line3(p1, p2), p3));
+    }
+
+    SurfaceMesh averaged(const SurfaceMesh& mesh, double expectedArea)
+    {
+        SurfaceMesh m = mesh;
+        CGAL::Polygon_mesh_processing::triangulate_faces(m);
+        while (true)
+        {
+            int faceSize = static_cast<int>(m.number_of_faces());
+            std::vector<bool> ifOverBig(faceSize, false);
+
+#pragma omp parallel for
+            for (int i = 0; i < faceSize; i++)
+            {
+                CGAL::Vertex_around_face_iterator<SurfaceMesh> vbegin, vend;
+                boost::tie(vbegin, vend) = vertices_around_face(m.halfedge(SurfaceMesh::face_index(i)), m);
+                Point3 p1 = m.point(*vbegin), p2 = m.point(*(++vbegin)), p3 = m.point(*(++vbegin));
+                if (area(p1, p2, p3) > expectedArea)
+                {
+                    ifOverBig[i] = true;
+                }
+            }
+
+            std::vector<int> OBvec;
+            for (int i = 0; i < faceSize; i++)
+            {
+                if (ifOverBig.at(i))
+	            {
+                    OBvec.push_back(i);
+	            }
+            }
+
+            if (OBvec.empty())
+            {
+                break;
+            }
+            else
+            {
+#pragma omp parallel for
+                for (int i = 0; i < OBvec.size(); i++)
+                {
+                    SurfaceMesh::face_index curFI(OBvec.at(i));
+                    CGAL::Vertex_around_face_iterator<SurfaceMesh> vbegin, vend;
+                    boost::tie(vbegin, vend) = vertices_around_face(m.halfedge(curFI), m);
+                    SurfaceMesh::vertex_index ep1VI = *vbegin, ep2VI = *(++vbegin), ep3VI = *(++vbegin);
+                    Point3 p1 = m.point(ep1VI), p2 = m.point(ep2VI), p3 = m.point(ep3VI);
+                    Point3 oddp1 = CGAL::midpoint(p1, p2), oddp2 = CGAL::midpoint(p2, p3), oddp3 = CGAL::midpoint(p3, p1);
+#pragma omp critical
+                    {
+                        m.remove_face(curFI);
+                        
+                        SMVI p1VI = m.add_vertex(oddp1), p2VI = m.add_vertex(oddp2), p3VI = m.add_vertex(oddp3);
+                        SMFI f1 = m.add_face(ep1VI, p1VI, p3VI), f2 = m.add_face(p1VI, ep2VI, p2VI);
+                        SMFI f3 = m.add_face(p1VI, p2VI, p3VI),f4 = m.add_face(p3VI, p2VI, ep3VI);
+
+                        SMHEI he1 = m.add_edge(ep1VI, p1VI), he2 = m.add_edge(p1VI, ep2VI), he3 = m.add_edge(ep2VI, p2VI);
+                        SMHEI he4 = m.add_edge(p2VI, ep3VI), he5 = m.add_edge(ep3VI, p3VI), he6 = m.add_edge(p3VI, ep1VI);
+                        SMHEI he7 = m.add_edge(p1VI, p3VI), he8 = m.add_edge(p2VI, p1VI), he9 = m.add_edge(p3VI, p2VI);
+
+                        SMHEI ohe1 = m.opposite(he1), ohe2 = m.opposite(he2), ohe3 = m.opposite(he3);
+                        SMHEI ohe4 = m.opposite(he4), ohe5 = m.opposite(he5), ohe6 = m.opposite(he6);
+                        SMHEI ohe7 = m.opposite(he7), ohe8 = m.opposite(he8), ohe9 = m.opposite(he9);
+
+                        m.set_target(he1, p1VI), m.set_target(ohe1, ep1VI);
+                        m.set_target(he2, ep2VI), m.set_target(ohe2, p1VI);
+                        m.set_target(he3, p2VI), m.set_target(ohe3, ep2VI);
+                        m.set_target(he4, ep3VI), m.set_target(ohe4, p2VI);
+                        m.set_target(he5, p3VI), m.set_target(ohe5, ep3VI);
+                        m.set_target(he6, ep1VI), m.set_target(ohe6, p3VI);
+                        m.set_target(he7, p3VI), m.set_target(ohe7, p1VI);
+                        m.set_target(he8, p1VI), m.set_target(ohe8, p2VI);
+                        m.set_target(he9, p2VI), m.set_target(ohe9, p3VI);
+
+                        m.set_next(he1, he7), m.set_next(he7, he6), m.set_next(he6, he1);
+                        m.set_next(ohe1, ohe6), m.set_next(ohe6, ohe7), m.set_next(ohe7, ohe1);
+
+                        m.set_next(he2, he3), m.set_next(he3, he8), m.set_next(he8, he2);
+                        m.set_next(ohe2, ohe8), m.set_next(ohe8, ohe3), m.set_next(ohe3, ohe2);
+
+                        m.set_next(he7, he9), m.set_next(he9, he8), m.set_next(he8, he7);
+                        m.set_next(ohe7, ohe8), m.set_next(ohe8, ohe9), m.set_next(ohe9, ohe7);
+
+                        m.set_next(he9, he4), m.set_next(he4, he5), m.set_next(he5, he9);
+                        m.set_next(ohe9, ohe5), m.set_next(ohe5, ohe4), m.set_next(ohe4, ohe9);
+
+                        m.set_face(he1, f1), m.set_face(he2, f2), m.set_face(m.opposite(he7), f3), m.set_face(he4, f4);
+                        m.set_face(he7, f1), m.set_face(he3, f2), m.set_face(m.opposite(he8), f3), m.set_face(he9, f4);
+                        m.set_face(he6, f1), m.set_face(he8, f2), m.set_face(m.opposite(he9), f3), m.set_face(he5, f4);
+
+                    }
+                }
+                m.collect_garbage();
+            }
+        }
+
+        return m;
+    }
 
     double squaredDistanceCuboid(Cuboid& l, Cuboid& r)
     {

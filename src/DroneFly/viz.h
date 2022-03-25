@@ -191,7 +191,7 @@ public:
     }
 
     void draw_line(
-        const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, int sickness = 1,
+        const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, float sickness = 1.,
         const Eigen::Vector4d& v_color = Eigen::Vector4d(1., 0., 0., 1.)
     )
     {
@@ -325,7 +325,7 @@ public:
 
         s_cam = pangolin::OpenGlRenderState(
             pangolin::ProjectionMatrix(1920, 1080, 800, 450, 800, 450, 1, 99999),
-            pangolin::ModelViewLookAt(300, -700, 200, 400, -800, 100, pangolin::AxisZ)
+            pangolin::ModelViewLookAt(0, 0, 100, 1, 1, -1, pangolin::AxisZ)
         );
 
 

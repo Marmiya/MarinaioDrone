@@ -1,7 +1,6 @@
 #include <argparse/argparse.hpp>
 #include <cpr/cpr.h>
 #include <glog/logging.h>
-#include <boost/format.hpp>
 #include <json/reader.h>
 #include <regex>
 #include <opencv2/features2d.hpp>
@@ -10,7 +9,7 @@
 #include "map_util.h"
 #include "airsim_control.h"
 #include "metrics.h"
-
+#include "ibs.h"
 #include "viz.h"
 #include "next_best_target.h"
 
@@ -1372,6 +1371,7 @@ int main(int argc, char** argv)
 	std::cout << "Read config " << argv[2] << std::endl;
 	Json::Value args;
 	std::string logPath;
+	int STAGE;
 	{
 		google::InitGoogleLogging(argv[0]);
 
@@ -1402,8 +1402,13 @@ int main(int argc, char** argv)
 			LOG(INFO) << program;
 			exit(0);
 		}
-
-		int STAGE = args["target_flag"].asBool() ? 1 : 0;
+		/*
+		 * STAGE:
+		 *	0: Original DroneFly
+		 *	1: Target mode
+		 *	2: IBS
+		 */
+		STAGE = args["stage"].asInt();
 		logPath = args["logPath"].asString();
 		auto logt = comutil::timeToString(std::chrono::system_clock::now());
 
@@ -1432,9 +1437,6 @@ int main(int argc, char** argv)
 	FLAGS_stderrthreshold = software_parameter_is_log ? 0 : 2;
 
 	LOG(INFO) << "Log initialization finished.";
-
-	bool targetFlag = args["target_flag"].asBool();
-
 
 	LOG(INFO) << "Initialization of directory, airsim, map converter and resetting color.";
 
@@ -1566,7 +1568,7 @@ int main(int argc, char** argv)
 	MyViewpoint next_viewpoint;
 	Tree tree;
 
-	if (targetFlag)
+	if (STAGE == 1)
 	{
 		auto viz = new tVisualizer(args["obj_path"].asString());
 
@@ -1890,10 +1892,10 @@ int main(int argc, char** argv)
 		}
 		comutil::debug_img();
 	}
-	else
+	else if(STAGE == 0)
 	{
-		auto viz = new oriVisualizer;
-
+		//auto viz = new oriVisualizer;
+		auto viz = new tVisualizer(args["obj_path"].asString());
 		viz->m_uncertainty_map_distance = args["ccpp_cell_distance"].asFloat();
 
 		while (!end)
@@ -2214,6 +2216,27 @@ int main(int argc, char** argv)
 		}
 		comutil::debug_img();
 	}
+	else if (STAGE == 2)
+	{
+		mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
+		LOG(INFO) << "Buildings' num: " << total_buildings.size();
 
+		std::vector<SurfaceMesh> SMs;
+		SurfaceMesh cur_mesh;
+		for (const auto& item : total_buildings)
+		{
+			//CGAL::draw(item.buildingMesh);
+			//CGAL::draw(IBSCreating(item.buildingMesh, item.buildingMesh));
+			SMs.push_back(item.buildingMesh);
+			cur_mesh += item.buildingMesh;
+		}
+		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
+		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
+
+	}
+	else
+	{
+	throw;
+	}
 	return 0;
 }

@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <CGAL/draw_polygon_2.h>
+#include <CGAL/draw_surface_mesh.h>
 
 #include "building.h"
 #include "map_util.h"

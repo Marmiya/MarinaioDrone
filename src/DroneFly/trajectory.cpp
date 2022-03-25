@@ -1,5 +1,4 @@
 #include "trajectory.h"
-#include <CGAL/draw_polygon_2.h>
 
 void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
 {
@@ -470,7 +469,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 				while (tplgs.size() > 1)
 				{
 					std::vector<Point2> localpts;
-					
+					//CGAL::draw(tplgs.front());CGAL::draw(tplgs.back());
 					if (!CGAL::do_intersect(tplgs.front(), tplgs.back()))
 					{
 						

@@ -14,6 +14,7 @@
 #include <CGAL/AABB_tree.h>
 #include <CGAL/approximated_offset_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/boost/graph/iterator.h>
 #include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/intersections.h>
@@ -24,7 +25,7 @@
 #include <CGAL/Point_set_2.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Polygon_2.h>
-#include <CGAL/Polygon_mesh_processing/measure.h>
+#include <CGAL/polygon_mesh_processing.h>
 #include <CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h>
 #include <CGAL/Polygon_mesh_slicer.h>
 #include <CGAL/Polyhedron_3.h>
@@ -45,16 +46,15 @@
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
+#include <CGAL/Shape_detection.h>
 
-#include <CGAL/Shape_detection/Efficient_RANSAC.h>
-#include <CGAL/Shape_detection/Region_growing/Region_growing.h>
-#include <CGAL/Shape_detection/Region_growing/Region_growing_on_point_set.h>
 #include <CGAL/Polygonal_surface_reconstruction.h>
 #include <CGAL/SCIP_mixed_integer_program_traits.h>
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 
 using IsoCuboid3 = K::Iso_cuboid_3;
+using Line3 = K::Line_3;
 using Plane3 = K::Plane_3;
 using Point2 = K::Point_2;
 using Polygon2 = CGAL::Polygon_2<K>;
@@ -80,7 +80,9 @@ using Neighbor_search = CGAL::Orthogonal_k_neighbor_search<KDTreeTraits>;
 using KDTree = Neighbor_search::Tree;
 using Polyline_type = std::vector<Point3>;
 using Polylines = std::list<Polyline_type>;
-
+using SMFI = SurfaceMesh::Face_index;
+using SMVI = SurfaceMesh::vertex_index;
+using SMHEI = SurfaceMesh::halfedge_index;
 using PNI = boost::tuple<Point3, Vector3, int>;
 using Point_vector = std::vector<PNI>;
 using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
@@ -127,6 +129,10 @@ private:
 
 
 namespace cgaltools {
+
+	inline double area(const Point3& p1, const Point3& p2, const Point3& p3);
+
+	SurfaceMesh averaged(const SurfaceMesh& mesh, double expectedArea);
 
 	// Link node of segments
 	class SegmentLN {
