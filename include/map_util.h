@@ -4,9 +4,7 @@
  */
 #include "common_util.h"
 
-#include<Eigen/Dense>
-
-#define M_PI 3.14159265358f
+#include <Eigen/Dense>
 
 struct Pos_Pack
 {

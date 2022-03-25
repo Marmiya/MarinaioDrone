@@ -1,8 +1,5 @@
 #pragma once
 #include "model_tools.h"
-#include <CGAL/point_generators_2.h>
-#include <CGAL/algorithm.h>
-#include <CGAL/random_selection.h>
 
 struct MyViewpoint
 {
@@ -13,7 +10,7 @@ struct MyViewpoint
 	float yaw;   //forwards->x, towards right -> +yaw
 	bool is_towards_reconstruction;
 
-	MyViewpoint(){};
+	MyViewpoint() = default;
 	
 	MyViewpoint(const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point)
 		:pos_mesh(v_pos_mesh), focus_point(v_focus_point)
@@ -28,13 +25,13 @@ struct MyViewpoint
 			180. / M_PI;
 		yaw = std::atan2f(direction[1], direction[0]) * 180. / M_PI;
 	}
-
 	
 };
 
 struct Building {
 	
 	cgaltools::RotatedBox bounding_box_3d;
+	SurfaceMesh buildingMesh;
 	PointSet3 points_camera_space;
 	PointSet3 points_world_space;
 	CGAL::Bbox_2 bounding_box_2d;

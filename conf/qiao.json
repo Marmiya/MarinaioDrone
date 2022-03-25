@@ -1,0 +1,72 @@
+{
+    "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
+    "stage": 2,
+    
+    "simplify": false,
+    "ori_lift": false,
+    "polygon_clustering_dis": 10,
+    "ignore_area": 10,
+
+    "with_exploration": false,
+    "with_reconstruction": true,
+    
+    "with_continuous_height_flag": false,
+    "with_erosion_flag": false,
+    "double_flag": true,
+    "split_flag": false,
+    "cluster_duplicate_flag": true,
+    
+    "fix_angle_flag": false,
+    "explore_multi_angle": true,
+
+    "search_sphere_radius": 0.5, 
+	"max_distance_to_plane": 0.5,
+	"max_accepted_angle": 25,
+    "min_region_size":150,
+   
+    "view_distance": 20,
+    "safe_distance": 5,
+    "safe_height": 5,
+    
+    "vertical_overlap": 0.6,
+    "horizontal_overlap": 0.6,
+    "split_overlap": 0.3,
+   
+    "fov": 37,
+
+    "HEIGHT_CLIP": 1, 
+    "MERGED_THRESHOLD": -1,
+    "SPLIT_THRESHOLD": 100,
+    "heightmap_resolution": 5,
+    "heightmap_dilate": 4,
+    "cluster_radius": 1,
+    "obj_path": "C:\\Marinaio\\Data\\samples\\qiaoori.ply",
+    "model_path": "C:\\Marinaio\\Data\\samples\\qiao.ply",
+    "safe_zone_model_path": "C:\\Marinaio\\Data\\samples\\qiao.ply",
+
+    "is_viz": true,
+    "is_log": true,
+
+    "START_X": -100.0,
+    "START_Y": -100.0,
+    "START_Z": 50.0,
+    "MAP_START_UNREAL_X": -10000.0,
+    "MAP_START_UNREAL_Y": 10000.0,
+    "MAP_START_UNREAL_Z": 5000.0,
+    "MAP_END_UNREAL_X": 9000.0,
+    "MAP_END_UNREAL_Y": -10000.0,
+    "MAP_END_UNREAL_Z": 500.0,
+    "DRONE_STEP": 10,
+    "CCPP_CELL_THRESHOLD": 5,
+    "ccpp_cell_distance": 30,
+
+    "SYNTHETIC_POINT_CLOUD": true,
+    "MAP_2D_BOX_TO_3D": true,
+    "mapper": "gt_mapper",
+
+    "with_interpolated": false, 
+    "nbv_target": "Topology_decomposition",
+   
+    "output_waypoint": true,
+    "geo_origin": [ 1.26826e7, 2.57652e6, 0 ]
+}

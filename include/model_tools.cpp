@@ -188,15 +188,97 @@ namespace modeltools {
 		return plys.front();
 	}
 
+	Polygon2 expansion(const Polygon2& plg, double safeDis)
+	{
+		if (plg.is_empty())
+		{
+			throw;
+		}
+
+		std::vector<Point2> opts;
+
+		int sz = static_cast<int>(plg.size());
+		
+		for (int i = 1; i < sz - 1; i++)
+		{
+			Point2 curp = plg.vertex(i);
+			Segment2 curEdge = plg.edge(i);
+			Segment2 lastEdge = plg.edge(i - 1);
+
+			Vector2 curDir = curEdge.direction().to_vector();
+			curDir = curDir / std::sqrt(curDir.squared_length());
+			Vector2 lastDir = -lastEdge.direction().to_vector();
+			lastDir = lastDir / std::sqrt(lastDir.squared_length());
+			const double cosv = curDir * lastDir;
+			const double arcv_2 = std::acos(cosv) / 2.;
+			const double rotationVec = M_PI + arcv_2;
+			double vertexMovdis = safeDis / std::sin(arcv_2);
+			double curx = curDir.x();
+			double cury = curDir.y();
+			double newvx = std::cos(rotationVec) * curx - std::sin(rotationVec) * cury;
+			double newvy = std::sin(rotationVec) * curx + std::cos(rotationVec) * cury;
+			Point2 newp(curp.x() + newvx * vertexMovdis, curp.y() + newvy * vertexMovdis);
+			opts.push_back(newp);
+		}
+		
+		Polygon2 oplg(opts.begin(), opts.end());
+		
+		while (true)
+		{
+			int plgsz = static_cast<int>(oplg.size());
+			std::vector<Point2> finalpts;
+			for (int i = 0; i < plgsz;)
+			{
+				finalpts.push_back(oplg.vertex(i));
+				Segment2 tseg = oplg.edge(i);
+				bool ifIntersection = false;
+				Point2 intersectionp;
+				int diff = 1;
+				for (auto j = i + 1; j < plgsz; ++j)
+				{
+					const auto result = CGAL::intersection(oplg.edge(j), tseg);
+					if (result)
+					{
+						if (const Point2* s = boost::get<Point2>(&*result)) {
+							intersectionp = *boost::get<Point2>(&*result);
+							if (intersectionp != tseg.vertex(0) && intersectionp != tseg.vertex(1)) 
+							{
+								ifIntersection = true;
+								diff += j - i;
+								break;
+							}
+						}
+						else
+						{
+							throw;
+						}
+					}
+				}
+				if (ifIntersection)
+				{
+					finalpts.push_back(intersectionp);
+				}
+				i += diff;
+			}
+			
+			oplg = Polygon2(finalpts.begin(), finalpts.end());
+			if (finalpts.size() == plgsz)
+			{
+				break;
+			}
+		}
+		return oplg;
+	}
+
 	PointSet3 CCPP(Point3 base, Point3 survey) {
 		using namespace cgaltools;
 		PointSet3 t;
 		double dis = std::sqrt(CGAL::squared_distance(base, survey));
-		size_t num = dis / 6;
+		size_t num = static_cast<size_t>(dis / 6);
 		double ratio = 6 / dis;
 		Vector3 vec = Vector3(base, survey);
 		for (size_t i = 0; i <= num; i++) {
-			t.insert(base + ratio * vec * i);
+			t.insert(base + ratio * vec * static_cast<double>(i));
 		}
 		return t;
 	}
@@ -250,7 +332,7 @@ namespace modeltools {
 			fprintf(fp, "Ks %f %f %f\n", mat.specular[0], mat.specular[1], mat.specular[2]);
 			fprintf(fp, "Kt %f %f %f\n", mat.transmittance[0], mat.specular[1], mat.specular[2]);
 			fprintf(fp, "Ke %f %f %f\n", mat.emission[0], mat.emission[1], mat.emission[2]);
-			fprintf(fp, "d %f\n", 1);
+			fprintf(fp, "d %f\n", 1.);
 			fprintf(fp, "Ns %f\n", mat.shininess);
 			fprintf(fp, "Ni %f\n", mat.ior);
 			fprintf(fp, "illum %d\n", mat.illum);
@@ -322,7 +404,7 @@ namespace modeltools {
 
 			if (shapes[i].name.empty())
 			{
-				fprintf(fp, "g %s\n", std::to_string(i));
+				fprintf(fp, "g %s\n", std::to_string(i).c_str());
 			}
 			else
 			{
@@ -707,8 +789,11 @@ namespace modeltools {
 					{
 						const tinyobj::index_t& ref = shape.mesh.indices[k + l];
 						// v0/t0/vn0
-						fprintf(fp, " %d/%d/%d", ref.vertex_index + 1 + vertex_already_assigned,
-							ref.texcoord_index + 1 + tex_already_assigned, ref.normal_index + 1 + vertex_already_assigned);
+						fprintf(fp, " %d/%d/%d",
+							static_cast<int>(ref.vertex_index + 1 + vertex_already_assigned),
+							static_cast<int>(ref.texcoord_index + 1 + tex_already_assigned),
+							static_cast<int>(ref.normal_index + 1 + vertex_already_assigned)
+						);
 					}
 					fprintf(fp, "\n");
 				}
@@ -829,16 +914,16 @@ namespace modeltools {
 				tinyobj::index_t idx1 = shapes[s].mesh.indices[index_offset + 1];
 				tinyobj::index_t idx2 = shapes[s].mesh.indices[index_offset + 2];
 
-				float vertex0[3] = { attrib.vertices[3 * idx0.vertex_index + 0] ,attrib.vertices[3 * idx0.vertex_index + 1] ,attrib.vertices[3 * idx0.vertex_index + 2] };
-				float vertex1[3] = { attrib.vertices[3 * idx1.vertex_index + 0] ,attrib.vertices[3 * idx1.vertex_index + 1] ,attrib.vertices[3 * idx1.vertex_index + 2] };
-				float vertex2[3] = { attrib.vertices[3 * idx2.vertex_index + 0] ,attrib.vertices[3 * idx2.vertex_index + 1] ,attrib.vertices[3 * idx2.vertex_index + 2] };
+				double vertex0[3] = { attrib.vertices[3 * idx0.vertex_index + 0] ,attrib.vertices[3 * idx0.vertex_index + 1] ,attrib.vertices[3 * idx0.vertex_index + 2] };
+				double vertex1[3] = { attrib.vertices[3 * idx1.vertex_index + 0] ,attrib.vertices[3 * idx1.vertex_index + 1] ,attrib.vertices[3 * idx1.vertex_index + 2] };
+				double vertex2[3] = { attrib.vertices[3 * idx2.vertex_index + 0] ,attrib.vertices[3 * idx2.vertex_index + 1] ,attrib.vertices[3 * idx2.vertex_index + 2] };
 
-				int xmin_item = (std::min({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution;
-				int ymin_item = (std::min({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution;
-				int xmax_item = (std::max({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution;
-				int ymax_item = (std::max({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution;
+				int xmin_item = static_cast<int>((std::min({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution);
+				int ymin_item = static_cast<int>((std::min({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution);
+				int xmax_item = static_cast<int>((std::max({ vertex0[ref_axis1], vertex1[ref_axis1], vertex2[ref_axis1] }) - min_box[ref_axis1]) / resolution);
+				int ymax_item = static_cast<int>((std::max({ vertex0[ref_axis2], vertex1[ref_axis2], vertex2[ref_axis2] }) - min_box[ref_axis2]) / resolution);
 
-				typedef CGAL::Simple_cartesian<int> K;
+				typedef CGAL::Simple_cartesian<double> K;
 				CGAL::Triangle_2<K> t1(
 					CGAL::Point_2<K>((vertex0[ref_axis1] - min_box[ref_axis1]) / resolution, (vertex0[ref_axis2] - min_box[ref_axis2]) / resolution),
 					CGAL::Point_2<K>((vertex1[ref_axis1] - min_box[ref_axis1]) / resolution, (vertex1[ref_axis2] - min_box[ref_axis2]) / resolution),
@@ -928,8 +1013,8 @@ namespace modeltools {
 				std::min_element(buildings[building_idx].xs.begin(), buildings[building_idx].xs.end()));
 			int y_center = *std::max_element(buildings[building_idx].ys.begin(), buildings[building_idx].ys.end()) + (*
 				std::min_element(buildings[building_idx].ys.begin(), buildings[building_idx].ys.end()));
-			x_center = x_center / 2 * resolution + min_box[ref_axis1];
-			y_center = y_center / 2 * resolution + min_box[ref_axis2];
+			x_center = static_cast<int>(x_center / 2 * resolution + min_box[ref_axis1]);
+			y_center = static_cast<int>(y_center / 2 * resolution + min_box[ref_axis2]);
 
 			std::map<Eigen::VectorXf, int> vertex_already_assigned;
 
@@ -1286,7 +1371,7 @@ namespace modeltools {
 			float area = CGAL::Polygon_mesh_processing::face_area(it_face, v_mesh);
 
 			float face_samples = area * point_per_area;
-			uint num_face_samples = face_samples;
+			uint num_face_samples = static_cast<uint>(face_samples);
 
 			if (dist(gen) < (face_samples - static_cast<float>(num_face_samples))) {
 				num_face_samples += 1;
@@ -1407,5 +1492,27 @@ namespace modeltools {
 		}
 		f.close();
 		return;
+	}
+
+	bool liftModel(PointSet3& pts)
+	{
+		double lowestPoint = 9999999.;
+		for (const Point3& i : pts.points())
+		{
+			lowestPoint = i.z() < lowestPoint ? i.z() : lowestPoint;
+		}
+		if (lowestPoint < 0.)
+		{
+			for (auto& i : pts.points())
+			{
+				i = Point3(i.x(), i.y(), i.z() + ::abs(lowestPoint));
+			}
+			std::cout << "LIFT model: " << lowestPoint << "\n";
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

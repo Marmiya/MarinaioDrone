@@ -5,55 +5,72 @@
 
 #include <tuple>
 #include <iostream>
-#include <corecrt_math.h>
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <corecrt_math_defines.h>
 
 #include <boost/core/swap.hpp>
 
 #include <CGAL/AABB_tree.h>
 #include <CGAL/approximated_offset_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/boost/graph/iterator.h>
+#include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/intersections.h>
+#include <CGAL/Polygon_with_holes_2.h>
+#include <CGAL/grid_simplify_point_set.h>
 #include <CGAL/Plane_3.h>
+#include <CGAL/point_generators_2.h>
 #include <CGAL/Point_set_2.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Polygon_2.h>
-#include <CGAL/Polygon_mesh_processing/measure.h>
+#include <CGAL/polygon_mesh_processing.h>
 #include <CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h>
+#include <CGAL/Polygon_mesh_slicer.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CGAL/poisson_surface_reconstruction.h>
+#include <CGAL/property_map.h>
 #include <CGAL/Random.h>
+#include <CGAL/random_selection.h>
+#include <CGAL/IO/read_points.h>
 #include <CGAL/Surface_mesh/Surface_mesh.h>
+
 #include <opencv2/opencv.hpp>
 
 #include <Eigen/src/Geometry/AlignedBox.h>
 #include <tiny_obj_loader.h>
 
-// For intersection_tools.h
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
-#include <CGAL/Point_set_3.h>
+#include <CGAL/Shape_detection.h>
 
+#include <CGAL/Polygonal_surface_reconstruction.h>
+#include <CGAL/SCIP_mixed_integer_program_traits.h>
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 
 using IsoCuboid3 = K::Iso_cuboid_3;
+using Line3 = K::Line_3;
 using Plane3 = K::Plane_3;
 using Point2 = K::Point_2;
 using Polygon2 = CGAL::Polygon_2<K>;
 using PointSet2 = CGAL::Point_set_2<Point2>;
 using Point3 = K::Point_3;
-using PointSet3 = CGAL::Point_set_3<Point3>;
 using Polyhedron3 = CGAL::Polyhedron_3<K>;
 using Ray3 = K::Ray_3;
+using Segment2 = K::Segment_2;
 using Segment3 = K::Segment_3;
+using Direction2 = K::Direction_2;
 using SurfaceMesh = CGAL::Surface_mesh<K::Point_3>;
 using Tetrahedron3 = K::Tetrahedron_3;
 using Triangle3 = K::Triangle_3;
-using Vector3 = CGAL::Vector_3<K>;
-// For intersection_tools.h
+using Vector2 = K::Vector_2;
+using Vector3 = K::Vector_3;
+using PointSet3 = CGAL::Point_set_3<Point3, Vector3>;
 using Primitive = CGAL::AABB_face_graph_triangle_primitive<SurfaceMesh, CGAL::Default, CGAL::Tag_false>;
 using AABB_Traits = CGAL::AABB_traits<K, Primitive>;
 using Tree = CGAL::AABB_tree<AABB_Traits>;
@@ -61,8 +78,61 @@ using Primitive_id = Tree::Primitive_id;
 using KDTreeTraits = CGAL::Search_traits_3<K>;
 using Neighbor_search = CGAL::Orthogonal_k_neighbor_search<KDTreeTraits>;
 using KDTree = Neighbor_search::Tree;
+using Polyline_type = std::vector<Point3>;
+using Polylines = std::list<Polyline_type>;
+using SMFI = SurfaceMesh::Face_index;
+using SMVI = SurfaceMesh::vertex_index;
+using SMHEI = SurfaceMesh::halfedge_index;
+using PNI = boost::tuple<Point3, Vector3, int>;
+using Point_vector = std::vector<PNI>;
+using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
+using Normal_map = CGAL::Nth_of_tuple_property_map<1, PNI>;
+using Plane_index_map = CGAL::Nth_of_tuple_property_map<2, PNI>;
+using Traits = CGAL::Shape_detection::Efficient_RANSAC_traits<K, Point_vector, Point_map, Normal_map>;
+using Efficient_ransac = CGAL::Shape_detection::Efficient_RANSAC<Traits>;
+using Plane = CGAL::Shape_detection::Plane<Traits>;
+using Point_to_shape_index_map = CGAL::Shape_detection::Point_to_shape_index_map<Traits>;
+using Polygonal_surface_reconstruction = CGAL::Polygonal_surface_reconstruction<K>;
+using MIP_Solver = CGAL::SCIP_mixed_integer_program_traits<double>;
+
+using FT = K::FT;
+using Neighbor_query = CGAL::Shape_detection::Point_set::Sphere_neighbor_query<K, Point_vector, Point_map>;
+using Region_type = CGAL::Shape_detection::Point_set::Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map>;
+using Region_growing = CGAL::Shape_detection::Region_growing<Point_vector, Neighbor_query, Region_type>;
+
+class Index_map {
+public:
+	using key_type = std::size_t;
+	using value_type = int;
+	using reference = value_type;
+	using category = boost::readable_property_map_tag;
+	Index_map() { }
+	template<typename PointRange>
+	Index_map(const PointRange& points,
+		const std::vector< std::vector<std::size_t> >& regions)
+		: m_indices(new std::vector<int>(points.size(), -1))
+	{
+		for (std::size_t i = 0; i < regions.size(); ++i)
+			for (const std::size_t idx : regions[i])
+				(*m_indices)[idx] = static_cast<int>(i);
+	}
+	inline friend value_type get(const Index_map& index_map,
+		const key_type key)
+	{
+		const auto& indices = *(index_map.m_indices);
+		return indices[key];
+	}
+private:
+	std::shared_ptr< std::vector<int> > m_indices;
+};
+
+
 
 namespace cgaltools {
+
+	inline double area(const Point3& p1, const Point3& p2, const Point3& p3);
+
+	SurfaceMesh averaged(const SurfaceMesh& mesh, double expectedArea);
 
 	// Link node of segments
 	class SegmentLN {

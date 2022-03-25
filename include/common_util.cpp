@@ -74,10 +74,10 @@ namespace comutil {
         cv::destroyWindow("Debug");
     }
 
-    void override_sleep(float seconds)
+    void override_sleep(double seconds)
     {
 #ifdef _WIN32
-        _sleep(seconds * 1000);
+        _sleep(static_cast<long>(seconds * 1000));
 #else
         sleep(seconds);
 #endif

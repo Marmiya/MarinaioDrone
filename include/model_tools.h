@@ -8,9 +8,6 @@
 #include <queue>
 #include <fstream>
 #include <random>
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include <corecrt_math_defines.h>
 
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
@@ -32,7 +29,11 @@ namespace modeltools{
 
     Polygon2 safeExpansionAny(
         std::vector<cgaltools::SegmentLN>, double);
-    
+
+    // Scaling the input polygon to its safe distance polygon.
+    // The input polygon must be simple.
+    Polygon2 expansion(const Polygon2& plg, double safeDis);
+
     //It's wrong now. Just a interpolation process.
     PointSet3 CCPP(Point3, Point3);
 
@@ -148,6 +149,8 @@ namespace modeltools{
     void get_box_mesh_with_colors(const std::vector<Eigen::AlignedBox3d>& v_boxes,
         const std::vector<cv::Vec3b>& v_colors, const std::string& v_name);
 
+    bool liftModel(PointSet3& pts);
+
     class Height_map {
 
     public:
@@ -206,11 +209,16 @@ namespace modeltools{
         }
 
         Height_map(const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, const float v_resolution, int v_dilate, float v_default_height = -610610.610610)
-            :m_resolution(v_resolution), m_start(v_min), m_dilate(v_dilate), m_default_height(v_default_height) {
+            :m_resolution(v_resolution), m_start(v_min), m_dilate(v_dilate), m_default_height(v_default_height)
+    	{
             Eigen::Vector3d delta = (v_max - m_start) / m_resolution;
-            m_map = cv::Mat((int)delta[1] + 1, (int)delta[0] + 1, CV_32FC1);
+            const int r = std::abs(static_cast<int>(delta[1]) + 1);
+            const int c = std::abs(static_cast<int>(delta[0]) + 1);
+            m_map = cv::Mat(r, c, CV_32FC1);
+            //m_map = cv::Mat(39, 39, CV_32FC1);
             m_map.setTo(m_default_height);
-            m_map_dilated = cv::Mat((int)delta[1] + 1, (int)delta[0] + 1, CV_32FC1);
+
+            m_map_dilated = cv::Mat(r, c, CV_32FC1);
             m_map_dilated.setTo(m_default_height);
         }
 
@@ -258,10 +266,10 @@ namespace modeltools{
             auto xmax_point = std::max_element(points, points + 4, [](const cv::Point2f& item1, const cv::Point2f& item2) {return item1.x < item2.x; });
             auto ymax_point = std::max_element(points, points + 4, [](const cv::Point2f& item1, const cv::Point2f& item2) {return item1.y < item2.y; });
 
-            int xmin = ((*xmin_point).x - m_start[0]) / m_resolution;
-            int ymin = ((*ymin_point).y - m_start[1]) / m_resolution;
-            int xmax = ((*xmax_point).x - m_start[0]) / m_resolution + 1;
-            int ymax = ((*ymax_point).y - m_start[1]) / m_resolution + 1;
+            int xmin = static_cast<int>(((*xmin_point).x - m_start[0]) / m_resolution);
+            int ymin = static_cast<int>(((*ymin_point).y - m_start[1]) / m_resolution);
+            int xmax = static_cast<int>(((*xmax_point).x - m_start[0]) / m_resolution + 1);
+            int ymax = static_cast<int>(((*ymax_point).y - m_start[1]) / m_resolution + 1);
             xmin = std::max(xmin, 0);
             xmax = std::min(xmax, m_map.cols - 1);
             ymin = std::max(ymin, 0);
