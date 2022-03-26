@@ -9,9 +9,12 @@ find_package(cpr CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../../include)
 target_link_options(${PROJECT_NAME} PRIVATE "/FORCE:MULTIPLE")
 
+target_include_directories(${PROJECT_NAME} PRIVATE ../../include)
+target_include_directories(${PROJECT_NAME} PRIVATE ../voro)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Voro)
 target_link_libraries(${PROJECT_NAME} PRIVATE AMarinaioDrone)
 target_link_libraries(${PROJECT_NAME} PRIVATE pangolin)
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_lib)

@@ -43,7 +43,8 @@ IBSCreating(
 	PointSet3 lmidpts(true), rmidpts(true);
 	lmidpts = generateMidpts(lmesh);
 	rmidpts = generateMidpts(rmesh);
-	
+
+	voro::container con(0, 1, 0, 1, 0, 1, 5, 5, 5, false, false, false, 8);
 
 	return obb;
 }
