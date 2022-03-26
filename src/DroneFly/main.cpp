@@ -778,7 +778,7 @@ public:
 
 				if (!currentColor.contains(pixel))
 				{
-					currentColor.insert(std::make_pair(pixel, bbox.size()));
+					currentColor.insert(std::make_pair(pixel, static_cast<int>(bbox.size())));
 					bbox.push_back(std::make_pair(std::vector<int>(), std::vector<int>()));
 				}
 
@@ -2225,10 +2225,13 @@ int main(int argc, char** argv)
 		SurfaceMesh cur_mesh;
 		for (const auto& item : total_buildings)
 		{
-			//CGAL::draw(item.buildingMesh);
-			//CGAL::draw(IBSCreating(item.buildingMesh, item.buildingMesh));
-			SMs.push_back(item.buildingMesh);
-			cur_mesh += item.buildingMesh;
+			SurfaceMesh cursm = item.buildingMesh;
+			SMs.push_back(cursm);
+			cur_mesh += cursm;
+
+			cursm += IBSCreating(item.buildingMesh, item.buildingMesh, 15., 1.);
+			CGAL::draw(cursm);
+			
 		}
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);

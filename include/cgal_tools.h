@@ -15,11 +15,13 @@
 #include <CGAL/approximated_offset_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/boost/graph/iterator.h>
+#include <CGAL/boost/graph/generators.h>
 #include <CGAL/cluster_point_set.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/grid_simplify_point_set.h>
+#include <CGAL/Optimal_bounding_box/oriented_bounding_box.h>
 #include <CGAL/Plane_3.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/Point_set_2.h>
@@ -126,13 +128,13 @@ private:
 	std::shared_ptr< std::vector<int> > m_indices;
 };
 
-
-
 namespace cgaltools {
 
 	inline double area(const Point3& p1, const Point3& p2, const Point3& p3);
 
 	SurfaceMesh averaged(const SurfaceMesh& mesh, double expectedArea);
+
+	SurfaceMesh obb(const SurfaceMesh& sm, const double& bbExpandBias);
 
 	// Link node of segments
 	class SegmentLN {
@@ -173,7 +175,6 @@ namespace cgaltools {
 			visited += 1;
 		}
 	};
-
 
 	class Cuboid {
 

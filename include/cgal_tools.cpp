@@ -326,6 +326,47 @@ namespace cgaltools {
         return m;
     }
 
+    SurfaceMesh
+	obb(
+        const SurfaceMesh& sm, const double& bbExpandBias
+    )
+    {
+        SurfaceMesh obb;
+        std::array<Point3, 8> obbpts;
+        CGAL::oriented_bounding_box(sm, obbpts);
+        if (bbExpandBias != 0.)
+        {
+            Vector3 xdirection = obbpts.at(1) - obbpts.at(0);
+            Vector3 ydirection = obbpts.at(3) - obbpts.at(0);
+            Vector3 zdirection = obbpts.at(5) - obbpts.at(0);
+            xdirection /= CGAL::sqrt(xdirection.squared_length());
+            ydirection /= CGAL::sqrt(ydirection.squared_length());
+            zdirection /= CGAL::sqrt(zdirection.squared_length());
+
+            obbpts.at(0) = obbpts.at(0) + bbExpandBias * (-xdirection + (-ydirection));
+            obbpts.at(1) = obbpts.at(1) + bbExpandBias * (xdirection + (-ydirection));
+            obbpts.at(2) = obbpts.at(2) + bbExpandBias * (xdirection + ydirection);
+            obbpts.at(3) = obbpts.at(3) + bbExpandBias * (-xdirection + ydirection);
+            obbpts.at(4) = obbpts.at(4) + bbExpandBias * (-xdirection + ydirection + zdirection);
+            obbpts.at(5) = obbpts.at(5) + bbExpandBias * (-xdirection + (-ydirection) + zdirection);
+            obbpts.at(6) = obbpts.at(6) + bbExpandBias * (xdirection + (-ydirection) + zdirection);
+            obbpts.at(7) = obbpts.at(7) + bbExpandBias * (xdirection + ydirection + zdirection);
+        }
+
+        CGAL::make_hexahedron(
+            obbpts.at(0),
+            obbpts.at(1),
+            obbpts.at(2),
+            obbpts.at(3),
+            obbpts.at(4),
+            obbpts.at(5),
+            obbpts.at(6),
+            obbpts.at(7),
+            obb
+        );
+        return obb;
+    }
+
     double squaredDistanceCuboid(Cuboid& l, Cuboid& r)
     {
         auto lv = l.getVer();

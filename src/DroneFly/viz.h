@@ -339,7 +339,7 @@ public:
         while (!pangolin::ShouldQuit()) 
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glClearColor(0.56, 0.56, 0.56, 1);
+            glClearColor(static_cast<GLclampf>(0.56), static_cast<GLclampf>(0.56), static_cast<GLclampf>(0.56), static_cast<GLclampf>(1));
 
             lock();
             d_cam1.Activate(s_cam);
@@ -464,8 +464,8 @@ public:
         const Eigen::Vector4d& v_color = Eigen::Vector4d(1., 0., 0., 1.)
     )
     {
-        glLineWidth(sickness);
-        glColor3d(v_color.x(), v_color.y(), v_color.z());
+        glLineWidth(static_cast<GLfloat>(sickness));
+        glColor3d(static_cast<GLdouble>(v_color.x()), static_cast<GLdouble>(v_color.y()), static_cast<GLdouble>(v_color.z()));
         pangolin::glDrawLine(v_min.x(), v_min.y(), v_min.z(), v_max.x(), v_max.y(), v_max.z());
     }
 	
@@ -599,7 +599,7 @@ public:
 		
         while (!pangolin::ShouldQuit()) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glClearColor(0.56, 0.56, 0.56, 1);
+            glClearColor(static_cast<GLclampf>(0.56), static_cast<GLclampf>(0.56), static_cast<GLclampf>(0.56), static_cast<GLclampf>(1));
 
             lock();
             d_cam2.Activate(s_cam2);
