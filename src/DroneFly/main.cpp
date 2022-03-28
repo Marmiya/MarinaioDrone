@@ -2230,16 +2230,10 @@ int main(int argc, char** argv)
 			cur_mesh += cursm;
 		}
 
-		SurfaceMesh sml = total_buildings.at(2).buildingMesh;
-		SurfaceMesh smr = total_buildings.at(7).buildingMesh;
-		std::vector<SurfaceMesh> sms;
-		sms.push_back(sml);
-		sms.push_back(smr);
-		SurfaceMesh ans = IBSCreating(sms, 15., 1.);
-		ans += sml;
-		ans += smr;
-		CGAL::draw(ans);
-
+		
+		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., 1.);
+		
+		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
 

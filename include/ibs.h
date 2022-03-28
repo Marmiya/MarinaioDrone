@@ -18,3 +18,9 @@ IBSCreating(
 	const std::vector<SurfaceMesh>& objs, 
 	const double& bbExpandBias,	const double& expectedArea
 );
+
+SurfaceMesh
+IBSCreatingWithSenceBB(
+	const std::vector<SurfaceMesh>& objs,
+	const double& bbExpandBias, const double& expectedArea
+);

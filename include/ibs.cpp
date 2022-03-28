@@ -213,3 +213,97 @@ IBSCreating(
 	//con.draw_cells_gnuplot("C:\\Users\\mic\\Documents\\gnuplot\\random_points_v.gnu");
 	return ans;
 }
+
+SurfaceMesh
+IBSCreatingWithSenceBB(
+	const std::vector<SurfaceMesh>& objs,
+	const double& bbExpandBias, const double& expectedArea
+)
+{
+	SurfaceMesh ori;
+	SurfaceMesh ans;
+
+	size_t objsSize = objs.size();
+
+	for (size_t i = 0; i < objsSize; i++)
+	{
+		ori += objs.at(i);
+	}
+	SurfaceMesh obb = cgaltools::obb(ori, bbExpandBias);
+
+	double ax = 363363., ay = ax, az = ay;
+	double bx = -363363., by = bx, bz = by;
+	for (const auto& i : obb.points())
+	{
+		if (i.x() < ax)
+		{
+			ax = i.x();
+		}
+		if (i.x() > bx)
+		{
+			bx = i.x();
+		}
+		if (i.y() < ay)
+		{
+			ay = i.y();
+		}
+		if (i.y() > by)
+		{
+			by = i.y();
+		}
+		if (i.z() < az)
+		{
+			az = i.z();
+		}
+		if (i.z() > bz)
+		{
+			bz = i.z();
+		}
+	}
+	bz += 5.;
+	SurfaceMesh sencebb;
+	std::vector<SMVI> ptsVI;
+	ptsVI.push_back(sencebb.add_vertex(Point3(ax, ay, az)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(bx, ay, az)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(bx, by, az)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(ax, by, az)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(ax, by, bz)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(ax, ay, bz)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(bx, ay, bz)));
+	ptsVI.push_back(sencebb.add_vertex(Point3(bx, by, bz)));
+	std::vector<SMVI> f;
+	f.push_back(ptsVI.at(0));
+	f.push_back(ptsVI.at(1));
+	f.push_back(ptsVI.at(6));
+	f.push_back(ptsVI.at(5));
+	sencebb.add_face(f);
+	f.clear();
+	f.push_back(ptsVI.at(1));
+	f.push_back(ptsVI.at(2));
+	f.push_back(ptsVI.at(7));
+	f.push_back(ptsVI.at(6));
+	sencebb.add_face(f);
+	f.clear();
+	f.push_back(ptsVI.at(2));
+	f.push_back(ptsVI.at(3));
+	f.push_back(ptsVI.at(4));
+	f.push_back(ptsVI.at(7));
+	sencebb.add_face(f);
+	f.clear();
+	f.push_back(ptsVI.at(3));
+	f.push_back(ptsVI.at(0));
+	f.push_back(ptsVI.at(5));
+	f.push_back(ptsVI.at(4));
+	sencebb.add_face(f);
+	f.clear();
+	f.push_back(ptsVI.at(4));
+	f.push_back(ptsVI.at(5));
+	f.push_back(ptsVI.at(6));
+	f.push_back(ptsVI.at(7));
+	sencebb.add_face(f);
+	sencebb = cgaltools::averaged(sencebb, 2.);
+	std::vector<SurfaceMesh> tobjs = objs;
+	tobjs.push_back(sencebb);
+
+	return IBSCreating(tobjs, bbExpandBias, expectedArea);
+}
