@@ -2220,22 +2220,99 @@ int main(int argc, char** argv)
 	{
 		mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
 		LOG(INFO) << "Buildings' num: " << total_buildings.size();
+		const double safeHeight = args["safe_height"].asDouble();
+		const double safeDis = args["safe_distance"].asDouble();
+		const double viewDis = args["view_distance"].asDouble();
 
 		std::vector<SurfaceMesh> SMs;
 		SurfaceMesh cur_mesh;
+		double bz = 0.;
 		for (const auto& item : total_buildings)
 		{
 			SurfaceMesh cursm = item.buildingMesh;
 			SMs.push_back(cursm);
 			cur_mesh += cursm;
+			if (item.bounding_box_3d.box.max().z() > bz)
+			{
+				bz = item.bounding_box_3d.box.max().z();
+			}
 		}
-
 		
-		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., 1.);
+		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., 1.5, safeDis);
+
+		SurfaceMesh::Property_map<SMFI, Point3> midp;
+		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
+		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
+		bool ifsueecssed;
+		boost::tie(midp, ifsueecssed) = ans.property_map<SMFI, Point3>("midp");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
+		std::pair<Point3, double> init(Point3(-1., -1., -1.), -1.);
+		boost::tie(monitoringp1, ifsueecssed) =
+			ans.property_map<SMFI, std::pair<Point3, double>>("mp1");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
+		boost::tie(monitoringp2, ifsueecssed) =
+			ans.property_map<SMFI, std::pair<Point3, double>>("mp2");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
 		
 		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
+
+		double curHeight = safeHeight;
+		std::vector<double> sliceZ;
+		while (curHeight < bz + 5.)
+		{
+			sliceZ.push_back(curHeight);
+			curHeight += 5.;
+		}
+
 		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
+
+		PointSet3 views(true);
+		int meshSize = static_cast<int>(ans.number_of_faces());
+		for (const auto& curHeight : sliceZ)
+		{
+			#pragma omp parallel for
+			for (int i = 0; i < meshSize; i++)
+			{
+				SMFI curFI(i);
+				Point3 mp = midp[curFI];
+				if (std::abs(mp.z() - curHeight) < .125)
+				{
+					Point3 ansp;
+					Vector3 ansv;
+					std::pair<Point3, double> mp1, mp2;
+					mp1 = monitoringp1[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp1, safeDis))
+					{
+						#pragma omp critical
+						{
+							views.insert(ansp, ansv);
+						}
+					}
+
+					mp2 = monitoringp2[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp2, safeDis))
+					{
+						#pragma omp critical
+						{
+							views.insert(ansp, ansv);
+						}
+					}
+				}
+			}
+		}
+
+		CGAL::IO::write_point_set(logPath + "IBSviews.ply", views);
+
 
 	}
 	else

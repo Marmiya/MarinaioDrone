@@ -98,6 +98,29 @@ IBSCreating(
 	SurfaceMesh ori;
 	SurfaceMesh ans;
 
+	SurfaceMesh::Property_map<SMFI, Point3> midp;
+	SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
+	SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
+	bool ifsueecssed;
+	boost::tie(midp, ifsueecssed) = ans.add_property_map<SMFI, Point3>("midp", Point3(-1., -1., -1.));
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+	std::pair<Point3, double> init(Point3(-1., -1., -1.), -1.);
+	boost::tie(monitoringp1, ifsueecssed) =
+		ans.add_property_map<SMFI, std::pair<Point3, double>>("mp1", init);
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+	boost::tie(monitoringp2, ifsueecssed) =
+		ans.add_property_map<SMFI, std::pair<Point3, double>>("mp2", init);
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+
 	size_t objsSize = objs.size();
 	
 	std::vector<SurfaceMesh> meshs(objsSize);
@@ -153,14 +176,15 @@ IBSCreating(
 		}
 	}
 
-	voro::container con(ax, bx, ay, by, az, bz, 50, 50, 50, false, false, false, 8);
-
+	voro::container con(ax, bx, ay, by, az, bz, 80, 80, 40, false, false, false, 8);
+	PointSet3 totalPts;
 	size_t startIndex = 0;
 	for (size_t i = 0; i < objsSize; i++)
 	{
 		for (size_t j = 0; j < midptsSize.at(i); j++)
 		{
 			con.put(j + startIndex, ptss.at(i).point(j).x(), ptss.at(i).point(j).y(), ptss.at(i).point(j).z());
+			totalPts.insert(ptss.at(i).point(j));
 		}
 		startIndex += midptsSize.at(i);
 	}
@@ -187,37 +211,41 @@ IBSCreating(
 			for (i = 0, j = 0; i < neigh.size(); i++) 
 			{
 				if (neigh[i] > id && !ifneighbor(midptsSize, id, neigh[i]))
-					
 				{
-
 					int k, l, n = f_vert[j];
 					std::vector<SMVI> ptsVI;
-
+					Point3 curmidp(0., 0., 0.);
 					for (k = 0; k < n; k++) {
 						l = 3 * f_vert[j + k + 1];
 						ptsVI.push_back(ans.add_vertex(Point3(v[l], v[l + 1], v[l + 2])));
+						curmidp = CGAL::midpoint(curmidp, Point3(v[l], v[l + 1], v[l + 2]));
 					}
 
-					ans.add_face(ptsVI);
-
+					SMFI curFI = ans.add_face(ptsVI);
+					midp[curFI] = curmidp;
+					std::pair<Point3, double> curmp1, curmp2;
+					curmp1.first = Point3(x, y, z);
+					curmp1.second = CGAL::sqrt(CGAL::squared_distance(curmidp, curmp1.first));
+					monitoringp1[curFI] = curmp1;
+					curmp2.first = totalPts.point(neigh[i]);
+					curmp2.second = CGAL::sqrt(CGAL::squared_distance(curmidp, curmp2.first));
+					monitoringp2[curFI] = curmp2;
 				}
 				
 				// Skip to the next entry in the face vertex list
 				j += f_vert[j] + 1;
-
 			}
 
 		} while (cl.inc());
 
-	//con.draw_particles("C:\\Users\\mic\\Documents\\gnuplot\\random_points_p.gnu");
-	//con.draw_cells_gnuplot("C:\\Users\\mic\\Documents\\gnuplot\\random_points_v.gnu");
 	return ans;
 }
 
 SurfaceMesh
 IBSCreatingWithSenceBB(
 	const std::vector<SurfaceMesh>& objs,
-	const double& bbExpandBias, const double& expectedArea
+	const double& bbExpandBias, const double& expectedArea,
+	const double& safeDis
 )
 {
 	SurfaceMesh ori;
@@ -229,7 +257,7 @@ IBSCreatingWithSenceBB(
 	{
 		ori += objs.at(i);
 	}
-	SurfaceMesh obb = cgaltools::obb(ori, bbExpandBias);
+	SurfaceMesh obb = cgaltools::obb(ori, 2 * safeDis + 0.5);
 
 	double ax = 363363., ay = ax, az = ay;
 	double bx = -363363., by = bx, bz = by;
@@ -301,9 +329,53 @@ IBSCreatingWithSenceBB(
 	f.push_back(ptsVI.at(6));
 	f.push_back(ptsVI.at(7));
 	sencebb.add_face(f);
-	sencebb = cgaltools::averaged(sencebb, 2.);
+	sencebb = cgaltools::averaged(sencebb, 5 * expectedArea);
 	std::vector<SurfaceMesh> tobjs = objs;
 	tobjs.push_back(sencebb);
 
 	return IBSCreating(tobjs, bbExpandBias, expectedArea);
+}
+
+bool
+IBSviewsGeneration(
+	const Tree& tree, const Point3& midp, Point3& ansp, Vector3& ansv,
+	const std::pair<Point3, double>& monitoringp, const double& safeDis
+)
+{
+	if (CGAL::sqrt(tree.squared_distance(monitoringp.first)) > 1.)
+	{
+		return false;
+	}
+	Vector3 d1 = monitoringp.first - midp;
+	d1 /= monitoringp.second;
+	if (monitoringp.second > safeDis)
+	{
+		Point3 v1 = midp + (monitoringp.second - safeDis) * d1;
+		ansp = v1, ansv = d1;
+		return true;
+	}
+	else
+	{
+		const Point3 mp = monitoringp.first;
+		Point3 v1 = midp;
+		double dis = CGAL::sqrt(tree.squared_distance(v1));
+		do
+		{
+			v1 += -d1 * 1.;
+			dis = CGAL::sqrt(tree.squared_distance(v1));
+			if (CGAL::sqrt(CGAL::squared_distance(v1, mp)) > safeDis)
+			{
+				break;
+			}
+		} while (dis > safeDis);
+		if (dis < safeDis)
+		{
+			return false;
+		}
+		else
+		{
+			ansp = v1, ansv = d1;
+			return true;
+		}
+	}
 }

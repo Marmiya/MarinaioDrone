@@ -22,5 +22,12 @@ IBSCreating(
 SurfaceMesh
 IBSCreatingWithSenceBB(
 	const std::vector<SurfaceMesh>& objs,
-	const double& bbExpandBias, const double& expectedArea
+	const double& bbExpandBias, const double& expectedArea,
+	const double& safeDis
+);
+
+bool
+IBSviewsGeneration(
+	const Tree& tree, const Point3& midp, Point3& ansp, Vector3& ansv,
+	const std::pair<Point3, double>& monitoringp, const double& safeDis
 );
