@@ -329,10 +329,10 @@ IBSCreatingWithSenceBB(
 	f.push_back(ptsVI.at(6));
 	f.push_back(ptsVI.at(7));
 	sencebb.add_face(f);
-	sencebb = cgaltools::averaged(sencebb, 5 * expectedArea);
+	sencebb = cgaltools::averaged(sencebb, 12. * expectedArea);
 	std::vector<SurfaceMesh> tobjs = objs;
 	tobjs.push_back(sencebb);
-
+	
 	return IBSCreating(tobjs, bbExpandBias, expectedArea);
 }
 

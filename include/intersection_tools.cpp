@@ -75,8 +75,14 @@ namespace intersectiontools {
 
 		// Intersection Test
 		RTCRayHit rayhits;
-		rayhits.ray.org_x = static_cast<float>(v_view_pos.x()); rayhits.ray.org_y = static_cast<float>(v_view_pos.y()); rayhits.ray.org_z = static_cast<float>(v_view_pos.z());
-		rayhits.ray.dir_x = static_cast<float>(view_to_point.x()); rayhits.ray.dir_y = static_cast<float>(view_to_point.y()); rayhits.ray.dir_z = static_cast<float>(view_to_point.z());
+		rayhits.ray.org_x = static_cast<float>(v_view_pos.x());
+		rayhits.ray.org_y = static_cast<float>(v_view_pos.y());
+		rayhits.ray.org_z = static_cast<float>(v_view_pos.z());
+
+		rayhits.ray.dir_x = static_cast<float>(view_to_point.x());
+		rayhits.ray.dir_y = static_cast<float>(view_to_point.y());
+		rayhits.ray.dir_z = static_cast<float>(view_to_point.z());
+
 		rayhits.ray.tnear = 0;
 		rayhits.ray.tfar = std::numeric_limits<float>::infinity();
 		rayhits.hit.geomID = RTC_INVALID_GEOMETRY_ID;

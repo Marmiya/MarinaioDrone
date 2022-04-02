@@ -8,13 +8,10 @@
 #include <queue>
 #include <fstream>
 #include <random>
-
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
-
 #include <Eigen/Core>
-
 
 namespace modeltools{
 

@@ -31,8 +31,9 @@
     "vertical_overlap": 0.6,
     "horizontal_overlap": 0.6,
     "split_overlap": 0.3,
+    "unit_area": 2,
    
-    "fov": 37,
+    "fov": 60,
 
     "HEIGHT_CLIP": 1, 
     "MERGED_THRESHOLD": -1,

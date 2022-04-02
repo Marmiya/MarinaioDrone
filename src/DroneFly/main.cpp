@@ -2223,6 +2223,7 @@ int main(int argc, char** argv)
 		const double safeHeight = args["safe_height"].asDouble();
 		const double safeDis = args["safe_distance"].asDouble();
 		const double viewDis = args["view_distance"].asDouble();
+		const double unitArea = args["unit_area"].asDouble();
 
 		std::vector<SurfaceMesh> SMs;
 		SurfaceMesh cur_mesh;
@@ -2237,35 +2238,40 @@ int main(int argc, char** argv)
 				bz = item.bounding_box_3d.box.max().z();
 			}
 		}
-		
-		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., 1.5, safeDis);
-
+		LOG(INFO) << "Begin IBS creating...";
+		auto t = comutil::recordTime();
+		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., unitArea, safeDis);
+		comutil::checkpointTime(t, "IBS was created");
+		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
+		//CGAL::draw(ans);
 		SurfaceMesh::Property_map<SMFI, Point3> midp;
 		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
 		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
 		bool ifsueecssed;
+
 		boost::tie(midp, ifsueecssed) = ans.property_map<SMFI, Point3>("midp");
 		if (!ifsueecssed)
 		{
 			throw;
 		}
-		std::pair<Point3, double> init(Point3(-1., -1., -1.), -1.);
+		
 		boost::tie(monitoringp1, ifsueecssed) =
 			ans.property_map<SMFI, std::pair<Point3, double>>("mp1");
 		if (!ifsueecssed)
 		{
 			throw;
 		}
+
 		boost::tie(monitoringp2, ifsueecssed) =
 			ans.property_map<SMFI, std::pair<Point3, double>>("mp2");
 		if (!ifsueecssed)
 		{
 			throw;
 		}
-		
-		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
+
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 
+		comutil::checkpointTime(t, "Begin views sampling...");
 		double curHeight = safeHeight;
 		std::vector<double> sliceZ;
 		while (curHeight < bz + 5.)
@@ -2290,6 +2296,7 @@ int main(int argc, char** argv)
 					Point3 ansp;
 					Vector3 ansv;
 					std::pair<Point3, double> mp1, mp2;
+
 					mp1 = monitoringp1[curFI];
 					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp1, safeDis))
 					{
@@ -2298,7 +2305,6 @@ int main(int argc, char** argv)
 							views.insert(ansp, ansv);
 						}
 					}
-
 					mp2 = monitoringp2[curFI];
 					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp2, safeDis))
 					{
@@ -2310,10 +2316,9 @@ int main(int argc, char** argv)
 				}
 			}
 		}
+		comutil::checkpointTime(t, "Views sampling was finished");
 
 		CGAL::IO::write_point_set(logPath + "IBSviews.ply", views);
-
-
 	}
 	else
 	{
