@@ -107,7 +107,7 @@ std::vector<Viewpoint> droneScan(
     // ************************************************************************
 
     // initialize the reconstructability for every point.
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int k = 0; k < pointsSize; ++k)
     {
         if (!modl)
@@ -205,12 +205,12 @@ std::vector<Viewpoint> droneScan(
     }
 
     int del = 0;
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int i = 0; i < pointsSize; i++)
     {
         if (recpts.at(i) <= conBaseLine)
         {
-#pragma omp critical
+			#pragma omp critical
             {
                 points.remove(i);
                 low.insert(points.point(i));
@@ -271,7 +271,7 @@ std::vector<Viewpoint> droneScanAdj(
     auto visibilityindex = compute_visibilityIndex(traj, mesh, points, intrinsicMatrix, maxDis, embree_scene);
 
     // initialize the reconstructability for every point.
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int k = 0; k < pointsSize; ++k)
     {
         Eigen::Vector3d point = cgaltools::cgal_point_2_eigen(points.point(k));
@@ -296,14 +296,14 @@ std::vector<Viewpoint> droneScanAdj(
 
     std::vector<std::vector<std::pair<int, bool>>> IRD(pointsSize);
 
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int k = 0; k < pointsSize; ++k)
     {
         std::vector<int> vis = visibilityindex.at(k);
 
         for (int i = 0; i < vis.size(); ++i)
         {
-#pragma omp critical
+	        #pragma omp critical
             {
                 correlation.at(vis.at(i)).push_back(k);
             }
@@ -312,7 +312,7 @@ std::vector<Viewpoint> droneScanAdj(
     }
     LOG(INFO) << "Analysis of correlation was finished.";
 
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int i = 0; i < viewSize; ++i)
     {
         double imp = .0;
@@ -328,14 +328,14 @@ std::vector<Viewpoint> droneScanAdj(
                 }
             }
         }
-#pragma omp critical
+		#pragma omp critical
         {
             importance.at(i).first = imp;
         }
     }
     LOG(INFO) << "Computation of importance is finished.";
 
-#pragma omp parallel for
+	#pragma omp parallel for
     for (int i = 0; i < pointsSize; i++)
     {
         std::vector<std::pair<int, bool>> t;
@@ -344,7 +344,7 @@ std::vector<Viewpoint> droneScanAdj(
         {
             t.push_back({ vis.at(j), true });
         }
-#pragma omp critical
+	    #pragma omp critical
         {
             IRD.at(i) = t;
         }
@@ -369,7 +369,7 @@ std::vector<Viewpoint> droneScanAdj(
         std::vector<std::pair<int, double>> storage(pts.size());
         bool remove = true;
 
-#pragma omp parallel for
+		#pragma omp parallel for
         for (int i = 0; i < pts.size(); i++)
         {
             auto pt = pts.at(i);
@@ -394,7 +394,7 @@ std::vector<Viewpoint> droneScanAdj(
                     ct++;
                 }
             }
-#pragma omp critical
+			#pragma omp critical
             {
                 storage.at(i) = { me, down };
             }
@@ -408,12 +408,12 @@ std::vector<Viewpoint> droneScanAdj(
         min->second = false;
         if (remove)
         {
-#pragma omp parallel for
+			#pragma omp parallel for
             for (int i = 0; i < pts.size(); i++)
             {
                 auto pt = pts.at(i);
                 auto& ird = IRD.at(pt);
-#pragma omp critical
+				#pragma omp critical
                 {
                     recpts.at(pt) -= storage.at(i).second;
                     ird.at(storage.at(i).first).second = false;
@@ -425,7 +425,7 @@ std::vector<Viewpoint> droneScanAdj(
                     {
                         if (1. / recpts.at(pt) > importance.at(ird.at(j).first).first)
                         {
-#pragma omp critical
+							#pragma omp critical
                             {
                                 importance.at(ird.at(j).first).first = 1. / recpts.at(pt);
                             }

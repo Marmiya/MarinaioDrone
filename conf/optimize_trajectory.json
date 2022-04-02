@@ -1,8 +1,9 @@
 {
     "log_txt": true,
-    "points": "C:\\SSD\\Marinaio\\DATA\\samples\\7K.ply",
-    "model": "C:\\SSD\\Marinaio\\DATA\\models\\xuexiao_fine.ply",
-    "stage": 1,
+    "points": "C:\\Marinaio\\DATA\\testFile\\sample.drone_path",
+    "model": "C:\\Marinaio\\DATA\\testFile\\obj_box.ply",
+    "stage": 3,
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\",
-    "traj": "C:/DATA/combination"
+    "traj": "C:/DATA/combination",
+    "DPviews":"C:\\Marinaio\\DATA\\testFile\\path0.drone_path"
 }
