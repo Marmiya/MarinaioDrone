@@ -118,11 +118,11 @@ namespace cgaltools {
     {
         return Point3(p.x(), p.y(), p.z());
     }
+
     Vector3 eigen_2_cgal_vector(const Eigen::Vector3d& p)
     {
         return Vector3(p.x(), p.y(), p.z());
     }
-
 
     Cuboid::Cuboid(std::set<Point3> s)
     {
@@ -253,7 +253,6 @@ namespace cgaltools {
                         ifOverBig[i] = true;
                     }
                 }
-                //std::cout << i << " " << area(p1, p2, p3);
             }
 
             std::vector<int> OBvec;

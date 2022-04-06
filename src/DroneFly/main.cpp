@@ -2227,100 +2227,31 @@ int main(int argc, char** argv)
 
 		std::vector<SurfaceMesh> SMs;
 		SurfaceMesh cur_mesh;
-		double bz = 0.;
+		
 		for (const auto& item : total_buildings)
 		{
 			SurfaceMesh cursm = item.buildingMesh;
 			SMs.push_back(cursm);
 			cur_mesh += cursm;
-			if (item.bounding_box_3d.box.max().z() > bz)
-			{
-				bz = item.bounding_box_3d.box.max().z();
-			}
 		}
 		LOG(INFO) << "Begin IBS creating...";
 		auto t = comutil::recordTime();
 		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., unitArea, safeDis);
 		comutil::checkpointTime(t, "IBS was created");
+
+		auto triAns = IBSTriangulation(ans);
 		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
-		//CGAL::draw(ans);
-		SurfaceMesh::Property_map<SMFI, Point3> midp;
-		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
-		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
-		bool ifsueecssed;
-
-		boost::tie(midp, ifsueecssed) = ans.property_map<SMFI, Point3>("midp");
-		if (!ifsueecssed)
-		{
-			throw;
-		}
-		
-		boost::tie(monitoringp1, ifsueecssed) =
-			ans.property_map<SMFI, std::pair<Point3, double>>("mp1");
-		if (!ifsueecssed)
-		{
-			throw;
-		}
-
-		boost::tie(monitoringp2, ifsueecssed) =
-			ans.property_map<SMFI, std::pair<Point3, double>>("mp2");
-		if (!ifsueecssed)
-		{
-			throw;
-		}
-
+		CGAL::IO::write_PLY(logPath + "triIBS.ply", triAns);
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 
 		comutil::checkpointTime(t, "Begin views sampling...");
-		double curHeight = safeHeight;
-		std::vector<double> sliceZ;
-		while (curHeight < bz + 5.)
-		{
-			sliceZ.push_back(curHeight);
-			curHeight += 5.;
-		}
+		
+		PointSet3 views = IBSviewNet(ans, SMs, safeDis, safeHeight, 5., 5.);
 
-		tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
-
-		PointSet3 views(true);
-		int meshSize = static_cast<int>(ans.number_of_faces());
-		for (const auto& curHeight : sliceZ)
-		{
-			#pragma omp parallel for
-			for (int i = 0; i < meshSize; i++)
-			{
-				SMFI curFI(i);
-				Point3 mp = midp[curFI];
-				if (std::abs(mp.z() - curHeight) < .125)
-				{
-					Point3 ansp;
-					Vector3 ansv;
-					std::pair<Point3, double> mp1, mp2;
-
-					mp1 = monitoringp1[curFI];
-					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp1, safeDis))
-					{
-						#pragma omp critical
-						{
-							views.insert(ansp, ansv);
-						}
-					}
-					mp2 = monitoringp2[curFI];
-					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp2, safeDis))
-					{
-						#pragma omp critical
-						{
-							views.insert(ansp, ansv);
-						}
-					}
-				}
-			}
-		}
 		comutil::checkpointTime(t, "Views sampling was finished");
-
 		CGAL::IO::write_point_set(logPath + "IBSviews.ply", views);
 	}
-	else
+	else // Stage which is not defined.
 	{
 	throw;
 	}

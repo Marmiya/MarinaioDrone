@@ -47,7 +47,7 @@ namespace intersectiontools {
 			}
 			i_index++;
 		}
-
+		
 		rtcCommitGeometry(d_mesh);
 		rtcAttachGeometry(scene, d_mesh);
 		rtcReleaseGeometry(d_mesh);

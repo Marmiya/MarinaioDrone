@@ -38,7 +38,8 @@ find_package(glog CONFIG REQUIRED)
 find_package(embree 3 CONFIG REQUIRED)
 find_package(SCIP CONFIG REQUIRED)
 find_package(Qhull CONFIG REQUIRED)
-
+find_package(tinyply CONFIG REQUIRED)
+    
 add_definitions(-DCGAL_USE_BASIC_VIEWER)
 include(CGAL_SCIP_support)
 if (OPENMP_FOUND)
@@ -58,6 +59,7 @@ function(link_general arg)
     target_link_libraries(${ARGV0} PRIVATE glog::glog)
     target_link_libraries(${ARGV0} PRIVATE embree)
     target_link_libraries(${ARGV0} PRIVATE Qhull::qhullcpp)
+    target_link_libraries(${ARGV0} PRIVATE tinyply)
 endfunction()
 
 FILE(GLOB LIBRARY_FILE "include/*.cpp" "include/*.h")
@@ -65,7 +67,7 @@ add_library(${PROJECT_NAME} ${LIBRARY_FILE})
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PUBLIC "/Zc:__cplusplus")
-    #target_compile_options(${PROJECT_NAME} PUBLIC "/wd4819;")
+    target_compile_options(${PROJECT_NAME} PUBLIC "/wd4146;")
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE src/voro)
@@ -80,5 +82,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE tinyobjloader::tinyobjloader)
 target_link_libraries(${PROJECT_NAME} PRIVATE glog::glog)
 target_link_libraries(${PROJECT_NAME} PRIVATE embree)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qhull::qhullcpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE tinyply)
 
 add_subdirectory(src)

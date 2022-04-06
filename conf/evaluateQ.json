@@ -1,0 +1,25 @@
+{
+
+    "recon_model": "D:\\Projects\\Reconstructability\\PathPlanning\\test\\school_test_rc12.ply",
+    //"recon_model": "D:\\Projects\\Reconstructability\\training_data\\v4\\xuexiao_fine_ds_0090\\Mesh.ply",
+    "gt_model": "D:\\Projects\\Reconstructability\\proxy\\xuexiao_fine.ply",
+
+
+    //"matrix": [
+    //    0.999332,
+    //    -8.4292e-05,
+    //    -0.000487032,
+    //    0.0242144,
+    //    8.44307e-05,
+    //    0.999332,
+    //    0.000284688,
+    //    -0.0177531,
+    //    0.000487008,
+    //    -0.00028473,
+    //    0.999332,
+    //    -0.0389075
+    //],
+
+    "local_icp": 2
+}
+© 2022 GitHub, Inc.

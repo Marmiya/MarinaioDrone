@@ -1,5 +1,14 @@
 #include "ibs.h"
 
+std::array<double, 36> roundedDirection{
+	0.,		  M_PI / 18.,		M_PI / 9.,	M_PI / 6.,	4 * (M_PI / 18.),	5 * (M_PI / 18.),
+	M_PI / 3.,7 * (M_PI / 18.), 8 * (M_PI / 18.),M_PI / 2.,	10 * (M_PI / 18.),11 * (M_PI / 18.),
+	12 * (M_PI / 18.),13 * (M_PI / 18.),	14 * (M_PI / 18.),15 * (M_PI / 18.),16 * (M_PI / 18.),
+	17 * (M_PI / 18.),	M_PI ,19 * (M_PI / 18.),20 * (M_PI / 18.),21 * (M_PI / 18.),22 * (M_PI / 18.),23 * (M_PI / 18.),
+	24 * (M_PI / 18.),25 * (M_PI / 18.),26 * (M_PI / 18.),	27 * (M_PI / 18.),28 * (M_PI / 18.),29 * (M_PI / 18.),
+	30 * (M_PI / 18.),31 * (M_PI / 18.),32 * (M_PI / 18.),33 * (M_PI / 18.),34 * (M_PI / 18.),35 * (M_PI / 18.)
+};
+
 PointSet3
 generateMidpts(const SurfaceMesh& mesh)
 {
@@ -378,4 +387,268 @@ IBSviewsGeneration(
 			return true;
 		}
 	}
+}
+
+SurfaceMesh
+IBSTriangulation(
+	const SurfaceMesh& IBS
+)
+{
+	SurfaceMesh ans = IBS;
+	SurfaceMesh::Property_map<SMFI, Point3> midp;
+	SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
+	SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
+	bool ifsueecssed;
+
+	boost::tie(midp, ifsueecssed) = ans.property_map<SMFI, Point3>("midp");
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+
+	boost::tie(monitoringp1, ifsueecssed) =
+		ans.property_map<SMFI, std::pair<Point3, double>>("mp1");
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+
+	boost::tie(monitoringp2, ifsueecssed) =
+		ans.property_map<SMFI, std::pair<Point3, double>>("mp2");
+	if (!ifsueecssed)
+	{
+		throw;
+	}
+
+	while (!CGAL::is_triangle_mesh(ans))
+	{
+		int faceSize = static_cast<int>(ans.number_of_faces());
+		#pragma omp parallel for
+		for (int i = 0; i < faceSize; i++)
+		{
+			SMFI curFI(i);
+			CGAL::Vertex_around_face_iterator<SurfaceMesh> vbegin, vend;
+			boost::tie(vbegin, vend) = vertices_around_face(ans.halfedge(curFI), ans);
+			if (ans.degree(curFI) > 3)
+			{
+				int dg = static_cast<int>(ans.degree(curFI));
+				int split = dg / 2;
+				std::vector<Point3> pts;
+				std::vector<SMVI> fstF, sndF;
+				Point3 mp = midp[curFI];
+				std::pair<Point3, double> mp1 = monitoringp1[curFI];
+				std::pair<Point3, double> mp2 = monitoringp2[curFI];
+
+				#pragma omp critical
+				{
+					ans.remove_face(curFI);
+					while (vbegin != vend)
+					{
+						pts.push_back(ans.point(*vbegin));
+						ans.remove_vertex(*vbegin);
+						++vbegin;
+					}
+					for (int i = 0; i <= split; i++)
+					{
+						fstF.push_back(ans.add_vertex(pts.at(i)));
+					}
+					SMFI fVI = ans.add_face(fstF);
+					midp[fVI] = mp;
+					monitoringp1[fVI] = mp1;
+					monitoringp2[fVI] = mp2;
+
+					for (int i = split; i < dg; i++)
+					{
+						sndF.push_back(ans.add_vertex(pts.at(i)));
+					}
+					sndF.push_back(ans.add_vertex(pts.at(0)));
+
+					SMFI sVI = ans.add_face(sndF);
+					midp[sVI] = mp;
+					monitoringp1[sVI] = mp1;
+					monitoringp2[sVI] = mp2;
+				}
+			}
+		}
+		ans.collect_garbage();
+	}
+	return ans;
+}
+
+PointSet3 IBSviewNet(
+	const SurfaceMesh& IBS, const std::vector<SurfaceMesh>& meshs,
+	const double& safeDis, const double& safeHeight, 
+	const double& verticalStep, const double& horizontalStep
+)
+{
+	auto tIBS = IBSTriangulation(IBS);
+	PointSet3 ans(true);
+	if(!CGAL::Polygon_mesh_processing::triangulate_faces(tIBS))
+	{
+		throw;
+	}
+	const auto scene = intersectiontools::generate_embree_scene(tIBS);
+
+	for (const auto& mesh : meshs)
+	{
+		auto obb = cgaltools::obb(mesh, 0.);
+		Point2 midpom(
+			0.25 * (obb.point(SMVI(0)).x() + obb.point(SMVI(1)).x() + obb.point(SMVI(2)).x() + obb.point(SMVI(3)).x()),
+			0.25 * (obb.point(SMVI(0)).y() + obb.point(SMVI(1)).y() + obb.point(SMVI(2)).y() + obb.point(SMVI(3)).y())
+		);
+		const double highestZ = obb.point(SMVI(4)).z();
+		std::vector<double> sliceZ;
+		double curHeight = safeHeight;
+
+		while (curHeight < highestZ)
+		{
+			sliceZ.push_back(curHeight);
+			curHeight += verticalStep;
+		}
+
+		SurfaceMesh::Property_map<SMFI, Point3> midp;
+		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;
+		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp2;
+		bool ifsueecssed;
+
+		boost::tie(midp, ifsueecssed) = tIBS.property_map<SMFI, Point3>("midp");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
+
+		boost::tie(monitoringp1, ifsueecssed) =
+			tIBS.property_map<SMFI, std::pair<Point3, double>>("mp1");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
+
+		boost::tie(monitoringp2, ifsueecssed) =
+			tIBS.property_map<SMFI, std::pair<Point3, double>>("mp2");
+		if (!ifsueecssed)
+		{
+			throw;
+		}
+
+		Tree tree(mesh.faces().begin(), mesh.faces().end(), mesh);
+
+		for (const auto& curHeight : sliceZ)
+		{
+			#pragma omp parallel for
+			for (int j = 0; j < 36; j++)
+			{
+				Eigen::AngleAxisd rotation(roundedDirection.at(j), Eigen::Vector3d(0., 0., 1.));
+				Eigen::Vector3d directionv = rotation * Eigen::Vector3d(0., 1., 0.);
+
+				RTCRayHit rayhits;
+				rayhits.ray.org_x = static_cast<float>(midpom.x());
+				rayhits.ray.org_y = static_cast<float>(midpom.y());
+				rayhits.ray.org_z = static_cast<float>(curHeight);
+
+				rayhits.ray.dir_x = static_cast<float>(directionv.x());
+				rayhits.ray.dir_y = static_cast<float>(directionv.y());
+				rayhits.ray.dir_z = static_cast<float>(directionv.z());
+
+				rayhits.ray.tnear = 0;
+				rayhits.ray.tfar = std::numeric_limits<float>::infinity();
+				rayhits.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+				rayhits.hit.primID = RTC_INVALID_GEOMETRY_ID;
+
+				RTCIntersectContext context;
+				rtcInitIntersectContext(&context);
+
+				rtcIntersect1(scene, &context, &rayhits);
+
+				if (rayhits.hit.geomID != RTC_INVALID_GEOMETRY_ID)
+				{
+					SMFI curFI(rayhits.hit.primID);
+					Point3 ansp;
+					Vector3 ansv;
+					std::pair<Point3, double> mp1, mp2;
+					Point3 mp = midp[curFI];
+					mp1 = monitoringp1[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp1, safeDis))
+					{
+						#pragma omp critical
+						{
+							ans.insert(ansp, ansv);
+						}
+					}
+					mp2 = monitoringp2[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp2, safeDis))
+					{
+						#pragma omp critical
+						{
+							ans.insert(ansp, ansv);
+						}
+					}
+				}
+			}
+		}
+
+		Vector3 xline = obb.point(SMVI(1)) - obb.point(SMVI(0));
+		Vector3 yline = obb.point(SMVI(3)) - obb.point(SMVI(0));
+		int xli = static_cast<int>(std::ceil(CGAL::sqrt(xline.squared_length()) / horizontalStep));
+		int yli = static_cast<int>(std::ceil(CGAL::sqrt(yline.squared_length()) / horizontalStep));
+		xline /= CGAL::sqrt(xline.squared_length());
+		yline /= CGAL::sqrt(yline.squared_length());
+
+		for (int i = 0; i <= xli; i++)
+		{
+			#pragma omp parallel for
+			for (int j = 0; j <= yli; j++)
+			{
+				Point3 curp = obb.point(SMVI(0));
+				curp += i * horizontalStep * xline;
+				curp += j * horizontalStep * yline;
+
+				RTCRayHit rayhits;
+				rayhits.ray.org_x = static_cast<float>(curp.x());
+				rayhits.ray.org_y = static_cast<float>(curp.y());
+				rayhits.ray.org_z = static_cast<float>(highestZ);
+
+				rayhits.ray.dir_x = static_cast<float>(0.);
+				rayhits.ray.dir_y = static_cast<float>(0.);
+				rayhits.ray.dir_z = static_cast<float>(1.);
+
+				rayhits.ray.tnear = 0;
+				rayhits.ray.tfar = std::numeric_limits<float>::infinity();
+				rayhits.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+				rayhits.hit.primID = RTC_INVALID_GEOMETRY_ID;
+
+				RTCIntersectContext context;
+				rtcInitIntersectContext(&context);
+
+				rtcIntersect1(scene, &context, &rayhits);
+
+				if (rayhits.hit.geomID != RTC_INVALID_GEOMETRY_ID)
+				{
+					SMFI curFI(rayhits.hit.primID);
+					Point3 ansp;
+					Vector3 ansv;
+					std::pair<Point3, double> mp1, mp2;
+					Point3 mp = midp[curFI];
+					mp1 = monitoringp1[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp1, safeDis))
+					{
+						#pragma omp critical
+						{
+							ans.insert(ansp, ansv);
+						}
+					}
+					mp2 = monitoringp2[curFI];
+					if (IBSviewsGeneration(tree, mp, ansp, ansv, mp2, safeDis))
+					{
+						#pragma omp critical
+						{
+							ans.insert(ansp, ansv);
+						}
+					}
+				}
+			}
+		}
+
+	}
+	return ans;
 }

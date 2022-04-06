@@ -73,18 +73,23 @@ using Triangle3 = K::Triangle_3;
 using Vector2 = K::Vector_2;
 using Vector3 = K::Vector_3;
 using PointSet3 = CGAL::Point_set_3<Point3, Vector3>;
+
 using Primitive = CGAL::AABB_face_graph_triangle_primitive<SurfaceMesh, CGAL::Default, CGAL::Tag_false>;
 using AABB_Traits = CGAL::AABB_traits<K, Primitive>;
 using Tree = CGAL::AABB_tree<AABB_Traits>;
+
 using Primitive_id = Tree::Primitive_id;
 using KDTreeTraits = CGAL::Search_traits_3<K>;
 using Neighbor_search = CGAL::Orthogonal_k_neighbor_search<KDTreeTraits>;
 using KDTree = Neighbor_search::Tree;
+
 using Polyline_type = std::vector<Point3>;
 using Polylines = std::list<Polyline_type>;
+
 using SMFI = SurfaceMesh::Face_index;
 using SMVI = SurfaceMesh::vertex_index;
 using SMHEI = SurfaceMesh::halfedge_index;
+
 using PNI = boost::tuple<Point3, Vector3, int>;
 using Point_vector = std::vector<PNI>;
 using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
@@ -130,11 +135,14 @@ private:
 
 namespace cgaltools {
 
-	inline double area(const Point3& p1, const Point3& p2, const Point3& p3);
+	inline double
+	area(const Point3& p1, const Point3& p2, const Point3& p3);
 
-	SurfaceMesh averaged(const SurfaceMesh& mesh, double expectedArea);
+	SurfaceMesh
+	averaged(const SurfaceMesh& mesh, double expectedArea);
 
-	SurfaceMesh obb(const SurfaceMesh& sm, const double& bbExpandBias);
+	SurfaceMesh
+	obb(const SurfaceMesh& sm, const double& bbExpandBias);
 
 	// Link node of segments
 	class SegmentLN {

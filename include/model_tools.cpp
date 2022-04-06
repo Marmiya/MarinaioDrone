@@ -2,7 +2,8 @@
 
 namespace modeltools {
 
-	SurfaceMesh read_model(const fs::path& v_path)
+	SurfaceMesh
+	read_model(const fs::path& v_path)
 	{
 		SurfaceMesh mesh;
 		if (!fs::exists(v_path))
@@ -29,7 +30,8 @@ namespace modeltools {
 		return mesh;
 	}
 
-	bool read_model(const fs::path& v_path, Polyhedron3& v_mesh)
+	bool
+	read_model(const fs::path& v_path, Polyhedron3& v_mesh)
 	{
 		if (!fs::exists(v_path))
 		{
@@ -46,6 +48,213 @@ namespace modeltools {
 		return true;
 	}
 
+	bool
+		read_model(
+			const fs::path& v_path, std::vector<Point3>& v_points, std::vector<Vector3>& v_normals,
+			std::vector<std::array<int, 3>>& v_face_indices, std::vector<CGAL::Triangle_3<K>>& v_faces
+		)
+	{
+		struct memory_buffer : public std::streambuf
+		{
+			char* p_start{ nullptr };
+			char* p_end{ nullptr };
+			size_t size;
+
+			memory_buffer(char const* first_elem, size_t size)
+				: p_start(const_cast<char*>(first_elem)), p_end(p_start + size), size(size)
+			{
+				setg(p_start, p_start, p_end);
+			}
+
+			pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which) override
+			{
+				if (dir == std::ios_base::cur) gbump(static_cast<size_t>(off));
+				else setg(p_start, (dir == std::ios_base::beg ? p_start : p_end) + off, p_end);
+				return gptr() - p_start;
+			}
+
+			pos_type seekpos(pos_type pos, std::ios_base::openmode which) override
+			{
+				return seekoff(pos, std::ios_base::beg, which);
+			}
+		};
+
+		struct memory_stream : virtual memory_buffer, public std::istream
+		{
+			memory_stream(char const* first_elem, size_t size)
+				: memory_buffer(first_elem, size), std::istream(static_cast<std::streambuf*>(this)) {}
+		};
+
+		std::unique_ptr<std::istream> file_stream;
+		std::vector<uint8_t> byte_buffer;
+
+		try
+		{
+			std::ifstream dummy_file(v_path.string(), std::ios::binary);
+
+			if (!dummy_file.is_open())
+				throw std::runtime_error("could not open binary ifstream to path " + v_path.string());
+			dummy_file.seekg(0, std::ios::end);
+			size_t sizeBytes = dummy_file.tellg();
+			std::cout << "The file is " << sizeBytes / 1024 / 1024 << " MB" << std::endl;
+			if (sizeBytes > 1024 * 1024 * 1024)
+			{
+				file_stream.reset(new std::ifstream(v_path.string(), std::ios::binary));
+			}
+			else
+			{
+				dummy_file.seekg(0, std::ios::beg);
+				byte_buffer.resize(sizeBytes);
+				if (dummy_file.read((char*)byte_buffer.data(), sizeBytes));
+				file_stream.reset(new memory_stream((char*)byte_buffer.data(), byte_buffer.size()));
+			}
+
+			if (!file_stream || file_stream->fail()) throw std::runtime_error("file_stream failed to open " + v_path.string());
+
+			tinyply::PlyFile file;
+			if (!file.parse_header(*file_stream))
+			{
+				std::cerr << "Error parsing the header";
+				throw;
+			}
+
+			//std::cout << "\t[ply_header] Type: " << (file.is_binary_file() ? "binary" : "ascii") << std::endl;
+			//for (const auto & c : file.get_comments()) std::cout << "\t[ply_header] Comment: " << c << std::endl;
+			//for (const auto & c : file.get_info()) std::cout << "\t[ply_header] Info: " << c << std::endl;
+
+			for (const auto& e : file.get_elements())
+			{
+				//std::cout << "\t[ply_header] element: " << e.name << " (" << e.size << ")" << std::endl;
+				for (const auto& p : e.properties)
+				{
+					//std::cout << "\t[ply_header] \tproperty: " << p.name << " (type=" << tinyply::PropertyTable[p.propertyType].str << ")";
+					//if (p.isList) std::cout << " (list_type=" << tinyply::PropertyTable[p.listType].str << ")";
+					//std::cout << std::endl;
+				}
+			}
+
+			std::shared_ptr<tinyply::PlyData> vertices, normals, colors, texcoords, faces, tripstrip;
+			try { vertices = file.request_properties_from_element("vertex", { "x", "y", "z" }); }
+			catch (const std::exception& e)
+			{
+				std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			try { normals = file.request_properties_from_element("vertex", { "nx", "ny", "nz" }); }
+			catch (const std::exception& e)
+			{
+				std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			try { colors = file.request_properties_from_element("vertex", { "red", "green", "blue", "alpha" }); }
+			catch (const std::exception& e)
+			{
+				//std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			try { colors = file.request_properties_from_element("vertex", { "r", "g", "b", "a" }); }
+			catch (const std::exception& e)
+			{
+				//std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			try { texcoords = file.request_properties_from_element("vertex", { "u", "v" }); }
+			catch (const std::exception& e)
+			{
+				//std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			try { faces = file.request_properties_from_element("face", { "vertex_indices" }, 3); }
+			catch (const std::exception& e)
+			{
+				std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			// Tristrips must always be read with a 0 list size hint (unless you know exactly how many elements
+			// are specifically in the file, which is unlikely); 
+			try { tripstrip = file.request_properties_from_element("tristrips", { "vertex_indices" }, 0); }
+			catch (const std::exception& e)
+			{
+				//std::cerr << "tinyply exception: " << e.what() << std::endl;
+			}
+
+			file.read(*file_stream);
+
+			//if (vertices)   std::cout << "\tRead " << vertices->count  << " total vertices "<< std::endl;
+			//if (normals)    std::cout << "\tRead " << normals->count   << " total vertex normals " << std::endl;
+			//if (colors)     std::cout << "\tRead " << colors->count << " total vertex colors " << std::endl;
+			//if (texcoords)  std::cout << "\tRead " << texcoords->count << " total vertex texcoords " << std::endl;
+			//if (faces)      std::cout << "\tRead " << faces->count     << " total faces (triangles) " << std::endl;
+			//if (tripstrip)  std::cout << "\tRead " << (tripstrip->buffer.size_bytes() / tinyply::PropertyTable[tripstrip->t].stride) << " total indicies (tristrip) " << std::endl;
+
+			//LOG(INFO) << "Read done. Generating the vector";
+			v_points.resize(vertices->count);
+			v_normals.resize(vertices->count);
+			v_faces.resize(faces->count);
+			v_face_indices.resize(faces->count);
+
+			if (vertices->t == tinyply::Type::FLOAT32)
+			{
+				#pragma omp parallel for
+				for (int i = 0; i < vertices->count; ++i)
+				{
+					v_points[i] = Point3(
+						((float*)vertices->buffer.get())[i * 3 + 0],
+						((float*)vertices->buffer.get())[i * 3 + 1],
+						((float*)vertices->buffer.get())[i * 3 + 2]
+					);
+				}
+			}
+			else if (vertices->t == tinyply::Type::FLOAT64)
+			{
+				#pragma omp parallel for
+				for (int i = 0; i < vertices->count; ++i)
+				{
+					v_points[i] = Point3(
+						((double*)vertices->buffer.get())[i * 3 + 0],
+						((double*)vertices->buffer.get())[i * 3 + 1],
+						((double*)vertices->buffer.get())[i * 3 + 2]
+					);
+				}
+			}
+			else
+				throw;
+
+			if (faces->t == tinyply::Type::UINT32)
+			{
+#pragma omp parallel for
+				for (int i = 0; i < faces->count; ++i)
+				{
+					v_faces[i] = CGAL::Triangle_3<K>(
+						v_points[((unsigned int*)faces->buffer.get())[i * 3 + 0]],
+						v_points[((unsigned int*)faces->buffer.get())[i * 3 + 1]],
+						v_points[((unsigned int*)faces->buffer.get())[i * 3 + 2]]);
+					v_face_indices[i] = {
+						(int)(((unsigned int*)faces->buffer.get())[i * 3 + 0]) ,
+						(int)(((unsigned int*)faces->buffer.get())[i * 3 + 1]),
+						(int)(((unsigned int*)faces->buffer.get())[i * 3 + 2]) };
+				}
+			}
+			else if (faces->t == tinyply::Type::INT32)
+#pragma omp parallel for
+				for (int i = 0; i < faces->count; ++i)
+				{
+					v_faces[i] = CGAL::Triangle_3<K>(
+						v_points[((int*)faces->buffer.get())[i * 3 + 0]],
+						v_points[((int*)faces->buffer.get())[i * 3 + 1]],
+						v_points[((int*)faces->buffer.get())[i * 3 + 2]]);
+					v_face_indices[i] = { ((int*)faces->buffer.get())[i * 3 + 0] ,((int*)faces->buffer.get())[i * 3 + 1], ((int*)faces->buffer.get())[i * 3 + 2] };
+				}
+			else
+				throw;
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
+		}
+
+		return true;
+	}
 
 	std::tuple<tinyobj::attrib_t, std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>>
 		load_obj(
@@ -1310,7 +1519,6 @@ namespace modeltools {
 		return output;
 	}
 
-
 	std::vector<Polygon2> get_polygons(std::string file_path)
 	{
 		std::ifstream inputFile;
@@ -1350,52 +1558,135 @@ namespace modeltools {
 
 	PointSet3 sample_points(const SurfaceMesh& v_mesh, const int v_num_points)
 	{
-		std::mt19937 gen; std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+		std::mt19937 gen; std::uniform_real_distribution<double> dist(0.0f, 1.0f);
 		PointSet3 o_point_set(true);
-		float total_area = CGAL::Polygon_mesh_processing::area(v_mesh);
-		float point_per_area = v_num_points / total_area;
+		double total_area = CGAL::Polygon_mesh_processing::area(v_mesh);
+		double point_per_area = (double)v_num_points / total_area;
 
-#pragma omp parallel for
+		#pragma omp parallel for
 		for (int i_face = 0; i_face < v_mesh.num_faces(); ++i_face)
 		{
 			const auto it_face = *(v_mesh.faces_begin() + i_face);
-			Eigen::Vector3d vertexes[3];
+			Point3 vertexes[3];
 			int i_vertex = 0;
 			for (auto it_vertex = (v_mesh.vertices_around_face(v_mesh.halfedge(it_face))).begin(); it_vertex != (v_mesh.vertices_around_face(v_mesh.halfedge(it_face))).end(); ++it_vertex)
 			{
-				vertexes[i_vertex++] = cgaltools::cgal_point_2_eigen(v_mesh.point(*it_vertex));
+				vertexes[i_vertex++] = v_mesh.point(*it_vertex);
 			}
 
-			Eigen::Vector3d normal = (vertexes[1] - vertexes[0]).cross(vertexes[2] - vertexes[0]).normalized();
+			Vector3 normal = CGAL::cross_product(vertexes[1] - vertexes[0], vertexes[2] - vertexes[0]);
+			normal /= std::sqrt(normal.squared_length());
 
-			float area = CGAL::Polygon_mesh_processing::face_area(it_face, v_mesh);
+			double area = CGAL::Polygon_mesh_processing::face_area(it_face, v_mesh);
 
-			float face_samples = area * point_per_area;
+			double face_samples = area * point_per_area;
 			uint num_face_samples = static_cast<uint>(face_samples);
 
-			if (dist(gen) < (face_samples - static_cast<float>(num_face_samples))) {
+			if (dist(gen) < (face_samples - static_cast<double>(num_face_samples))) {
 				num_face_samples += 1;
 			}
 
 			for (uint j = 0; j < num_face_samples; ++j) {
-				float r1 = dist(gen);
-				float r2 = dist(gen);
+				double r1 = dist(gen);
+				double r2 = dist(gen);
 
-				float tmp = std::sqrt(r1);
-				float u = 1.0f - tmp;
-				float v = r2 * tmp;
+				double tmp = std::sqrt(r1);
+				double u = 1.0f - tmp;
+				double v = r2 * tmp;
 
-				float w = 1.0f - v - u;
-				auto point = cgaltools::eigen_2_cgal_point(u * vertexes[0] + v * vertexes[1] + w * vertexes[2]);
+				double w = 1.0f - v - u;
+				auto point = Point3(
+					u * vertexes[0].x() + v * vertexes[1].x() + w * vertexes[2].x(),
+					u * vertexes[0].y() + v * vertexes[1].y() + w * vertexes[2].y(),
+					u * vertexes[0].z() + v * vertexes[1].z() + w * vertexes[2].z()
+				);
 #pragma omp critical
 				{
-					o_point_set.insert(point, cgaltools::eigen_2_cgal_vector(normal));
+					o_point_set.insert(point, normal);
 				}
 			}
 		}
 		return o_point_set;
 	}
 
+	PointSet3 sample_points_according_density(const std::vector<Triangle3>& v_mesh, const int v_num_points_per_m2)
+	{
+		double total_area = 0.;
+		#pragma omp parallel for reduction(+:total_area)
+		for (int i_face = 0; i_face < v_mesh.size(); ++i_face)
+			total_area += std::sqrt(v_mesh[i_face].squared_area());
+		return sample_points(v_mesh, static_cast<int>(v_num_points_per_m2 * total_area));
+	}
+
+	PointSet3 sample_points(const std::vector<Triangle3>& v_mesh, const int v_num_points)
+	{
+		std::mt19937 gen; std::uniform_real_distribution<double> dist(0.0f, 1.0f);
+		PointSet3 o_point_set(true);
+
+		double total_area = 0.;
+		#pragma omp parallel for reduction(+:total_area)
+		for (int i_face = 0; i_face < v_mesh.size(); ++i_face)
+			total_area += std::sqrt(v_mesh[i_face].squared_area());
+
+		double point_per_area = (double)v_num_points / total_area;
+
+		#pragma omp parallel for
+		for (int i_face = 0; i_face < v_mesh.size(); ++i_face)
+		{
+			Point3 vertexes[3];
+			vertexes[0] = v_mesh[i_face].vertex(0);
+			vertexes[1] = v_mesh[i_face].vertex(1);
+			vertexes[2] = v_mesh[i_face].vertex(2);
+
+
+			Vector3 normal = CGAL::cross_product(vertexes[1] - vertexes[0], vertexes[2] - vertexes[0]);
+			normal /= std::sqrt(normal.squared_length());
+
+			double area = std::sqrt(v_mesh[i_face].squared_area());
+
+			double face_samples = area * point_per_area;
+			uint num_face_samples = static_cast<uint>(face_samples);
+
+			if (dist(gen) < (face_samples - static_cast<double>(num_face_samples))) {
+				num_face_samples += 1;
+			}
+
+			for (uint j = 0; j < num_face_samples; ++j) {
+				double r1 = dist(gen);
+				double r2 = dist(gen);
+
+				double tmp = std::sqrt(r1);
+				double u = 1.0f - tmp;
+				double v = r2 * tmp;
+
+				double w = 1.0f - v - u;
+				auto point = Point3(
+					u * vertexes[0].x() + v * vertexes[1].x() + w * vertexes[2].x(),
+					u * vertexes[0].y() + v * vertexes[1].y() + w * vertexes[2].y(),
+					u * vertexes[0].z() + v * vertexes[1].z() + w * vertexes[2].z()
+				);
+#pragma omp critical
+				{
+					o_point_set.insert(point, normal);
+				}
+			}
+		}
+		return o_point_set;
+	}
+
+	PointSet3 sample_points(const Polyhedron3& v_mesh, const int v_num_points)
+	{
+		PointSet3 points;
+		CGAL::Random_points_in_triangle_mesh_3<Polyhedron3> g(v_mesh);
+		std::copy_n(g, v_num_points, points.point_back_inserter());
+		return points;
+	}
+
+	PointSet3 sample_points_according_density(const Polyhedron3& v_mesh, const int v_num_points_per_m2)
+	{
+		double total_area = CGAL::Polygon_mesh_processing::area(v_mesh);
+		return sample_points(v_mesh, static_cast<int>(v_num_points_per_m2 * total_area));
+	}
 
 	float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box) {
 		float sqDist = 0.0f;

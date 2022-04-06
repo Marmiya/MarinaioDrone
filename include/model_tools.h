@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include "cgal_tools.h"
 #include "common_util.h"
+#include "tinyply.h"
 
 #include <queue>
 #include <fstream>
@@ -41,8 +42,15 @@ namespace modeltools{
     };
 
     SurfaceMesh read_model(const fs::path& v_path);
-    bool read_model(const fs::path& v_path, Polyhedron3& v_mesh);
-
+    bool
+	read_model(
+        const fs::path& v_path, Polyhedron3& v_mesh
+    );
+    bool
+	read_model(
+        const fs::path& v_path, std::vector<Point3>& v_points, std::vector<Vector3>& v_normals, std::vector < std::array<int, 3> >& v_face_indices,
+        std::vector<CGAL::Triangle_3<K>>& v_faces
+    );
 
     /*
     Some useful function
@@ -131,9 +139,26 @@ namespace modeltools{
     //          SurfaceMesh
     //          num_points
     // @ret:
-    PointSet3 sample_points(const SurfaceMesh& v_mesh, const int v_num_points);
-    PointSet3 sample_points(const Polyhedron3& v_mesh, const int v_num_points);
-    PointSet3 sample_points(const std::vector<Triangle3>& v_mesh, const int v_num_points);
+    PointSet3
+	sample_points(
+        const SurfaceMesh& v_mesh, const int v_num_points
+    );
+    PointSet3
+	sample_points(
+        const Polyhedron3& v_mesh, const int v_num_points
+    );
+    PointSet3
+	sample_points(
+        const std::vector<Triangle3>& v_mesh, const int v_num_points
+    );
+    PointSet3
+	sample_points_according_density(
+        const Polyhedron3& v_mesh, const int v_num_points_per_m2
+    );
+    PointSet3
+	sample_points_according_density(
+        const std::vector<Triangle3>& v_mesh, const int v_num_points_per_m2
+    );
 
     float point_box_distance_eigen(const Eigen::Vector2d& v_pos, const Eigen::AlignedBox2d& v_box);
 
