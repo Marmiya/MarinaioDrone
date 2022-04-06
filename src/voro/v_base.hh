@@ -54,7 +54,7 @@ class voro_base {
 		 * construction, by the initialize_radii() routine. */
 		double *mrad;
 		/** The pre-computed block worklists. */
-		static const unsigned int wl[wl_seq_length*wl_hgridcu];
+		static const unsigned int wl[wl_seq_length * wl_hgridcu];
 		bool contains_neighbor(const char* format);
 		voro_base(int nx_,int ny_,int nz_,double boxx_,double boxy_,double boxz_);
 		~voro_base() {delete [] mrad;}

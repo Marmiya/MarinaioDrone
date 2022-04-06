@@ -113,6 +113,6 @@ bool voro_base::contains_neighbor(const char *format) {
 	return false;
 }
 
-#include "v_base_wl.cc"
+//#include "v_base_wl.cc"
 
 }
