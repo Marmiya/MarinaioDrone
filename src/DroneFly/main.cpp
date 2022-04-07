@@ -601,15 +601,19 @@ int main(int argc, char** argv)
 			CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 
 			tree = Tree(cur_mesh.faces().begin(), cur_mesh.faces().end(), cur_mesh);
+			modeltools::Height_map heightMap(map_start_mesh, map_end_mesh,
+				args["heightmap_resolution"].asDouble(),
+				args["heightmap_dilate"].asInt()
+			);
+
 			next_best_target->update_uncertainty(current_pos, total_buildings);
 
 			std::vector<MyViewpoint> current_trajectory;
-
 			if (!with_interpolated || (with_interpolated && !is_interpolated))
 			{
 				current_trajectory = generate_trajectory_tg(
 					args, total_buildings,
-					runtime_height_map, tree
+					heightMap, tree
 				);
 
 				LOG(INFO) << "New trajectory!";

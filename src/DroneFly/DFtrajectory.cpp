@@ -326,7 +326,6 @@ ifNeighbouring(
 	{
 		for (const auto& j : b.buildingMesh.points())
 		{
-			//LOG(INFO) << std::sqrt(CGAL::squared_distance(i, j));
 			if (std::sqrt(CGAL::squared_distance(i, j)) < threshold)
 			{
 				return true;
@@ -345,6 +344,9 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	const double safe_distance = v_params["safe_distance"].asDouble();
 	const double safe_height = v_params["safe_height"].asDouble();
 	const double overlap = v_params["vertical_overlap"].asDouble();
+	const double fov = v_params["fov"].asDouble();
+	const double unitArea = v_params["unit_area"].asDouble();
+	auto [verticalStep, horizontalStep] = modeltools::meshStep(fov, fov, safe_distance, overlap);
 
 	std::vector<MyViewpoint> total_trajectory;
 
@@ -379,6 +381,14 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		{
 			Building c;
 			c.buildingMesh += v_buildings.at(na).buildingMesh, c.buildingMesh += v_buildings.at(nb).buildingMesh;
+			for (const auto& i : v_buildings.at(na).buildingMeshs)
+			{
+				c.buildingMeshs.push_back(i);
+			}
+			for (const auto& i : v_buildings.at(nb).buildingMeshs)
+			{
+				c.buildingMeshs.push_back(i);
+			}
 			c.points_world_space += v_buildings.at(na).points_world_space, c.points_world_space += v_buildings.at(nb).points_world_space;
 			c.bounding_box_3d = cgaltools::get_bounding_box_rotated(c.points_world_space);
 			c.boxes.push_back(c.bounding_box_3d);
@@ -389,184 +399,44 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	}
 
 	LOG(INFO) << "Totally " << v_buildings.size() << " target(s).";
+
 	for (size_t i = 0; i < v_buildings.size(); i++)
 	{
 		LOG(INFO) << "Deal with " << i << " Target.";
-
 		std::vector<MyViewpoint> item_trajectory;
 
-		Building& curbuilding = v_buildings.at(i);
-		double maxZ = curbuilding.bounding_box_3d.box.max().z();
-		double maxFlyZ = maxZ + 15.;
-		CGAL::Polygon_mesh_slicer<SurfaceMesh, K> slicer(curbuilding.buildingMesh);
+		SurfaceMesh curIBS = 
+			IBSCreatingWithSenceBB(v_buildings.at(i).buildingMeshs, safe_distance, unitArea, safe_distance);
 
-		std::vector<double> sliceZ;
-		double cursliceZ = safe_height;
-		while (true)
+		PointSet3 traj = IBSviewNet(curIBS, v_buildings.at(i).buildingMeshs, safe_distance, safe_height, verticalStep, horizontalStep);
+		auto [focusp, ifSuccessed] = traj.property_map<Point3>("focusp");
+		if (!ifSuccessed)
 		{
-			if (cursliceZ > maxZ)
+			throw;
+		}
+
+		size_t unsafeView = 0;
+		for (const auto& pi : traj)
+		{
+			MyViewpoint tv(cgaltools::cgal_point_2_eigen(traj.point(pi)), cgaltools::cgal_point_2_eigen(focusp[pi]));
+			if (v_height_map.is_safe(tv.pos_mesh))
 			{
-				if (cursliceZ != maxZ)
-				{
-					sliceZ.push_back(maxZ);
-				}
-				break;
+				item_trajectory.push_back(tv);
 			}
 			else
 			{
-				sliceZ.push_back(cursliceZ);
+				unsafeView++;
 			}
 		}
-		
-		std::vector<std::vector<Polygon2>> slicesPloygons;
-		PointSet3 slicesPts;
-
-		for (int i = 0; i < sliceZ.size(); i++)
+		if (unsafeView)
 		{
-			std::vector<Polygon2> tplgs;
-			Polylines slices;
-			slicer(Plane3(0, 0, 1, -sliceZ.at(i)), std::back_inserter(slices));
-			
-			for (const auto& j : slices)
-			{
-				std::vector<Point2> tpts2;
-				for (const auto& i : j)
-				{
-					tpts2.push_back(Point2(i.x(), i.y()));
-				}
-				
-				Polygon2 plg(tpts2.begin(), tpts2.end());
-				if (plg.area() > v_params["ignore_area"].asDouble()) {
-					tplgs.push_back(plg);
-				}
-			}
-			slicesPloygons.push_back(tplgs);
+			LOG(INFO) << "There are " << unsafeView << " unsafe View(s).";
 		}
-		
-		for (int i = 0; i < sliceZ.size(); i++)
-		{
-			for (const auto& j : slicesPloygons.at(i))
-			{
-				for (const auto& k : j)
-				{
-					slicesPts.insert(Point3(k.x(), k.y(), sliceZ.at(i)));
-				}
-			}
-		}
-		
-		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_slicesPts.ply", slicesPts);
-
-		PointSet3 viewpts;
-
-		for (int slice_i = 0; slice_i < sliceZ.size(); slice_i++)
-		{
-			if (slicesPloygons.at(slice_i).empty())
-			{
-				break;
-			}
-			std::vector<Polygon2> tplgs;
-			const double z = sliceZ.at(slice_i);
-
-			for (auto& j : slicesPloygons.at(slice_i))
-			{
-				tplgs.push_back(modeltools::expansion(j, safe_distance));
-			}
-			
-			if (tplgs.size() > 1) {
-				
-				while (tplgs.size() > 1)
-				{
-					std::vector<Point2> localpts;
-					//CGAL::draw(tplgs.front());CGAL::draw(tplgs.back());
-					if (!CGAL::do_intersect(tplgs.front(), tplgs.back()))
-					{
-						
-						LOG(INFO) << "Target index: " << i << ". Height: " << z << " . no intersection.";
-						for (const auto& i : tplgs.front())
-						{
-							localpts.push_back(i);
-						}
-						for (const auto& i : tplgs.back())
-						{
-							localpts.push_back(i);
-						}
-					}
-					else {
-						CGAL::Polygon_with_holes_2<K> sumPolygon;
-						CGAL::join(tplgs.front(), tplgs.back(), sumPolygon);
-
-						// todo: need follow-up process.
-						if (sumPolygon.has_holes())
-						{
-							LOG(INFO) << "Target index: " << i << ". Height: " << z << " . At least a hole exists.";
-						}
-						else
-						{
-							LOG(INFO) << "Target index: " << i << ". Height: " << z << " . No hole exists.";
-						}
-						for (const auto& i : sumPolygon.outer_boundary())
-						{
-							localpts.push_back(i);
-						}
-					}
-
-					tplgs.emplace_back(localpts.begin(), localpts.end());
-					tplgs.erase(tplgs.begin());
-					tplgs.erase(tplgs.end() - 1);
-					tplgs.shrink_to_fit();
-				}
-			}
-			else
-			{
-				LOG(INFO) << "Target index: " << i << ". Height: " << z << " . solo.";
-			}
-			
-			for (const auto& i : tplgs.front())
-			{
-				Point3 tp(i.x(), i.y(), z);
-				if (v_tree.squared_distance(tp) > safe_distance)
-				{
-					Point2 focus_point = slicesPloygons.at(slice_i).front().vertex(0);
-					double shortestDis = CGAL::squared_distance(i, focus_point);
-					for (auto& j : slicesPloygons.at(slice_i))
-					{
-						for (const auto& k : j)
-						{
-							double tDis = CGAL::squared_distance(k, i);
-							if (tDis < shortestDis)
-							{
-								shortestDis = tDis;
-								focus_point = k;
-							}
-						}
-					}
-					viewpts.insert(tp);
-					item_trajectory.emplace_back(cgaltools::cgal_point_2_eigen(tp), Eigen::Vector3d(focus_point.x(), focus_point.y(), z));
-				}
-			}
-			//CGAL::draw(tplgs.front());
-
-		}
-		CGAL::IO::write_PLY(v_params["tlogpath"].asString() + std::to_string(i) + "_viewPts.ply", viewpts);
 
 		v_buildings[i].one_pass_trajectory_num += item_trajectory.size();
 
-		/*Eigen::Isometry3d transform = Eigen::Isometry3d::Identity();
-		transform.translate(v_buildings[i].bounding_box_3d.box.center());
-		transform.rotate(Eigen::AngleAxisd(v_buildings[i].bounding_box_3d.cv_box.angle / 180. * M_PI, Eigen::Vector3d::UnitZ()));
-		transform.translate(-v_buildings[i].bounding_box_3d.box.center());
 
-		for (int i = 0; i < item_trajectory.size(); ++i)
-		{
-			item_trajectory[i].pos_mesh = transform * item_trajectory[i].pos_mesh;
-			item_trajectory[i].focus_point = transform * item_trajectory[i].focus_point;
-			item_trajectory[i].calculate_direction();
-		}*/
-
-		//if (v_params["with_erosion_flag"].asBool())
-		//	item_trajectory = find_short_cut(item_trajectory, v_height_map, safe_distance, v_buildings[id_building], v_tree);
-		//else
-			//item_trajectory = ensure_safe_trajectory(item_trajectory, v_height_map, safe_distance);
+		
 
 		if (v_params.isMember("z_down_bounds"))
 		{
@@ -587,7 +457,7 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 		total_trajectory.insert(total_trajectory.end(), item_trajectory.begin(), item_trajectory.end());
 		v_buildings[i].is_changed = false;
 	}
-	
+
 	return total_trajectory;
 }
 

@@ -1,6 +1,6 @@
 {
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
-    "stage": 3,
+    "stage": 2,
     
     "simplify": false,
     "ori_lift": false,
@@ -28,12 +28,10 @@
     "safe_distance": 20,
     "safe_height": 10,
     
+    "fov": 60,
     "vertical_overlap": 0.6,
     "horizontal_overlap": 0.6,
-    "split_overlap": 0.3,
     "unit_area": 2,
-   
-    "fov": 60,
 
     "HEIGHT_CLIP": 1, 
     "MERGED_THRESHOLD": -1,

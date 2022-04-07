@@ -76,7 +76,7 @@ GT_mapper::GT_mapper(const Json::Value& args) : Mapper(args)
 				{
 					for (auto iter_segment = m_boundary.edges_begin(); iter_segment != m_boundary.edges_end();
 						++iter_segment)
-						if (CGAL::squared_distance(p, *iter_segment) < 00 * 00)
+						if (CGAL::squared_distance(p, *iter_segment) < 0 * 0)
 							add_as_target = false;
 					if (m_boundary.bounded_side(p) != CGAL::ON_BOUNDED_SIDE)
 						add_as_target = false;
@@ -159,7 +159,8 @@ GT_mapper::GT_mapper(const Json::Value& args) : Mapper(args)
 			current_building.points_world_space.insert(point_cloud.point(idx), point_cloud.normal(idx));
 		}
 	}
-#pragma omp parallel for
+
+	#pragma omp parallel for
 	for (int i = 0; i < m_buildings_target.size(); ++i)
 	{
 		m_buildings_target[i].bounding_box_3d = cgaltools::get_bounding_box_rotated(
@@ -170,7 +171,8 @@ GT_mapper::GT_mapper(const Json::Value& args) : Mapper(args)
 
 		double spacing = CGAL::compute_average_spacing<CGAL::Sequential_tag>(tpts, 6);
 
-		if (args["simplify"].asBool()) {
+		if (args["simplify"].asBool()) 
+		{
 			tpts.remove(
 				grid_simplify_point_set(
 					tpts, spacing, CGAL::parameters::point_map(tpts.point_map())
@@ -181,11 +183,13 @@ GT_mapper::GT_mapper(const Json::Value& args) : Mapper(args)
 				<< " point(s) removed after simplification." << std::endl;
 			tpts.collect_garbage();
 		}
+
 		CGAL::poisson_surface_reconstruction_delaunay
 		(tpts.begin(), tpts.end(), tpts.point_map(), tpts.normal_map(),
 			m_buildings_target[i].buildingMesh, spacing);
-		CGAL::IO::write_PLY(args["tlogpath"].asString() + std::to_string(i) + "mesh.ply", m_buildings_target[i].buildingMesh);
+		m_buildings_target[i].buildingMeshs.push_back(m_buildings_target[i].buildingMesh);
 
+		CGAL::IO::write_PLY(args["tlogpath"].asString() + std::to_string(i) + "mesh.ply", m_buildings_target[i].buildingMesh);
 	}
 
 	for (int i_building_1 = m_buildings_target.size() - 1; i_building_1 >= 0; --i_building_1)
@@ -1085,7 +1089,5 @@ void calculate_trajectory_intrinsic(
 
 	split_min_distance = 2 * (std::sqrt(3) - 1) * view_distance - v_args["split_overlap"].asDouble() * (std::sqrt(3) - 1)
 		* view_distance; // std::sqrt(3) is the cot(30), 30 is the view angle
-	LOG(INFO) <<
-		boost::format("Horizontal step:%f; Vertical step:%f; Split step:%f")
-		% horizontal_step % vertical_step % split_min_distance;
+	
 }

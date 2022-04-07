@@ -1,7 +1,8 @@
 #include "ibs.h"
 
-std::array<double, 36> roundedDirection{
-	0.,		  M_PI / 18.,		M_PI / 9.,	M_PI / 6.,	4 * (M_PI / 18.),	5 * (M_PI / 18.),
+std::array<double, 36> roundedDirection
+{
+	0.,	M_PI / 18., M_PI / 9.,	M_PI / 6.,	4 * (M_PI / 18.),	5 * (M_PI / 18.),
 	M_PI / 3.,7 * (M_PI / 18.), 8 * (M_PI / 18.),M_PI / 2.,	10 * (M_PI / 18.),11 * (M_PI / 18.),
 	12 * (M_PI / 18.),13 * (M_PI / 18.),	14 * (M_PI / 18.),15 * (M_PI / 18.),16 * (M_PI / 18.),
 	17 * (M_PI / 18.),	M_PI ,19 * (M_PI / 18.),20 * (M_PI / 18.),21 * (M_PI / 18.),22 * (M_PI / 18.),23 * (M_PI / 18.),
@@ -33,37 +34,6 @@ generateMidpts(const SurfaceMesh& mesh)
 	}
 
 	return midpts;
-}
-
-void
-draw_polygon(
-	FILE* fp, std::vector<int>& f_vert, std::vector<double>& v, int j)
-{
-	static char s[6][128];
-	int k, l, n = f_vert[j];
-
-	// Create POV-Ray vector strings for each of the vertices
-	for (k = 0; k < n; k++) {
-		l = 3 * f_vert[j + k + 1];
-		sprintf(s[k], "<%g,%g,%g>", v[l], v[l + 1], v[l + 2]);
-
-	}
-
-	// Draw the interior of the polygon
-	fputs("union{\n", fp);
-	for (k = 2; k < n; k++) fprintf(fp, "\ttriangle{%s,%s,%s}\n", s[0], s[k - 1], s[k]);
-	fputs("\ttexture{t1}\n}\n", fp);
-
-	// Draw the outline of the polygon
-	fputs("union{\n", fp);
-	for (k = 0; k < n; k++) {
-		l = (k + 1) % n;
-		fprintf(fp, "\tcylinder{%s,%s,r}\n\tsphere{%s,r}\n",
-			s[k], s[l], s[l]);
-
-	}
-	fputs("\ttexture{t2}\n}\n", fp);
-
 }
 
 inline bool
@@ -483,7 +453,8 @@ PointSet3 IBSviewNet(
 {
 	auto tIBS = IBSTriangulation(IBS);
 	PointSet3 ans(true);
-	if(!CGAL::Polygon_mesh_processing::triangulate_faces(tIBS))
+	auto [focusp, ign] = ans.add_property_map("focusp", Point3(-1, -1, -1));
+	if (!CGAL::Polygon_mesh_processing::triangulate_faces(tIBS) || !ign)
 	{
 		throw;
 	}
@@ -574,6 +545,7 @@ PointSet3 IBSviewNet(
 						#pragma omp critical
 						{
 							ans.insert(ansp, ansv);
+							focusp[ans.size() - 1] = mp1.first;
 						}
 					}
 					mp2 = monitoringp2[curFI];
@@ -582,6 +554,7 @@ PointSet3 IBSviewNet(
 						#pragma omp critical
 						{
 							ans.insert(ansp, ansv);
+							focusp[ans.size() - 1] = mp2.first;
 						}
 					}
 				}

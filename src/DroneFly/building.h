@@ -10,10 +10,15 @@ struct MyViewpoint
 	float yaw;   //forwards->x, towards right -> +yaw
 	bool is_towards_reconstruction;
 
-	MyViewpoint() = default;
+	MyViewpoint()
+	{
+		pitch = 0.;
+		yaw = 0.;
+	}
 	
-	MyViewpoint(const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point)
-		:pos_mesh(v_pos_mesh), focus_point(v_focus_point)
+	MyViewpoint(
+		const Eigen::Vector3d v_pos_mesh, const Eigen::Vector3d v_focus_point
+	) :pos_mesh(v_pos_mesh), focus_point(v_focus_point)
 	{
 		calculate_direction();
 	}
@@ -21,8 +26,7 @@ struct MyViewpoint
 	void calculate_direction()
 	{
 		direction = (focus_point - pos_mesh).normalized();
-		pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) *
-			180. / M_PI;
+		pitch = std::atan2f(direction[2], std::sqrtf(direction[0] * direction[0] + direction[1] * direction[1])) * 180. / M_PI;
 		yaw = std::atan2f(direction[1], direction[0]) * 180. / M_PI;
 	}
 	
@@ -40,9 +44,9 @@ struct Building
 	bool is_changed = true;
 	bool is_divide = false;
 	int parent = -1;
-	int one_pass_trajectory_num = 0;
+	size_t one_pass_trajectory_num = 0;
 	int closest_trajectory_id = 0;
-
+	std::vector<SurfaceMesh> buildingMeshs;
 	//Used for trajectory generation
 	int start_box = -1;
 	std::vector<MyViewpoint> trajectory;
