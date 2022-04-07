@@ -28,8 +28,8 @@ struct MyViewpoint
 	
 };
 
-struct Building {
-	
+struct Building
+{
 	cgaltools::RotatedBox bounding_box_3d;
 	SurfaceMesh buildingMesh;
 	PointSet3 points_camera_space;
@@ -53,7 +53,8 @@ struct Building {
 		return std::min_element(trajectory.begin(), trajectory.end(),
 			[&v_pos](const MyViewpoint& item1, const MyViewpoint& item2) {
 			return (item1.pos_mesh - v_pos).norm() < (item2.pos_mesh - v_pos).norm();
-		}) - trajectory.begin();
+		}
+		) - trajectory.begin();
 	}
 
 	int find_nearest_trajectory_2d(const Eigen::Vector3d& v_pos) const {
@@ -67,11 +68,14 @@ struct Building {
 	}
 };
 
-struct Next_target {
+struct Next_target
+{
 	int origin_index_in_building_vector = -1;
 	int origin_index_in_untraveled_pointset = -1;
-	Next_target(const int v_origin_index_in_building_vector, const int v_origin_index_in_untraveled_pointset)
-		:origin_index_in_building_vector(v_origin_index_in_building_vector), origin_index_in_untraveled_pointset(v_origin_index_in_untraveled_pointset) {
-	}
+
+	Next_target(
+		const int v_origin_index_in_building_vector, const int v_origin_index_in_untraveled_pointset
+	) :origin_index_in_building_vector(v_origin_index_in_building_vector), origin_index_in_untraveled_pointset(v_origin_index_in_untraveled_pointset)
+	{	};
 };
 

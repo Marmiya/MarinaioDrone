@@ -505,6 +505,7 @@ PointSet3 IBSviewNet(
 			sliceZ.push_back(curHeight);
 			curHeight += verticalStep;
 		}
+		sliceZ.push_back(highestZ);
 
 		SurfaceMesh::Property_map<SMFI, Point3> midp;
 		SurfaceMesh::Property_map<SMFI, std::pair<Point3, double>> monitoringp1;

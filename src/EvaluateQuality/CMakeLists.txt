@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
-PROJECT(evaluate_quality)
+PROJECT(EvaluateQuality)
 
 FILE(GLOB SOURCE_FILE *.cpp *.h)
 

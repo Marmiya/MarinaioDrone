@@ -6,10 +6,10 @@
 #include <boost/algorithm/string.hpp>
 #include <CGAL/draw_polygon_2.h>
 #include <CGAL/draw_surface_mesh.h>
+#include <glog/logging.h>
 
 #include "building.h"
 #include "map_util.h"
-#include <glog/logging.h>
 
 struct Trajectory_params
 {
@@ -169,23 +169,19 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 	const double horizontal_step, const double split_min_distance, const Tree& v_tree
 );
 
-void
-generate_distance_map(
+void generate_distance_map(
 	const cv::Mat& v_map, cv::Mat& distance_map,
 	const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance
 );
 
-void
-update_obstacle_map(
+void update_obstacle_map(
 	const cv::Mat& v_map, cv::Mat& distance_map,
 	const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance
 );
 
-void
-print_map(const cv::Mat& v_map);
+void print_map(const cv::Mat& v_map);
 
-void
-explore(
+void explore(
 	const cv::Mat& v_map, const cv::Mat& distance_map,
 	const cv::Mat& obstacle_map, std::vector<Eigen::Vector2i>& trajectory,
 	Eigen::Vector2i now_point, const Eigen::Vector2i& goal,

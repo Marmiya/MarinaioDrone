@@ -1,5 +1,5 @@
 add_subdirectory(DensitySampling)
-add_subdirectory(DroneFlyPro)
+#add_subdirectory(DroneFlyPro)
 add_subdirectory(PathPlanning)
 add_subdirectory(DroneFly)
 add_subdirectory(voro)
