@@ -12,6 +12,7 @@
 #include "ibs.h"
 #include "viz.h"
 #include "next_best_target.h"
+#include "trajectory.h"
 
 
 using RotatedBox = cgaltools::RotatedBox;
@@ -2239,15 +2240,24 @@ int main(int argc, char** argv)
 		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., unitArea, safeDis);
 		comutil::checkpointTime(t, "IBS was created");
 
-		auto triAns = IBSTriangulation(ans);
+		//auto triAns = IBSTriangulation(ans);
+		//CGAL::IO::write_PLY(logPath + "triIBS.ply", triAns);
 		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
-		CGAL::IO::write_PLY(logPath + "triIBS.ply", triAns);
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 
 		comutil::checkpointTime(t, "Begin views sampling...");
 		
 		PointSet3 views = IBSviewNet(ans, SMs, safeDis, safeHeight, 5., 5.);
 
+		std::vector<Viewpoint> vs;
+		for (const auto& i : views)
+		{
+			Viewpoint tv;
+			tv.pos_mesh = cgaltools::cgal_point_2_eigen(views.point(i));
+			tv.direction = cgaltools::cgal_vector_2_eigen(views.normal(i));
+			vs.push_back(tv);
+		}
+		write_smith18_path(vs, logPath + "smithPath.log");
 		comutil::checkpointTime(t, "Views sampling was finished");
 		CGAL::IO::write_point_set(logPath + "IBSviews.ply", views);
 	}

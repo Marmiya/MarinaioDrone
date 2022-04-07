@@ -1,4 +1,4 @@
-#include "trajectory.h"
+#include "DFtrajectory.h"
 
 void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
 {

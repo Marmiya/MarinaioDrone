@@ -4,7 +4,7 @@
 
 #include "map_util.h"
 #include "building.h"
-#include "trajectory.h"
+#include "DFtrajectory.h"
 
 enum Motion_status { initialization, exploration, reconstruction, done, final_check, reconstruction_in_exploration };
 
