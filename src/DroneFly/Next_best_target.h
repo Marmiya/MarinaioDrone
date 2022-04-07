@@ -3,15 +3,24 @@
 #include "map_util.h"
 #include "DFtrajectory.h"
 
-enum Motion_status { initialization, exploration, reconstruction, done, final_check, reconstruction_in_exploration };
+enum Motion_status 
+{ 
+	initialization, 
+	exploration, 
+	reconstruction,
+	done, 
+	final_check, 
+	reconstruction_in_exploration 
+};
 
-class Next_best_target {
+class Next_best_target 
+{
 public:
 	Motion_status m_motion_status;
 	int m_current_building_id = -1;
 
 	double DISTANCE_THRESHOLD;
-	std::vector<CGAL::Point_2<K>> sample_points;
+	std::vector<Point2> sample_points;
 	std::vector<cv::Vec3b> region_status;
 	std::vector<cv::Vec3b> region_viz_color;
 
@@ -20,25 +29,41 @@ public:
 
 	Polygon2 m_boundary;
 
-	Next_best_target(const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh, float v_ccpp_cell_distance) :m_map_start(v_map_start_mesh), m_map_end(v_map_end_mesh)
+	Next_best_target(
+		const Eigen::Vector3d& v_map_start_mesh, const Eigen::Vector3d& v_map_end_mesh,
+		float v_ccpp_cell_distance
+	) :m_map_start(v_map_start_mesh), m_map_end(v_map_end_mesh), DISTANCE_THRESHOLD(v_ccpp_cell_distance)
 	{
-		DISTANCE_THRESHOLD = v_ccpp_cell_distance;
 		m_motion_status = Motion_status::initialization;
+
 		for (float y = v_map_start_mesh.y(); y < v_map_end_mesh.y(); y += DISTANCE_THRESHOLD)
+		{
 			for (float x = v_map_start_mesh.x(); x < v_map_end_mesh.x(); x += DISTANCE_THRESHOLD)
-				sample_points.push_back(CGAL::Point_2<K>(x, y));
+			{
+				sample_points.push_back(Point2(x, y));
+			}
+		}
 		region_viz_color = comutil::get_color_table_bgr();
 		region_status.resize(sample_points.size(), region_viz_color[0]);
 	}
 
-	virtual void get_next_target(int frame_id, const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings, bool with_exploration) = 0;
+	virtual void get_next_target(
+		int frame_id, const Pos_Pack& v_cur_pos, 
+		const std::vector<Building>& v_buildings, bool with_exploration
+	) = 0;
 
-	virtual void update_uncertainty(const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings) = 0;
+	virtual void update_uncertainty(
+		const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings
+	) = 0;
 
-	virtual MyViewpoint determine_next_target(int v_frame_id, const Pos_Pack& v_cur_pos, std::vector<Building>& v_buildings, bool with_exploration, float v_threshold) = 0;
+	virtual MyViewpoint determine_next_target(
+		int v_frame_id, const Pos_Pack& v_cur_pos, 
+		std::vector<Building>& v_buildings, bool with_exploration, float v_threshold
+	) = 0;
 };
 
-class Next_best_target_topology_exploration : public Next_best_target {
+class Next_best_target_topology_exploration : public Next_best_target 
+{
 public:
 	std::vector<Eigen::AlignedBox2d> topology;
 

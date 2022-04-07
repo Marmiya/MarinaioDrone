@@ -14,7 +14,12 @@
 #include <boost/algorithm/string.hpp>
 #include <Eigen/Core>
 
-namespace modeltools{
+namespace modeltools
+{
+    std::pair<double, double>
+        meshStep(const double& fovx, const double& fovy,
+            const double& viewDis, const double& overlap
+        );
 
     // Load obj file by tinyobj interface.
     std::tuple<tinyobj::attrib_t, std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>>
@@ -38,14 +43,16 @@ namespace modeltools{
     struct Proxy
     {
         float height;
-        CGAL::Polygon_2<K> polygon;
+        Polygon2 polygon;
     };
 
     SurfaceMesh read_model(const fs::path& v_path);
+
     bool
 	read_model(
         const fs::path& v_path, Polyhedron3& v_mesh
     );
+
     bool
 	read_model(
         const fs::path& v_path, std::vector<Point3>& v_points, std::vector<Vector3>& v_normals, std::vector < std::array<int, 3> >& v_face_indices,

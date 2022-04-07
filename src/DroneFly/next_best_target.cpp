@@ -13,10 +13,12 @@ Next_best_target_topology_exploration::Next_best_target_topology_exploration(
 	region_status.clear();
 	region_status.resize(sample_points.size(), color_unobserved);
 
-	if (v_boundary.size() != 0) {
-		for (int i_sample_point = 0; i_sample_point < sample_points.size(); ++i_sample_point) {
-			if (v_boundary.bounded_side(sample_points[i_sample_point]) != CGAL::ON_BOUNDED_SIDE) {
-				//LOG(INFO) << v_boundary.is_simple();
+	if (!v_boundary.is_empty()) 
+	{
+		for (int i_sample_point = 0; i_sample_point < sample_points.size(); ++i_sample_point)
+		{
+			if (v_boundary.bounded_side(sample_points[i_sample_point]) != CGAL::ON_BOUNDED_SIDE) 
+			{
 				region_status[i_sample_point] = color_occupied;
 			}
 		}
@@ -285,39 +287,28 @@ void Next_best_target_topology_exploration::get_next_target(
 }
 
 void Next_best_target_topology_exploration::update_uncertainty(
-	const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings) 
+	const Pos_Pack& v_cur_pos, const std::vector<Building>& v_buildings)
 {
 	Eigen::Vector2d cur_point_cgal(v_cur_pos.pos_mesh.x(), v_cur_pos.pos_mesh.y());
-	int nearest_region_id = std::min_element(sample_points.begin(), sample_points.end(),
-		[&cur_point_cgal](const CGAL::Point_2<K>& p1, const CGAL::Point_2<K>& p2) {
-			return std::pow(p1.x() - cur_point_cgal.x(), 2) + std::pow(p1.y() - cur_point_cgal.y(), 2) < std::pow(p2.x() - cur_point_cgal.x(), 2) + std::pow(p2.y() - cur_point_cgal.y(), 2);
-		}) - sample_points.begin();
-		
-		if ((m_motion_status == Motion_status::exploration || m_motion_status == Motion_status::final_check) && region_status[nearest_region_id] == color_unobserved)
-		{
-			bool inside = false;
-			for (auto item : topology)
-				if (modeltools::inside_box(Eigen::Vector2d(sample_points[nearest_region_id].x(), sample_points[nearest_region_id].y()), item))
-					inside = true;
-
-			if (inside && m_boundary.bounded_side(sample_points[nearest_region_id]) == CGAL::ON_BOUNDED_SIDE)
-				region_status[nearest_region_id] = region_viz_color[m_current_color_id % region_viz_color.size()];
-		}
-
-		for (int i_point = 0; i_point < region_status.size(); i_point++) {
-			const Eigen::Vector2d p(sample_points[i_point].x(), sample_points[i_point].y());
-
-			for (const auto& item_building : v_buildings) {
-
-				//Eigen::AlignedBox2d box(Eigen::Vector2d(item_building.bounding_box_3d.min().x(), item_building.bounding_box_3d.min().y()),
-				//	Eigen::Vector2d(item_building.bounding_box_3d.max().x(), item_building.bounding_box_3d.max().y()));
-				//if (point_box_distance_eigen(p, box) < 20 || inside_box(p, box)) {
-				//if (inside_box(p, box)) {
-					//region_status[i_point] = color_occupied;
-				//	break;
-				//}
+	int nearest_region_id =
+		std::min_element(sample_points.begin(), sample_points.end(),
+			[&cur_point_cgal](const Point2& p1, const Point2& p2) {
+				return std::pow(p1.x() - cur_point_cgal.x(), 2) + std::pow(p1.y() - cur_point_cgal.y(), 2) < std::pow(p2.x() - cur_point_cgal.x(), 2) + std::pow(p2.y() - cur_point_cgal.y(), 2);
 			}
-		}
+	) - sample_points.begin();
+
+	if ((m_motion_status == Motion_status::exploration || m_motion_status == Motion_status::final_check) && 
+		region_status[nearest_region_id] == color_unobserved)
+	{
+		bool inside = false;
+		for (auto item : topology)
+			if (modeltools::inside_box(Eigen::Vector2d(sample_points[nearest_region_id].x(), sample_points[nearest_region_id].y()), item))
+				inside = true;
+
+		if (inside && m_boundary.bounded_side(sample_points[nearest_region_id]) == CGAL::ON_BOUNDED_SIDE)
+			region_status[nearest_region_id] = region_viz_color[m_current_color_id % region_viz_color.size()];
+	}
+
 }
 
 MyViewpoint

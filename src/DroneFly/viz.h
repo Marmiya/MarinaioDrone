@@ -40,7 +40,7 @@ public:
     std::vector<MyViewpoint> m_trajectories;
     std::vector<int> m_is_reconstruction_status;
     std::vector<std::pair<Eigen::Vector2d, cv::Vec3b>> m_uncertainty_map;
-    float m_uncertainty_map_distance;
+    double m_uncertainty_map_distance;
     Eigen::Vector3d m_pos;
     Eigen::Vector3d m_direction;
     PointSet3 m_points;

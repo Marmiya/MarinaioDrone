@@ -8,8 +8,10 @@
 #include <CGAL/draw_surface_mesh.h>
 #include <glog/logging.h>
 
-#include "building.h"
 #include "map_util.h"
+#include "ibs.h"
+
+#include "building.h"
 
 struct Trajectory_params
 {
@@ -76,8 +78,7 @@ simplify_path_reduce_waypoints(
 	const std::vector<MyViewpoint>& v_trajectories
 );
 
-void
-write_wgs_path(
+void write_wgs_path(
 	const Json::Value& v_args, const std::vector<MyViewpoint>& v_trajectories, const std::string& v_path
 );
 
@@ -165,8 +166,7 @@ ifNeighbouring(
 
 std::vector<MyViewpoint> generate_trajectory_tg(
 	const Json::Value& v_params, std::vector<Building>& v_buildings,
-	const modeltools::Height_map& v_height_map, const double v_vertical_step,
-	const double horizontal_step, const double split_min_distance, const Tree& v_tree
+	const modeltools::Height_map& v_height_map, const Tree& v_tree
 );
 
 void generate_distance_map(

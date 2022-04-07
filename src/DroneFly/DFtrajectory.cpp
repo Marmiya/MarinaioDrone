@@ -1,6 +1,9 @@
 #include "DFtrajectory.h"
 
-void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
+void generate_distance_map(
+	const cv::Mat& v_map, cv::Mat& distance_map, 
+	const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance
+)
 {
 	if (now_point != goal)
 	{
@@ -33,7 +36,10 @@ void generate_distance_map(const cv::Mat& v_map, cv::Mat& distance_map, const Ei
 
 }
 
-void update_obstacle_map(const cv::Mat& v_map, cv::Mat& distance_map, const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance)
+void update_obstacle_map(
+	const cv::Mat& v_map, cv::Mat& distance_map, 
+	const Eigen::Vector2i goal, Eigen::Vector2i now_point, int distance
+)
 {
 	distance++;
 	generate_distance_map(v_map, distance_map, goal, Eigen::Vector2i(now_point.x() + 1, now_point.y()), distance);
@@ -59,7 +65,11 @@ void print_map(const cv::Mat& v_map)
 	return;
 }
 
-void explore(const cv::Mat& v_map, const cv::Mat& distance_map, const cv::Mat& obstacle_map, std::vector<Eigen::Vector2i>& trajectory, Eigen::Vector2i now_point, const Eigen::Vector2i& goal, cv::Mat& visited_map, bool& isFinished, float weight)
+void explore(
+	const cv::Mat& v_map, const cv::Mat& distance_map, const cv::Mat& obstacle_map, 
+	std::vector<Eigen::Vector2i>& trajectory, Eigen::Vector2i now_point, const Eigen::Vector2i& goal, 
+	cv::Mat& visited_map, bool& isFinished, float weight
+)
 {
 	trajectory.push_back(now_point);
 	visited_map.at<cv::int32_t>(now_point.x(), now_point.y()) += 1;
@@ -328,14 +338,13 @@ ifNeighbouring(
 
 std::vector<MyViewpoint> generate_trajectory_tg(
 	const Json::Value& v_params, std::vector<Building>& v_buildings,
-	const modeltools::Height_map& v_height_map, const double v_vertical_step,
-	const double horizontal_step, const double split_min_distance, const Tree& v_tree
+	const modeltools::Height_map& v_height_map, const Tree& v_tree
 )
 {
 	const double view_distance = v_params["view_distance"].asDouble();
 	const double safe_distance = v_params["safe_distance"].asDouble();
 	const double safe_height = v_params["safe_height"].asDouble();
-	const double viewLengthStep = v_params["view_length_step"].asDouble();
+	const double overlap = v_params["vertical_overlap"].asDouble();
 
 	std::vector<MyViewpoint> total_trajectory;
 
@@ -406,7 +415,6 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			else
 			{
 				sliceZ.push_back(cursliceZ);
-				cursliceZ += v_vertical_step;
 			}
 		}
 		
@@ -1132,72 +1140,6 @@ find_short_cut(
 }
 
 
-/*
-bool generate_next_view_curvature(const Trajectory_params& v_params,
-						Building& v_building,
-						std::pair<Eigen::Vector3d, Eigen::Vector3d>& v_cur_pos)
-{
-	const Eigen::AlignedBox3d* target_box = nullptr;
-	float cur_angle = 0.f;
-	bool start_flag = false;
-	int cur_box_id = -1;
-	float angle_step = v_params.xy_angle / 180.f * M_PI;
-	// Init
-	if (v_cur_pos.first == Eigen::Vector3d(0.f, 0.f, 0.f))
-	{
-		start_flag = true;
-		const Eigen::AlignedBox3d* closest_box;
-		while (closest_box != target_box || target_box == nullptr)
-		{
-			cur_box_id += 1;
-			target_box = &v_building.boxes[cur_box_id];
-			Eigen::Vector3d next_position(v_cur_pos.first);
-			float radius = std::max(target_box->sizes().x(), target_box->sizes().y()) / 2 + v_params.view_distance;
-			next_position.x() = radius * std::cos(cur_angle) + target_box->center().x();
-			next_position.y() = radius * std::sin(cur_angle) + target_box->center().y();
-			closest_box = &*std::min_element(v_building.boxes.begin(), v_building.boxes.end(),
-											 [&next_position](const Eigen::AlignedBox3d& item1,
-															  const Eigen::AlignedBox3d& item2)
-											 {
-												 return (next_position - item1.center()).norm() < (next_position - item2
-													 .center()).norm();
-											 });;
-		}
-		v_building.start_box = cur_box_id;
-		cur_angle = v_params.xy_angle / 180.f * M_PI;
-	}
-	else
-	{
-		target_box = &*std::min_element(v_building.boxes.begin(), v_building.boxes.end(),
-										[&v_cur_pos](const Eigen::AlignedBox3d& item1, const Eigen::AlignedBox3d& item2)
-										{
-											return (v_cur_pos.first - item1.center()).norm() < (v_cur_pos.first - item2.
-												center()).norm();
-										});
-		cur_box_id = target_box - &v_building.boxes[0];
-		Eigen::Vector3d view_to_center = v_cur_pos.first - target_box->center();
-		cur_angle = std::atan2f(view_to_center[1], view_to_center[0]);
-	}
-
-	float radius = std::max(target_box->sizes().x(), target_box->sizes().y()) / 2 + v_params.view_distance;
-	cur_angle -= angle_step;
-	// TODO: UGLY
-	//if(target_box == &v_building.boxes[0])
-	if (!start_flag && v_building.start_box == cur_box_id && std::abs(cur_angle) < angle_step - 1e-6)
-		return false;
-
-	//std::cout << cur_box_id << ", " << cur_angle << std::endl;
-	Eigen::Vector3d next_position(v_cur_pos.first);
-	Eigen::Vector3d camera_focus = target_box->center();
-
-	next_position.x() = radius * std::cos(cur_angle) + target_box->center().x();
-	next_position.y() = radius * std::sin(cur_angle) + target_box->center().y();
-	v_cur_pos.first = next_position;
-	v_cur_pos.second = camera_focus;
-	return true;
-}
-*/
-
 std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>
 read_unreal_trajectory(const std::string& v_path)
 {
@@ -1479,7 +1421,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 	//	Eigen::Vector2d temp_point = cur_item;
 	//	bool accept;
 	//	bool fail = false;
-
+	//
 	//	while ((cur_item - next_item).norm() > 5)
 	//	{
 	//		cur_item = temp_point;
@@ -1506,7 +1448,7 @@ std::vector<MyViewpoint> ensure_global_safe(
 	//				temp_point = cur_item;
 	//				break;
 	//			}
-
+	//
 	//			// Sub angle
 	//			now_angle = std::atan2(direction.y(), direction.x()) - (angle_in_degree / 180 * M_PI);
 	//			now_direction = Eigen::Vector2d(std::cos(now_angle), std::sin(now_angle));
@@ -1574,21 +1516,6 @@ std::vector<MyViewpoint> ensure_global_safe(
 			safe_trajectory.emplace_back(Eigen::Vector3d(next_item.pos_mesh.x(), next_item.pos_mesh.y(), top_height), next_item.focus_point);
 			safe_trajectory.back().is_towards_reconstruction = next_item.is_towards_reconstruction;
 		}
-		/*
-		while((cur_item-next_item.first).norm()>5)
-		{
-			cur_item += direction * 2;
-			if(v_height_map.get_height(cur_item.x(), cur_item.y()) + v_safe_distance > cur_item.z())
-			{
-				accept = false;
-			}
-		}
-		if(!accept)
-		{
-			safe_trajectory.emplace_back(Eigen::Vector3d(v_trajectory[i].first.x(), v_trajectory[i].first.y(), next_item.first.z() + 5), v_trajectory[i].second);
-			safe_trajectory.emplace_back(Eigen::Vector3d(next_item.first.x(), next_item.first.y(), next_item.first.z() + 5), v_trajectory[i+1].second);
-		}*/
-
 	}
 	safe_trajectory.push_back(boundary_safe_trajectory.back());
 	return safe_trajectory;
@@ -1607,10 +1534,11 @@ std::vector<MyViewpoint> ensure_safe_trajectory(
 	}
 	return safe_trajectory;
 }
-void
-write_wgs_path(
+
+void write_wgs_path(
 	const Json::Value& v_args, const std::vector<MyViewpoint>& v_trajectories, const std::string& v_path
-) {
+) 
+{
 	//Eigen::Vector2d origin_wgs(113.92332,22.64429); // Yingrenshi
 	Eigen::Vector3d origin_wgs(v_args["geo_origin"][0].asFloat(), v_args["geo_origin"][1].asFloat(), 0.f);
 	//Eigen::Vector2d origin_xy=lonLat2Mercator(origin_wgs);
@@ -1650,7 +1578,11 @@ write_wgs_path(
 	pose_total.close();
 }
 
-std::vector<MyViewpoint> simplify_path_reduce_waypoints(const std::vector<MyViewpoint>& v_trajectories) {
+std::vector<MyViewpoint> 
+simplify_path_reduce_waypoints(
+	const std::vector<MyViewpoint>& v_trajectories
+) 
+{
 	std::vector<MyViewpoint> simplified_trajectory;
 	int i0 = 0;
 	int i1 = 1;
@@ -1706,8 +1638,10 @@ interpolate_path(
 }
 
 
-void write_normal_path(const std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>& v_trajectories,
-	const std::string& v_path)
+void write_normal_path(
+	const std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>& v_trajectories,
+	const std::string& v_path
+)
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
@@ -1725,10 +1659,10 @@ void write_normal_path(const std::vector<std::pair<Eigen::Vector3d, Eigen::Vecto
 	pose.close();
 }
 
-void
-write_normal_path_with_flag(
+void write_normal_path_with_flag(
 	const std::vector<MyViewpoint>& v_trajectories,
-	const std::string& v_path)
+	const std::string& v_path
+)
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i) {
@@ -1741,8 +1675,9 @@ write_normal_path_with_flag(
 	pose.close();
 }
 
-void write_smith_path(const std::vector<MyViewpoint>& v_trajectories,
-	const std::string& v_path)
+void write_smith_path(
+	const std::vector<MyViewpoint>& v_trajectories, const std::string& v_path
+)
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
@@ -1760,8 +1695,9 @@ void write_smith_path(const std::vector<MyViewpoint>& v_trajectories,
 	pose.close();
 }
 
-void write_unreal_path(const std::vector<MyViewpoint>& v_trajectories,
-	const std::string& v_path)
+void write_unreal_path(
+	const std::vector<MyViewpoint>& v_trajectories,	const std::string& v_path
+)
 {
 	std::ofstream pose(v_path);
 	for (int i = 0; i < v_trajectories.size(); ++i)
@@ -1779,7 +1715,8 @@ void write_unreal_path(const std::vector<MyViewpoint>& v_trajectories,
 	pose.close();
 }
 
-Eigen::Vector3d wgs2cgcs2000(const Eigen::Vector3d& v_wgs) {
+Eigen::Vector3d wgs2cgcs2000(const Eigen::Vector3d& v_wgs) 
+{
 	Eigen::Matrix3d converter;
 	converter << 0.999997079, 3.47778126e-7, -2.6082455e-7, 3.21041821e-8, 1, 2.14655547e-8, 2.13904843e-7, -3.436997e-8, 1;
 
@@ -1787,7 +1724,8 @@ Eigen::Vector3d wgs2cgcs2000(const Eigen::Vector3d& v_wgs) {
 	return cgcs2000;
 }
 
-Eigen::Vector2d mercator2lonLat(const Eigen::Vector2d& mercator) {
+Eigen::Vector2d mercator2lonLat(const Eigen::Vector2d& mercator) 
+{
 	Eigen::Vector2d lonLat;
 	double x = mercator.x() / 20037508.34 * 180;
 	double y = mercator.y() / 20037508.34 * 180;
@@ -1796,7 +1734,8 @@ Eigen::Vector2d mercator2lonLat(const Eigen::Vector2d& mercator) {
 	return lonLat;
 }
 
-Eigen::Vector2d lonLat2Mercator(const Eigen::Vector2d& lonLat) {
+Eigen::Vector2d lonLat2Mercator(const Eigen::Vector2d& lonLat)
+{
 	Eigen::Vector2d mercator;
 	double x = lonLat.x() * 20037508.34 / 180;
 	double y = log(tan((90 + lonLat.y()) * M_PI / 360)) / (M_PI / 180);

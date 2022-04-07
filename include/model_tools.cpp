@@ -1,6 +1,18 @@
 #include "model_tools.h"
 
-namespace modeltools {
+namespace modeltools
+{
+	std::pair<double, double>
+		meshStep(const double& fovx, const double& fovy,
+			const double& viewDis, const double& overlap
+		)
+	{
+		const double anglex = 0.5 * (fovx / 180.) * M_PI;
+		const double angley = 0.5 * (fovy / 180.) * M_PI;
+		const double viewFiledx = 2 * std::tan(anglex) * viewDis;
+		const double viewFiledy = 2 * std::tan(angley) * viewDis;
+		return std::make_pair(viewFiledx * (1 - overlap), viewFiledy * (1 - overlap));
+	}
 
 	SurfaceMesh
 	read_model(const fs::path& v_path)
