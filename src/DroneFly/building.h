@@ -35,7 +35,6 @@ struct MyViewpoint
 struct Building
 {
 	cgaltools::RotatedBox bounding_box_3d;
-	SurfaceMesh buildingMesh;
 	PointSet3 points_camera_space;
 	PointSet3 points_world_space;
 	CGAL::Bbox_2 bounding_box_2d;
@@ -46,11 +45,14 @@ struct Building
 	int parent = -1;
 	size_t one_pass_trajectory_num = 0;
 	int closest_trajectory_id = 0;
-	std::vector<SurfaceMesh> buildingMeshs;
 	//Used for trajectory generation
 	int start_box = -1;
 	std::vector<MyViewpoint> trajectory;
 	std::vector<MyViewpoint> passed_trajectory;
+
+	bool ifChanged = false;
+	SurfaceMesh buildingMesh;
+	std::vector<SurfaceMesh> buildingMeshs;
 
 	int find_nearest_trajectory(const Eigen::Vector3d& v_pos) const 
 	{

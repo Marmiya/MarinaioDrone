@@ -7,10 +7,11 @@
 
 #include <cmath>
 #include <corecrt_math_defines.h>
-#include <chrono>
 #include <iostream>
 #include <string>
-#include <time.h>
+#include <chrono>
+#include <ctime>
+#include <Windows.h>
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
@@ -21,14 +22,16 @@ namespace fs = boost::filesystem;
 namespace std {
 
     template <typename Scalar, int Rows, int Cols>
-    struct hash<Eigen::Matrix<Scalar, Rows, Cols>> {
+    struct hash<Eigen::Matrix<Scalar, Rows, Cols>>
+	{
         // https://wjngkoh.wordpress.com/2015/03/04/c-hash-function-for-eigen-matrix-and-vector/
-        size_t operator()(const Eigen::Matrix<Scalar, Rows, Cols>& matrix) const {
+        size_t operator()(const Eigen::Matrix<Scalar, Rows, Cols>& matrix) const
+    	{
             size_t seed = 0;
-            for (size_t i = 0; i < matrix.size(); ++i) {
+            for (size_t i = 0; i < matrix.size(); ++i)
+            {
                 Scalar elem = *(matrix.data() + i);
-                seed ^=
-                    std::hash<Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                seed ^= std::hash<Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
             return seed;
         }
@@ -41,8 +44,8 @@ namespace std {
 
 }  // namespace std
 
-namespace comutil {
-
+namespace comutil
+{
     std::string timeToString(std::chrono::system_clock::time_point t);
 
     // If folder exists, delete it and make a empty new folder.
@@ -59,9 +62,16 @@ namespace comutil {
     // vTip is used for outputting some msg.
     void checkpointTime(std::chrono::steady_clock::time_point& now, std::string vTip = "", bool checkpoint = true);
 
+    /*
+     * Delay a period of time to fill the interval.
+     */
+    bool fillTimeInterval(
+        const std::chrono::steady_clock::time_point& lastTimePoint, const double& interval
+    );
+
     // Attention: This function will change the time "now".
 	// Return the time interval between "now" parameter and the time this function is executed.
-	float getTimeInterval(std::chrono::steady_clock::time_point& now);
+	double getTimeInterval(std::chrono::steady_clock::time_point& now);
 
     void debug_img();
 	void debug_img(std::vector<cv::Mat>& vImgs);

@@ -39,7 +39,8 @@ find_package(embree 3 CONFIG REQUIRED)
 find_package(SCIP CONFIG REQUIRED)
 #find_package(Qhull CONFIG REQUIRED)
 find_package(tinyply CONFIG REQUIRED)
-    
+
+add_definitions(-DNOMINMAX)
 add_definitions(-DCGAL_USE_BASIC_VIEWER)
 include(CGAL_SCIP_support)
 if (OPENMP_FOUND)

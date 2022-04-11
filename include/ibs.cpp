@@ -609,6 +609,7 @@ PointSet3 IBSviewNet(
 						#pragma omp critical
 						{
 							ans.insert(ansp, ansv);
+							focusp[ans.size() - 1] = mp1.first;
 						}
 					}
 					mp2 = monitoringp2[curFI];
@@ -617,6 +618,7 @@ PointSet3 IBSviewNet(
 						#pragma omp critical
 						{
 							ans.insert(ansp, ansv);
+							focusp[ans.size() - 1] = mp2.first;
 						}
 					}
 				}
@@ -624,5 +626,21 @@ PointSet3 IBSviewNet(
 		}
 
 	}
+
+	for (const auto& i : ans)
+	{
+		for (const auto& j : ans)
+		{
+			if (i != j)
+			{
+				if (CGAL::squared_distance(ans.point(j), ans.point(i)) < 1e-3)
+				{
+					ans.remove(j);
+				}
+			}
+		}
+	}
+	ans.collect_garbage();
+
 	return ans;
 }

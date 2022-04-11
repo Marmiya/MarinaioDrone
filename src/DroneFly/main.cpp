@@ -554,18 +554,53 @@ int main(int argc, char** argv)
 		LOG(INFO) << "Begin IBS creating...";
 		auto t = comutil::recordTime();
 		SurfaceMesh ans = IBSCreatingWithSenceBB(SMs, 15., unitArea, safeDis);
+		SurfaceMesh ansnobb = IBSCreating(SMs, 15., unitArea);
 		comutil::checkpointTime(t, "IBS was created");
 
 		//auto triAns = IBSTriangulation(ans);
 		//CGAL::IO::write_PLY(logPath + "triIBS.ply", triAns);
 		CGAL::IO::write_PLY(logPath + "curIBS.ply", ans);
+		CGAL::IO::write_PLY(logPath + "curIBSnobb.ply", ansnobb);
 		CGAL::IO::write_PLY(logPath + "curMesh.ply", cur_mesh);
 
 		comutil::checkpointTime(t, "Begin views sampling...");
 		
 		PointSet3 views = IBSviewNet(ans, SMs, safeDis, safeHeight, 5., 5.);
+		/*PointSet3 views(true);
+		CGAL::IO::read_point_set("C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\Wed Apr  6 22 30 59 2022 STAGE 2\\IBSviews.ply", views);
+		for (const auto& i : views)
+		{
+			for (const auto& j : views)
+			{
+				if (i != j)
+				{
+					if (CGAL::squared_distance(views.point(j), views.point(i)) < 1e-3)
+					{
+						views.remove(j);
+					}
+				}
+			}
+		}
+		views.collect_garbage();
 
-		std::vector<Viewpoint> vs;
+		std::vector<Point3> tpts;
+		for (const auto& pi : views)
+		{
+			tpts.push_back(views.point(pi));
+		}
+
+		for (size_t i = 0; i < tpts.size() - 1; i++)
+		{
+			LOG(INFO) << CGAL::squared_distance(tpts.at(i), tpts.at(i + 1))<<"!!!";
+		}
+		CGAL::Hilbert_policy<CGAL::Middle> mid;
+		CGAL::spatial_sort<CGAL::Parallel_if_available_tag>(tpts.begin(), tpts.end(), mid);
+		for (size_t i = 0; i < tpts.size() - 1; i++)
+		{
+			LOG(INFO) << CGAL::squared_distance(tpts.at(i), tpts.at(i + 1));
+		}*/
+
+		/*std::vector<Viewpoint> vs;
 		for (const auto& i : views)
 		{
 			Viewpoint tv;
@@ -573,7 +608,7 @@ int main(int argc, char** argv)
 			tv.direction = cgaltools::cgal_vector_2_eigen(views.normal(i));
 			vs.push_back(tv);
 		}
-		write_smith18_path(vs, logPath + "smithPath.log");
+		write_smith18_path(vs, logPath + "smithPath.log");*/
 		comutil::checkpointTime(t, "Views sampling was finished");
 		CGAL::IO::write_point_set(logPath + "IBSviews.ply", views);
 	}
@@ -587,6 +622,7 @@ int main(int argc, char** argv)
 		{
 			LOG(INFO) << ">>>>>>>>>>> Frame " << cur_frame_id << " begin.  <<<<<<<<<<<";
 			auto t = comutil::recordTime();
+			auto fullFrameTimer = comutil::recordTime();
 
 			mapper->get_buildings(total_buildings, current_pos, cur_frame_id, runtime_height_map);
 			LOG(INFO) << "Buildings' num: " << total_buildings.size();
@@ -611,12 +647,18 @@ int main(int argc, char** argv)
 			std::vector<MyViewpoint> current_trajectory;
 			if (!with_interpolated || (with_interpolated && !is_interpolated))
 			{
-				current_trajectory = generate_trajectory_tg(
-					args, total_buildings,
-					heightMap, tree
-				);
-
-				LOG(INFO) << "New trajectory!";
+				if (std::find_if(total_buildings.begin(), total_buildings.end(),
+					[](const Building& bld) {return bld.ifChanged; })
+					!= total_buildings.end() ||
+					cur_frame_id == 0
+					)
+				{
+					current_trajectory = generate_trajectory_tg(
+						args, total_buildings,
+						heightMap, tree, current_pos.pos_mesh
+					);
+					LOG(INFO) << "New trajectory!";
+				}
 
 				// Determine next position
 				{
@@ -628,8 +670,8 @@ int main(int argc, char** argv)
 					LOG(INFO) << "Determine next position.";
 				}
 
-				// End
-				if (next_best_target->m_motion_status == done) {
+				if (next_best_target->m_motion_status == done) 
+				{
 					break;
 				}
 
@@ -677,13 +719,9 @@ int main(int argc, char** argv)
 				}
 				viz->m_pos = current_pos.pos_mesh;
 				viz->m_direction = current_pos.direction;
-				//viz->m_trajectories = current_trajectory;
 				viz->m_trajectories = total_passed_trajectory;
-				//viz->m_is_reconstruction_status = trajectory_flag;
-				//viz->m_trajectories_spline = total_passed_trajectory;
-				//viz.m_polygon = next_best_target->img_polygon;
 				viz->unlock();
-				//override_sleep(0.1);
+				
 			}
 
 			comutil::checkpointTime(t, "Viz", software_parameter_is_log);
@@ -695,60 +733,9 @@ int main(int argc, char** argv)
 
 				int interpolated_num = static_cast<int>(direction.norm() / DRONE_STEP);
 
-				if (direction.norm() < 2 * DRONE_STEP || !with_interpolated)
-				{
-					//next_direction = next_pos_direction.second.normalized();
-					//next_direction_temp = next_viewpoint.direction;
-					next_direction = next_viewpoint.direction;
-					next_pos = next_viewpoint.pos_mesh;
-					is_interpolated = false;
-				}
-				else // Bug here
-				{
-					LOG(INFO) << "BUG here!";
-
-					next_direction = direction.normalized();
-					next_pos = current_pos.pos_mesh + next_direction * DRONE_STEP;
-					Eigen::Vector2d next_2D_direction(next_viewpoint.direction.x(), next_viewpoint.direction.y());
-					Eigen::Vector2d current_2D_direction(current_pos.direction.x(), current_pos.direction.y());
-
-					double current_yaw = atan2(current_2D_direction.y(), current_2D_direction.x());
-					double next_direction_yaw = atan2(next_2D_direction.y(), next_2D_direction.x());
-					double angle_delta;
-					if (abs(current_yaw - next_direction_yaw) > M_PI)
-					{
-						if (current_yaw > next_direction_yaw)
-						{
-							angle_delta = (next_direction_yaw - current_yaw + M_PI * 2) / interpolated_num;
-							next_direction.x() = cos(current_yaw + angle_delta);
-							next_direction.y() = sin(current_yaw + angle_delta);
-						}
-						else
-						{
-							angle_delta = (current_yaw - next_direction_yaw + M_PI * 2) / interpolated_num;
-							next_direction.x() = cos(current_yaw - angle_delta + M_PI * 2);
-							next_direction.y() = sin(current_yaw - angle_delta + M_PI * 2);
-						}
-					}
-					else
-					{
-						if (current_yaw > next_direction_yaw)
-						{
-							angle_delta = (current_yaw - next_direction_yaw) / interpolated_num;
-							next_direction.x() = cos(current_yaw - angle_delta);
-							next_direction.y() = sin(current_yaw - angle_delta);
-						}
-						else
-						{
-							angle_delta = (next_direction_yaw - current_yaw) / interpolated_num;
-							next_direction.x() = cos(current_yaw + angle_delta);
-							next_direction.y() = sin(current_yaw + angle_delta);
-						}
-					}
-					next_direction.z() = -std::sqrt(next_direction.x() * next_direction.x() + next_direction.y() * next_direction.y()) * std::tan(45. / 180 * M_PI);
-					next_direction.normalize();
-					is_interpolated = true;
-				}
+				next_direction = next_viewpoint.direction;
+				next_pos = next_viewpoint.pos_mesh;
+				is_interpolated = false;
 
 				total_passed_trajectory.push_back(next_viewpoint);
 
@@ -775,13 +762,13 @@ int main(int argc, char** argv)
 			{
 				for (const auto& item : total_buildings)
 					boxes.push_back(item.bounding_box_3d);
-				//SurfaceMesh mesh = get_box_mesh(boxes);
 				SurfaceMesh mesh = modeltools::get_rotated_box_mesh(boxes);
 
 				CGAL::IO::write_PLY(logPath + "gradually_results/box" + std::to_string(cur_frame_id) + ".ply", mesh);
 				write_normal_path_with_flag(total_passed_trajectory, logPath + "gradually_results/camera_normal_" + std::to_string(cur_frame_id) + ".log");
 			}
-		}
+			comutil::fillTimeInterval(fullFrameTimer, .33);
+		} // end while 
 
 		// Done
 		{
@@ -848,12 +835,6 @@ int main(int argc, char** argv)
 		LOG(ERROR) << "Total exploration length: " << exploration_length;
 		LOG(ERROR) << "Total reconstruction length: " << reconstruction_length;
 		LOG(ERROR) << "Max_turn: " << max_turn;
-		LOG(ERROR) << "Vertical step: " << vertical_step;
-		LOG(ERROR) << "Horizontal step: " << horizontal_step;
-		LOG(ERROR) << "Split minimum distance: " << split_min_distance;
-		runtime_height_map.save_height_map_tiff(logPath + "height_map.tiff");
-
-		comutil::debug_img();
 
 		if (args["output_waypoint"].asBool())
 		{

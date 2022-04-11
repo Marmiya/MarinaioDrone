@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <CGAL/draw_polygon_2.h>
 #include <CGAL/draw_surface_mesh.h>
+#include <CGAL/spatial_sort.h>
 #include <glog/logging.h>
 
 #include "map_util.h"
@@ -166,7 +167,8 @@ ifNeighbouring(
 
 std::vector<MyViewpoint> generate_trajectory_tg(
 	const Json::Value& v_params, std::vector<Building>& v_buildings,
-	const modeltools::Height_map& v_height_map, const Tree& v_tree
+	const modeltools::Height_map& v_height_map, const Tree& v_tree,
+	const Eigen::Vector3d& curPos
 );
 
 void generate_distance_map(

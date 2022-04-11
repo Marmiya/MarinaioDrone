@@ -335,9 +335,11 @@ ifNeighbouring(
 	return false;
 }
 
-std::vector<MyViewpoint> generate_trajectory_tg(
+std::vector<MyViewpoint>
+generate_trajectory_tg(
 	const Json::Value& v_params, std::vector<Building>& v_buildings,
-	const modeltools::Height_map& v_height_map, const Tree& v_tree
+	const modeltools::Height_map& v_height_map, const Tree& v_tree,
+	const Eigen::Vector3d& curPos
 )
 {
 	const double view_distance = v_params["view_distance"].asDouble();
@@ -415,40 +417,40 @@ std::vector<MyViewpoint> generate_trajectory_tg(
 			throw;
 		}
 
-		size_t unsafeView = 0;
+		std::vector<Point3> tpts;
 		for (const auto& pi : traj)
 		{
-			MyViewpoint tv(cgaltools::cgal_point_2_eigen(traj.point(pi)), cgaltools::cgal_point_2_eigen(focusp[pi]));
-			if (v_height_map.is_safe(tv.pos_mesh))
+			tpts.push_back(traj.point(pi));
+		}
+
+
+		CGAL::spatial_sort<CGAL::Parallel_if_available_tag>(tpts.begin(), tpts.end(), CGAL::Hilbert_sort_middle_policy());
+
+		size_t unsafeView = 0;
+		for (const auto& tp : tpts) 
+		{
+			for (const auto& pi : traj)
 			{
-				item_trajectory.push_back(tv);
-			}
-			else
-			{
-				unsafeView++;
+				if (CGAL::squared_distance(tp, traj.point(pi)) < 1e-3)
+				{
+					MyViewpoint tv(cgaltools::cgal_point_2_eigen(traj.point(pi)), cgaltools::cgal_point_2_eigen(focusp[pi]));
+					if (v_height_map.is_safe(tv.pos_mesh) && traj.point(pi).z() >= safe_height)
+					{
+						item_trajectory.push_back(tv);
+					}
+					else
+					{
+						unsafeView++;
+					}
+				}
 			}
 		}
 		if (unsafeView)
 		{
-			LOG(INFO) << "There are " << unsafeView << " unsafe View(s).";
+			LOG(INFO) << "There are " << unsafeView << " unsafe view(s).";
 		}
 
 		v_buildings[i].one_pass_trajectory_num += item_trajectory.size();
-
-
-		
-
-		if (v_params.isMember("z_down_bounds"))
-		{
-			for (int i = 0; i < item_trajectory.size(); ++i)
-			{
-				if (item_trajectory[i].pos_mesh.z() < v_params["z_down_bounds"].asFloat())
-				{
-					item_trajectory[i].pos_mesh.z() = v_params["z_down_bounds"].asFloat();
-					item_trajectory[i].calculate_direction();
-				}
-			}
-		}
 
 		if (v_params["cluster_duplicate_flag"].asBool())
 			cluster_duplicate(item_trajectory, v_params["vertical_overlap"].asFloat(), v_params["fov"].asFloat(), view_distance);

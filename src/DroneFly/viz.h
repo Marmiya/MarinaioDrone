@@ -73,7 +73,8 @@ public:
         m_mutex.lock();
     }
 
-    void unlock() {
+    void unlock()
+	{
         m_mutex.unlock();
     }
 };
