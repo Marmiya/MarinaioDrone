@@ -1,0 +1,17 @@
+{
+    "projectName":"ImiRT",
+    "stage":0,
+    "logPath":"C:\\SSD\\GitProject\\MarinaioDrone\\log",
+    "subdiretories":[
+        "map",
+        "perc"
+    ],
+
+    "viewDistance": 60.0,
+    "safeDistance": 20.0,
+    "fov": 60.0,
+
+    "GTModelPath": "",
+    "verticalOverlap": 0.8,
+    "horizontalOverlap": 0.8
+}

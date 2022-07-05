@@ -767,7 +767,7 @@ int main(int argc, char** argv)
 				CGAL::IO::write_PLY(logPath + "gradually_results/box" + std::to_string(cur_frame_id) + ".ply", mesh);
 				write_normal_path_with_flag(total_passed_trajectory, logPath + "gradually_results/camera_normal_" + std::to_string(cur_frame_id) + ".log");
 			}
-			comutil::fillTimeInterval(fullFrameTimer, .33);
+			comutil::fillTimeInterval(fullFrameTimer, .15);
 		} // end while 
 
 		// Done
@@ -842,6 +842,15 @@ int main(int argc, char** argv)
 				args["safe_distance"].asFloat(), mapper->m_boundary);
 		}
 
+		SurfaceMesh finalPath;
+		for (int i = 0; i < total_passed_trajectory.size() - 1; i++)
+		{
+			SMVI vi = finalPath.add_vertex(cgaltools::eigen_2_cgal_point(total_passed_trajectory.at(i).pos_mesh));
+			SMVI visd = finalPath.add_vertex(cgaltools::eigen_2_cgal_point(total_passed_trajectory.at(i + 1).pos_mesh));
+			finalPath.add_edge(vi, visd);
+		}
+		CGAL::IO::write_PLY(logPath + "finalPath.ply", finalPath);
+
 		write_unreal_path(total_passed_trajectory, logPath + "path" + "/camera_after_transaction.log");
 		write_smith_path(total_passed_trajectory, logPath + "path" + "/camera_smith_invert_x.log");
 		write_normal_path_with_flag(total_passed_trajectory, logPath + "path" + "/camera_with_flag.log");
@@ -873,6 +882,7 @@ int main(int argc, char** argv)
 			viz->unlock();
 			
 		}
+		
 		comutil::debug_img();
 	}
 	// Stage which is not defined.

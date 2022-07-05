@@ -16,6 +16,8 @@
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
 #include <json/reader.h>
+#include "nlohmann/json.hpp"
+#include <glog/logging.h>
 
 namespace fs = boost::filesystem;
 
@@ -83,4 +85,23 @@ namespace comutil
 
 
 }
+
+namespace Log
+{
+    using json = nlohmann::json;
+    using string = std::string;
+
+	class LogSys
+	{
+    public:
+        json args;
+        string logPath;
+        int stage;
+
+        LogSys() = delete;
+        LogSys(const string& programName, const string& configPath);
+    };
+    
+}
+
 #endif

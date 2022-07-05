@@ -1,6 +1,6 @@
 {
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\DroneFly\\",
-    "stage": 2,
+    "stage": 1,
     
     "simplify": false,
     "ori_lift": false,
@@ -25,7 +25,7 @@
     "min_region_size":150,
    
     "view_distance": 60,
-    "safe_distance": 20,
+    "safe_distance": 12,
     "safe_height": 10,
     
     "fov": 60,
@@ -39,8 +39,8 @@
     "heightmap_resolution": 5,
     "heightmap_dilate": 4,
     "cluster_radius": 1,
-    "obj_path": "C:\\TempData\\DATA\\samples\\qiaoori.ply",
-    "model_path": "C:\\TempData\\DATA\\samples\\qiao.ply",
+    "obj_path": "C:\\TempData\\GOTH-1\\gothspl.ply",
+    "model_path": "C:\\TempData\\GOTH-1\\gothsim.ply",
     //"safe_zone_model_path": "C:\\Marinaio\\DATA\\samples\\qiao.ply",
 
     "is_viz": true,

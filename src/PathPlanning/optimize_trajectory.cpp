@@ -2,7 +2,7 @@
 #include <list>
 #include <boost/filesystem.hpp>
 #include <argparse/argparse.hpp>
-#include <json/reader.h>
+#include <json/reader.h> 
 #include <glog/logging.h>
 #include <filesystem>
 #include <QString>
@@ -16,9 +16,6 @@
 
 #include "CGAL/Point_set_3.h"
 
-/*
-WGS84坐标转mercator坐标
-*/
 Point2 lonLat2Mercator(const Point2& lonLat)
 {
 	Point2  mercator;
@@ -53,9 +50,6 @@ Point2 mercator2lonLat(const Point2& mercator)
 	return lonLat;
 }
 
-/*
-向量单位化
-*/
 float normalize(Vector3& v)
 {
 	float len = std::sqrt(v.squared_length());
@@ -64,9 +58,6 @@ float normalize(Vector3& v)
 	return len;
 }
 
-/*
-朝向heading、角度pitch获取视角方向向量
-*/
 bool view_direction_heading_pith_from(const FT& heading, const FT& picth, Vector3& view_direction)
 {
 	FT x = cos(picth * M_PI / 180) * sin(heading * M_PI / 180);
@@ -78,9 +69,6 @@ bool view_direction_heading_pith_from(const FT& heading, const FT& picth, Vector
 	return true;
 };
 
-/*
-视角方向向量获取朝向heading、角度pitch
-*/
 bool heading_pith_from_view_direction(const Vector3& view_direction, FT& heading, FT& picth)
 {
 	FT length = view_direction.squared_length();
@@ -292,7 +280,7 @@ int main(int argc, char** argv)
 	std::cout << "Stage: " << STAGE << "\n"
 		<< "Log Path: " << logPath << "\n";
 
-	// Mesh of the enviroment.
+	// Mesh of the environment.
 	SurfaceMesh mesh;
 	mesh = modeltools::read_model(args["model"].asString());
 	auto embree_scene = intersectiontools::generate_embree_scene(mesh);
@@ -305,7 +293,7 @@ int main(int argc, char** argv)
 	// -----------------------------------------------------------------------------------------------
 
 	// The initial distance between view point and sample point.
-	double viewDis = 40;
+	double viewDis = 15;
 	// The max distance the drone's camera can watch.
 	double maxViewDis = 80;
 	double maxAngle = 15;
@@ -322,13 +310,13 @@ int main(int argc, char** argv)
 		0, resolution_v / 2 / std::tan(fov_v / 180 * M_PI / 2), 2026.0429677971831,
 		0, 0, 1;
 
-	// The max loop times when generating initail view.
+	// The max loop times when generating initial view.
 	constexpr int MAX_ITER_TIMES = 100;
-	constexpr int initialViewsAmount = 5;
+	const int initialViewsAmount = args["initialViewNum"].asInt();
 
 	if (STAGE == 0)
 	{
-		// The pointset which is processed in the workflow below.
+		// The point set which is processed in the workflow below.
 		PointSet3 points;
 		CGAL::IO::read_point_set(args["points"].asString(), points);
 		LOG(INFO) << boost::format("Totally %d points") % points.number_of_points();
@@ -428,7 +416,7 @@ int main(int argc, char** argv)
 							cgaltools::cgal_point_2_eigen(survey), cgaltools::cgal_vector_2_eigen(-direction))
 						.camera_matrix,
 						cgaltools::cgal_point_2_eigen(survey),
-						cgaltools::cgal_point_2_eigen(base), embree_scene, maxViewDis,mesh);
+						cgaltools::cgal_point_2_eigen(base), embree_scene, maxViewDis, mesh);
 
 
 					if (direction.z() >= 0 && visiable) // Do not intersect and do not contain up view
@@ -540,52 +528,52 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	else if (STAGE == 1)
-	/*
-	 * Do initial droneScan.
-	 */
+		/*
+		 * Do initial droneScan.
+		 */
 	{
 		// The pointset which is processed in the workflow below.
 		PointSet3 points;
 		CGAL::IO::read_point_set(args["points"].asString(), points);
-		for(const auto& item:points)
-			points.normal(item)/=std::sqrt(points.normal(item).squared_length());
+		for (const auto& item : points)
+			points.normal(item) /= std::sqrt(points.normal(item).squared_length());
 
 		LOG(INFO) << boost::format("Totally %d points") % points.number_of_points();
 
 		DroneScanViz* droneScanviz = new DroneScanViz(args["model"].asString());
- 		{
- 			droneScanviz->lock();
- 			droneScanviz->sample_points = points;
- 			droneScanviz->unlock();
- 		}
+		{
+			droneScanviz->lock();
+			droneScanviz->sample_points = points;
+			droneScanviz->unlock();
+		}
 
 		auto finalAns = droneScan(
 			points, mesh, intrinsic_matrix, MAX_ITER_TIMES, initialViewsAmount,
 			logPath, viewDis, maxAngle, maxViewDis, droneScanviz, false
 		);
 
- 		/*LOG(INFO) << "Statistic of the final reconstructability";
-		
+		/*LOG(INFO) << "Statistic of the final reconstructability";
+
 		auto result = reconstructability_hueristic(finalAns, points, mesh,
 			compute_visibility(finalAns, mesh, points, intrinsic_matrix, maxViewDis, embree_scene),
 			maxViewDis, 62, 42);
-  
- 		auto color_map = points.add_property_map("color",Eigen::Vector3d(0.,0.,0.)).first;
- 		std::vector<double> reconstructability(points.size());
- 		for (int i = 0; i < points.size(); i++)
- 		{
- 			reconstructability[i]=std::get<4>(result[i]);
- 			double color = std::min(1., std::get<4>(result[i]) / 15);
- 			color_map[i]=Eigen::Vector3d(color,color,color);
- 		}
- 		print_vector_distribution(reconstructability);*/
- 
- 		{
- 			droneScanviz->lock();
- 			droneScanviz->final_reconstructability_points = points;
- 			droneScanviz->final_views = finalAns;
- 			droneScanviz->unlock();
- 		}
+
+		auto color_map = points.add_property_map("color",Eigen::Vector3d(0.,0.,0.)).first;
+		std::vector<double> reconstructability(points.size());
+		for (int i = 0; i < points.size(); i++)
+		{
+			reconstructability[i]=std::get<4>(result[i]);
+			double color = std::min(1., std::get<4>(result[i]) / 15);
+			color_map[i]=Eigen::Vector3d(color,color,color);
+		}
+		print_vector_distribution(reconstructability);*/
+
+		{
+			droneScanviz->lock();
+			droneScanviz->final_reconstructability_points = points;
+			droneScanviz->final_views = finalAns;
+			droneScanviz->unlock();
+		}
 
 		std::chrono::system_clock::time_point t = std::chrono::system_clock::now();
 		std::string txttime = comutil::timeToString(t);
@@ -600,7 +588,7 @@ int main(int argc, char** argv)
 		/*
 		 * complete pathplanning
 		 */
-		// The pointset which is processed in the workflow below.
+		 // The pointset which is processed in the workflow below.
 		PointSet3 points;
 		CGAL::IO::read_point_set(args["points"].asString(), points);
 
@@ -652,14 +640,73 @@ int main(int argc, char** argv)
 		std::vector<Viewpoint> initialTraj = read_normal_path("C:\\Data\\combination\\Sat Jan 22 15 36 02 2022 STAGE 3\\1.1K.txt");
 		write_smith18_path(initialTraj, "C:\\Data\\combination\\Sat Jan 22 15 36 02 2022 STAGE 3\\1.1KSmith.log");
 	}
-	else
+	else if (STAGE == 5)
 	{
 		PointSet3 points;
 		CGAL::IO::read_point_set(args["points"].asString(), points);
-		std::vector<Viewpoint> initialTraj = read_normal_path("C:\\Data\\combination\\Sat Jan 22 15 23 11 2022 STAGE 3\\0.txt");
+
+		std::string viewpath = args["DPviews"].asString();
+		std::vector<Viewpoint> initialTraj = read_normal_path(viewpath);
 		std::vector<std::vector<int>> visibility = compute_visibilityIndex(
 			initialTraj, mesh, points, intrinsic_matrix, maxViewDis, embree_scene
 		);
+		const int vSize = static_cast<int>(initialTraj.size());
+		const int pSize = static_cast<int>(points.size());
+		LOG(INFO) << "Vsize: " << vSize << "  Psize: " << pSize;
+
+		std::vector<Eigen::Vector3d> ptsp(pSize), ptsn(pSize);
+		for (int i = 0; i < pSize; i++)
+		{
+			ptsp.at(i) = cgaltools::cgal_point_2_eigen(points.point(i));
+			ptsn.at(i) = cgaltools::cgal_vector_2_eigen(points.normal(i));
+		}
+		auto curREC = totalRECv(initialTraj, ptsp, ptsn, visibility);
+
+		int q = 0, w = 0, e = 0, r = 0, t = 0, y = 0;
+
+		for (const auto& i : curREC)
+		{
+			if (i == 0.)
+				q++;
+			else if (i < 2.17)
+				w++;
+			else if (i < 4.34)
+				e++;
+			else if (i < 14.34)
+				r++;
+			else if (i < 24.34)
+				t++;
+			else
+				y++;
+		}
+
+		std::cout << q << "\n"
+			<< w << "\n"
+			<< e << "\n"
+			<< r << "\n"
+			<< t << "\n"
+			<< y << "\n";
+	}
+	else
+	{
+
+		PointSet3 points;
+		CGAL::IO::read_point_set(args["points"].asString(), points);
+
+		std::string viewpath = args["DPviews"].asString();
+		std::vector<Viewpoint> initialTraj;
+		PointSet3 views(true);
+		CGAL::IO::read_point_set(viewpath, views);
+		for (const auto& i : views)
+		{
+			Viewpoint tv;
+			tv.pos_mesh = cgaltools::cgal_point_2_eigen(views.point(i));
+			tv.direction = cgaltools::cgal_vector_2_eigen((views.normal(i)));
+			initialTraj.push_back(tv);
+		}
+			std::vector<std::vector<int>> visibility = compute_visibilityIndex(
+				initialTraj, mesh, points, intrinsic_matrix, maxViewDis, embree_scene
+			);
 		const int vSize = static_cast<int>(initialTraj.size());
 		const int pSize = static_cast<int>(points.size());
 		LOG(INFO) << "Vsize: " << vSize << "  Psize: " << pSize;

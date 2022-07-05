@@ -2,7 +2,6 @@
 
 namespace comutil
 {
-
     std::string timeToString(std::chrono::system_clock::time_point t)
     {
         std::time_t time = std::chrono::system_clock::to_time_t(t);
@@ -137,4 +136,57 @@ namespace comutil
 
         return color_table;
     }
+}
+
+namespace Log
+{
+	LogSys::LogSys(const string& programName, const string& configPath)
+	{
+        std::cout << "Read config " << configPath << std::endl;
+        try
+        {
+            std::ifstream in(configPath);
+            if (!in.is_open())
+            {
+                LOG(ERROR) << "Error opening file" << configPath << std::endl;
+                throw;
+            }
+            
+            if (!(in >> args))
+            {
+                LOG(ERROR) << "Error parse config file" << configPath << std::endl;
+                throw;
+            }
+            in.close();
+        }
+        catch (const std::runtime_error& err)
+        {
+            LOG(INFO) << err.what();
+            exit(0);
+        }
+
+        stage = args["stage"];
+        logPath = args["logPath"];
+        const string prjName = args["projectName"];
+        logPath += "//" + prjName;
+        comutil::safeCheckFolder(logPath);
+
+        auto logt = comutil::timeToString(std::chrono::system_clock::now());
+        logPath += "//" + logt + " STAGE " + std::to_string(stage);
+
+        fs::path lop(logPath);
+        logPath += "/";
+        create_directory(lop);
+
+        LOG(INFO) << "Stage: " << stage << "\n";
+        LOG(INFO) << "Log Path: " << logPath << "\n";
+
+        std::vector<string> subdir = args["subdiretories"];
+        for (const auto& dirName : subdir)
+        {
+            fs::create_directories(logPath + dirName);
+        }
+
+	}
+
 }

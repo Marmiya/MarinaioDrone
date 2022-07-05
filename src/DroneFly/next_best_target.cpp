@@ -151,7 +151,6 @@ bool Next_best_target_topology_exploration::get_ccpp_trajectory(
 	//	Eigen::Vector3d(0, 0, -1)
 	//);
 	//cv::imwrite("log/ccpp_map/"+std::to_string(dummy1++) + "_ccpp.png", viz_ccpp);
-	// BUG
 	return true;
 }
 

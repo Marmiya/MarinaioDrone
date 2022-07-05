@@ -123,10 +123,10 @@ void tVisualizer::draw_obj(
 
 void tVisualizer::run()
 {
-    pangolin::CreateWindowAndBind("DFP", 1920, 1080);
+    pangolin::CreateWindowAndBind("DFP", 1080, 720);
     glEnable(GL_DEPTH_TEST);
     s_cam = pangolin::OpenGlRenderState(
-        pangolin::ProjectionMatrix(1920, 1080, 800, 450, 800, 450, 1, 99999),
+        pangolin::ProjectionMatrix(1080, 720, 800, 450, 800, 450, 1, 99999),
         pangolin::ModelViewLookAt(-100, -100, 80, 0, 0, -1, pangolin::AxisZ)
     );
 

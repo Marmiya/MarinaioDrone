@@ -1,9 +1,10 @@
 {
     "log_txt": true,
-    "points": "C:\\Marinaio\\DATA\\testFile\\sample.drone_path",
-    "model": "C:\\Marinaio\\DATA\\testFile\\obj_box.ply",
-    "stage": 3,
+    "points": "C:\\TempData\\DATA\\samples\\xuexiao_7K.ply",
+    "model": "C:\\TempData\\DATA\\models\\xuexiao_mesh.ply",
+    "stage": 1,
     "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\",
     "traj": "C:/DATA/combination",
-    "DPviews":"C:\\Marinaio\\DATA\\testFile\\path0.drone_path"
+    "DPviews":"C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\Fri Mar  4 15 29 26 2022 STAGE 2 q\\IBSviews.ply",
+    "initialViewNum":3
 }
