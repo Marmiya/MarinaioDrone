@@ -11,7 +11,8 @@
     "safeDistance": 20.0,
     "fov": 60.0,
 
-    "GTModelPath": "",
+    "GTModelPath": "C:\\TempData\\Tokyo\\Tokyo.ply",
+    "samplePath": "C:\\TempData\\Tokyo\\Samples\\17K.ply",
     "verticalOverlap": 0.8,
     "horizontalOverlap": 0.8
 }

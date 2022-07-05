@@ -45,7 +45,7 @@ int main(int argc, char** argv){
 	SurfaceMesh model_important,model_unimportant;
 	
 	model_important = modeltools::read_model(model_file);
-	CGAL::IO::write_PLY("test.ply",model_important);
+	//CGAL::IO::write_PLY("test.ply",model_important);
 	LOG(INFO) << boost::format("%d vertices, %d faces") % model_important.num_vertices() % model_important.num_faces();
 	model_unimportant = model_important;
 

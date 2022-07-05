@@ -4,8 +4,7 @@ namespace modeltools
 {
 	std::pair<double, double>
 		meshStep(const double& fovx, const double& fovy,
-			const double& viewDis, const double& overlap
-		)
+			const double& viewDis, const double& overlap)
 	{
 		const double anglex = 0.5 * (fovx / 180.) * M_PI;
 		const double angley = 0.5 * (fovy / 180.) * M_PI;
@@ -61,10 +60,9 @@ namespace modeltools
 	}
 
 	bool
-		read_model(
+	read_model(
 			const fs::path& v_path, std::vector<Point3>& v_points, std::vector<Vector3>& v_normals,
-			std::vector<std::array<int, 3>>& v_face_indices, std::vector<CGAL::Triangle_3<K>>& v_faces
-		)
+			std::vector<std::array<int, 3>>& v_face_indices, std::vector<CGAL::Triangle_3<K>>& v_faces)
 	{
 		struct memory_buffer : public std::streambuf
 		{
@@ -368,7 +366,8 @@ namespace modeltools
 	}
 
 
-	Polygon2 safeExpansionAny(
+	Polygon2
+	safeExpansionAny(
 		std::vector<cgaltools::SegmentLN> set, double safeDis) {
 
 		std::vector<Polygon2> plys;
@@ -409,7 +408,8 @@ namespace modeltools
 		return plys.front();
 	}
 
-	Polygon2 expansion(const Polygon2& plg, double safeDis)
+	Polygon2
+	expansion(const Polygon2& plg, double safeDis)
 	{
 		if (plg.is_empty())
 		{
@@ -491,7 +491,8 @@ namespace modeltools
 		return oplg;
 	}
 
-	PointSet3 CCPP(Point3 base, Point3 survey) {
+	PointSet3
+	CCPP(Point3 base, Point3 survey) {
 		using namespace cgaltools;
 		PointSet3 t;
 		double dis = std::sqrt(CGAL::squared_distance(base, survey));
@@ -504,7 +505,8 @@ namespace modeltools
 		return t;
 	}
 
-	Proxy load_footprint(const std::string& v_footprint_path)
+	Proxy
+	load_footprint(const std::string& v_footprint_path)
 	{
 		std::ifstream file_in(v_footprint_path);
 		if (!file_in.is_open()) {
@@ -534,7 +536,8 @@ namespace modeltools
 		return proxy;
 	}
 
-	bool WriteMat(const std::string& filename, const std::vector<tinyobj::material_t>& materials)
+	bool
+	WriteMat(const std::string& filename, const std::vector<tinyobj::material_t>& materials)
 	{
 		FILE* fp = fopen(filename.c_str(), "w");
 		if (!fp)
@@ -571,7 +574,8 @@ namespace modeltools
 		return true;
 	}
 
-	bool write_obj(const std::string& filename, const tinyobj::attrib_t& attributes,
+	bool
+	write_obj(const std::string& filename, const tinyobj::attrib_t& attributes,
 		const std::vector<tinyobj::shape_t>& shapes, const std::vector<tinyobj::material_t>& materials)
 	{
 		FILE* fp = fopen(filename.c_str(), "w");
@@ -701,7 +705,8 @@ namespace modeltools
 		return 1;
 	}
 
-	void fix_mtl_from_unreal(const std::string& filename)
+	void
+	fix_mtl_from_unreal(const std::string& filename)
 	{
 		std::ifstream f_in(filename);
 		std::string buffer;
@@ -736,7 +741,8 @@ namespace modeltools
 		f_out.close();
 	}
 
-	void clean_vertex(tinyobj::attrib_t& attrib, tinyobj::shape_t& shape)
+	void
+	clean_vertex(tinyobj::attrib_t& attrib, tinyobj::shape_t& shape)
 	{
 		bool has_texcoords = false, has_normal = false;
 		if (attrib.texcoords.size() > 0)
@@ -881,7 +887,8 @@ namespace modeltools
 
 	}
 
-	void clean_materials(tinyobj::shape_t& shape, std::vector<tinyobj::material_t>& materials)
+	void
+	clean_materials(tinyobj::shape_t& shape, std::vector<tinyobj::material_t>& materials)
 	{
 		if (materials.size() == 0)
 			return;
@@ -921,7 +928,8 @@ namespace modeltools
 	Get split mesh with a big whole mesh
 	*/
 
-	void merge_obj(const std::string& v_file,
+	void
+	merge_obj(const std::string& v_file,
 		const std::vector<tinyobj::attrib_t>& v_attribs, const std::vector<std::vector<tinyobj::shape_t>>& saved_shapes,
 		const std::vector < std::vector<tinyobj::_material_t>>& materials,
 		const int start_id)
