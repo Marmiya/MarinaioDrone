@@ -154,8 +154,7 @@ bool Next_best_target_topology_exploration::get_ccpp_trajectory(
 	return true;
 }
 
-Building
-Next_best_target_topology_exploration::default_expand()
+Building Next_best_target_topology_exploration::default_expand()
 {
 	int num_already_travelled_cell = 0;
 	int max_x = 0;

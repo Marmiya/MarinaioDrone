@@ -10,9 +10,15 @@
     "viewDistance": 60.0,
     "safeDistance": 20.0,
     "fov": 60.0,
+    "initx": 0.0,
+    "inity": 0.0,
+    "initz": 0.0,
 
     "GTModelPath": "C:\\TempData\\Tokyo\\Tokyo.ply",
     "samplePath": "C:\\TempData\\Tokyo\\Samples\\17K.ply",
     "verticalOverlap": 0.8,
-    "horizontalOverlap": 0.8
+    "horizontalOverlap": 0.8,
+    "ptsDensity": 0.5,
+
+    "ccppCellLength": 5.0
 }

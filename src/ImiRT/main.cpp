@@ -16,6 +16,13 @@ int main(int argc, char* argv[])
 
 	GTMap map(args["GTModelPath"], args["samplePath"]);
 	Drone drone(args["viewDistance"], args["safeDistance"], args["fov"], args["fov"], args["verticalOverlap"], args["horizontalOverlap"]);
+	map.initialization(args["ccppCellLength"]);
+	drone.initialization(args["initx"], args["inity"], args["initz"], map.range, args["ptsDensity"]);
+
+	while (true)
+	{
+		
+	}
 
 	return 0;
 }
