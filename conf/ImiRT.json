@@ -12,7 +12,7 @@
     "fov": 60.0,
     "initx": 0.0,
     "inity": 0.0,
-    "initz": 0.0,
+    "initz": 20.0,
 
     "GTModelPath": "C:\\TempData\\Tokyo\\Tokyo.ply",
     "samplePath": "C:\\TempData\\Tokyo\\Samples\\17K.ply",

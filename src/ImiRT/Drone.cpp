@@ -24,15 +24,15 @@ bool Drone::SASGen(const double& ptsD)
 	{
 		for (int j = 0; j <= hPtsA; j++)
 		{
-			sightAngleSet.push_back(std::make_pair(vbase * i * gap, hbase * j * gap));
+			sightAngleSet.emplace_back(std::make_pair(vbase * i * gap, hbase * j * gap));
 		}
-		sightAngleSet.push_back(std::make_pair(vbase * i * gap, -hbase));
+		sightAngleSet.emplace_back(std::make_pair(vbase * i * gap, -hbase));
 	}
 	for (int j = 0; j <= hPtsA; j++)
 	{
-		sightAngleSet.push_back(std::make_pair(vFov, hbase * j * gap));
+		sightAngleSet.emplace_back(std::make_pair(vFov, hbase * j * gap));
 	}
-	sightAngleSet.push_back(std::make_pair(vFov, -hbase));
+	sightAngleSet.emplace_back(std::make_pair(vFov, -hbase));
 	sightAngleSet.shrink_to_fit();
 
 	return true;
@@ -41,7 +41,9 @@ bool Drone::SASGen(const double& ptsD)
 
 
 void Drone::initialization(const double& initx, const double& inity, const double& initz,
-	const std::tuple<double, double, double, double>& range, const double& ptsD)
+	const std::tuple<double, double, double, double>& range, 
+	const std::vector<double>& xgp, const std::vector<double>& ygp,
+	const double& ptsD)
 {
 	double x, y, z;
 	if (initx <= std::get<0>(range))
@@ -81,6 +83,29 @@ void Drone::initialization(const double& initx, const double& inity, const doubl
 	position = Point3(x, y, z);
 	direction = Vector3(0, 1, 0);
 	SASGen(ptsD);
+	perception = Perception(range, xgp, ygp);
+	perception.initialization(position);
+}
+
+//Todo: add dangerous/safe check.
+void Drone::updateUncertainty(const PointSet3& pts)
+{
+	int farXIndex = static_cast<int>(std::floor((position.x() + viewDis - std::get<0>(perception.range)) / perception.CCL));
+	int farYIndex = static_cast<int>(std::floor((position.y() + viewDis - std::get<0>(perception.range)) / perception.CCL));
+	if (farXIndex > perception.xGridIndexA)
+	{
+		farXIndex = perception.xGridIndexA - 1;
+	}
+	if (farYIndex > perception.yGridIndexA)
+	{
+		farYIndex = perception.yGridIndexA - 1;
+	}
+	for (const auto& i : pts)
+	{
+		int xIndex = static_cast<int>(std::floor((pts.point(i).x() - std::get<0>(perception.range)) / perception.CCL));
+		int yIndex = static_cast<int>(std::floor((pts.point(i).y() - std::get<2>(perception.range)) / perception.CCL));
+		perception.stateNet.at(xIndex).at(yIndex) = occupied;
+	}
 }
 
 void Drone::whatWeLook(const RTCScene& scene)
@@ -117,12 +142,31 @@ void Drone::whatWeLook(const RTCScene& scene)
 
 		if (rayhits.hit.geomID != RTC_INVALID_GEOMETRY_ID) 
 		{
-			Point3 hit_position = position + rayhits.ray.tfar * Vector3(sdx, sdy, sdz);
-			#pragma omp critical
+			if (rayhits.ray.tfar < 60.)
 			{
-				hpts.insert(hit_position);
+				Point3 hit_position = position + rayhits.ray.tfar * Vector3(sdx, sdy, sdz);
+				#pragma omp critical
+				{
+					hpts.insert(hit_position);
+				}
 			}
 		}
 	}
 	
+}
+
+void Drone::letsThink()
+{
+	if (perception.pts.size() == 0)
+	{
+		
+	}
+	else
+	{
+		
+	}
+}
+
+void Drone::whatWeDo()
+{
 }

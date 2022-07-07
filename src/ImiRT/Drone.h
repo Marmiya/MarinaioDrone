@@ -21,9 +21,14 @@ public:
 	Drone() = delete;
 	Drone(const double&, const double&, const double&, const double&, const double&, const double&);
 
-	void initialization(const double& initx, const double& inity, const double& initz, 
-		const std::tuple<double, double, double, double>& ,const double&);
+	void initialization(const double& initx, const double& inity, const double& initz,
+		const std::tuple<double, double, double, double>&,
+		const std::vector<double>&, const std::vector<double>&,
+		const double&);
+	void updateUncertainty(const PointSet3& pts);
 	void whatWeLook(const RTCScene&);
+	void letsThink();
+	void whatWeDo();
 
 private:
 	bool SASGen(const double&);
