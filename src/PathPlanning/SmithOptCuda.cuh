@@ -4,6 +4,10 @@
 #include <type_traits>
 #include <vector>
 #include <utility>
+#include <optix.h>
+#include <optix_stubs.h>
+#include <optix_stack_size.h>
+#include <optix_function_table_definition.h>
 
 extern std::vector<std::pair<double, double>> viewsOffsetC;
 extern double verStripAngle;

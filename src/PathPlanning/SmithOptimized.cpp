@@ -809,9 +809,15 @@ std::vector<Viewpoint> adjusting(
     const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
 )
 {
-    std::vector<Viewpoint> temp;
-    return temp;
+    cudaFree(0);
+	optixInit();
+    OptixDeviceContextOptions options = {};
+    CUcontext cuCtx = 0;
+    OptixDeviceContext context = nullptr;
+    optixDeviceContextCreate(cuCtx, &options, &context);
 
+    // TODO: it's wrong now.
+    return views;
 }
 
 void initialization(const SurfaceMesh& mesh, const int& CVD)
