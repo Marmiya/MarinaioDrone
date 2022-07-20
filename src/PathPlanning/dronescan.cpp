@@ -13,7 +13,7 @@ std::vector<Viewpoint> droneScan(
     // Height map generation
 	{
 	    double area = CGAL::Polygon_mesh_processing::area(mesh);
-	    int num_sample = area / std::sqrt(3);
+	    int num_sample = static_cast<int>(area / std::sqrt(3));
 	    PointSet3 dense_points_used_for_heightmap_generation;
 	    CGAL::Random_points_in_triangle_mesh_3<SurfaceMesh> dense_point_generator(mesh);
 		std::copy_n(dense_point_generator, num_sample, dense_points_used_for_heightmap_generation.point_back_inserter());
@@ -108,6 +108,7 @@ std::vector<Viewpoint> droneScan(
 
     // initialize the reconstructability for every point.
 	#pragma omp parallel for
+    
     for (int k = 0; k < pointsSize; ++k)
     {
         if (!modl)
@@ -227,6 +228,8 @@ std::vector<Viewpoint> droneScan(
     finalAns = droneScanAdj(points, trajectory, mesh, intrinsicMatrix,
         viewDis, maxAngle, maxDis, v_viz, modl
     );
+
+    
 
     return finalAns;
 }
@@ -352,6 +355,18 @@ std::vector<Viewpoint> droneScanAdj(
 
     LOG(INFO) << "IRD was finised";
 
+  /*  std::ofstream qffile("C:/Marinaio/TEMP/test1232.txt");
+    for (int i = 0; i < visibilityindex.size(); i++)
+    {
+        qffile << visibilityindex.at(i).size() << std::endl;
+    }
+    std::ofstream qqffile("C:/Marinaio/TEMP/test12qwqw32.txt");
+    for (int i = 0; i < IRD.size(); i++)
+    {
+        qqffile << IRD.at(i).size()<< std::endl;
+    }*/
+
+
     // Loop for eliminating redundant views.
     int z = viewSize;
     int t = 0;
@@ -404,7 +419,7 @@ std::vector<Viewpoint> droneScanAdj(
                 remove = false;
             }
         }
-
+       
         min->second = false;
         if (remove)
         {

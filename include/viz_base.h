@@ -1,5 +1,5 @@
 #pragma once
-#define __cplusplus 201703L
+//#define __cplusplus 201703L
 
 #include "trajectory.h"
 #include "cgal_tools.h"
@@ -182,7 +182,7 @@ public:
 		{
 			has_color = true;
 		}
-		glPointSize(m_point_size);
+		glPointSize(static_cast<GLfloat>(m_point_size));
 		glBegin(GL_POINTS);
 		const auto& colors = v_points.property_map<Eigen::Vector3d>("color").first;
 		for (size_t i = 0; i < v_points.size(); ++i)
@@ -199,7 +199,7 @@ public:
 	void draw_line(const Eigen::Vector3d& v_min, const Eigen::Vector3d& v_max, int sickness = 1,
 	               const Eigen::Vector4f& v_color = Eigen::Vector4f(1., 0., 0., 1.))
 	{
-		glLineWidth(sickness);
+		glLineWidth(static_cast<GLfloat>(sickness));
 		glColor3d(v_color.x(), v_color.y(), v_color.z());
 		pangolin::glDrawLine(v_min.x(), v_min.y(), v_min.z(), v_max.x(), v_max.y(), v_max.z());
 	}

@@ -8,11 +8,12 @@
 #include <QString>
 #include <QStringList>
 
-#include "ppc.h"
-#include "SmithViz.h"
+#include "dronescan.h"
+#include "DroneScanViz.h"
 #include "viz.h"
 #include "metrics.h"
 #include "initialize.h"
+#include "SmithOptimized.h"
 
 #include "CGAL/Point_set_3.h"
 
@@ -521,9 +522,9 @@ int main(int argc, char** argv)
 			ptsn.at(i) = cgaltools::cgal_vector_2_eigen(points.normal(i));
 		}
 		LOG(INFO) << "ini";
-		auto z = totalREC(trajectory, ptsp, ptsn, vis);
+		//auto z = totalREC(trajectory, ptsp, ptsn, vis);
 		comutil::checkpointTime(t);
-		LOG(INFO) << "GPUREC: " << z;
+		//LOG(INFO) << "GPUREC: " << z;
 
 		return 0;
 	}
@@ -583,166 +584,13 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-	else if (STAGE == 2)
-	{
-		/*
-		 * complete pathplanning
-		 */
-		 // The pointset which is processed in the workflow below.
-		PointSet3 points;
-		CGAL::IO::read_point_set(args["points"].asString(), points);
-
-		for (const auto& item : points)
-			points.normal(item) /= std::sqrt(points.normal(item).squared_length());
-
-		auto traj = pathplanning(
-			points, mesh, intrinsic_matrix,
-			MAX_ITER_TIMES, initialViewsAmount, logPath,
-			viewDis, maxAngle, maxViewDis
-		);
-		LOG(INFO) << "finish ppc.";
-
-		write_normal_path(traj, logPath + "finalans.txt");
-
-		SmithViz* smithViz = new SmithViz(args["model"].asString());
-		{
-			smithViz->lock();
-			smithViz->sample_points = points;
-			smithViz->final_views = traj;
-			smithViz->unlock();
-		}
-
-		comutil::debug_img();
-
-	}
-	else if (STAGE == 3)
+	else if (STAGE == 6)
 	{
 		PointSet3 pts(true), vs(true);
 		load_samples_by_user(pts, args["points"].asString());
 		std::vector<Viewpoint> views;
 		load_cameras_by_user(views, args["DPviews"].asString());
-		/*for (const auto& i : views)
-		{
-			vs.insert(cgaltools::eigen_2_cgal_point(i.pos_mesh), cgaltools::eigen_2_cgal_vector(i.direction));
-		}
-		CGAL::IO::write_point_set(logPath + "sppp.ply", pts);
-		CGAL::IO::write_point_set(logPath + "VVVVVV.ply", vs);*/
-
-		auto ans = droneScanAdj(pts, views, mesh, intrinsic_matrix, viewDis, maxAngle, maxViewDis);
-		for (const auto& i : ans)
-		{
-			vs.insert(cgaltools::eigen_2_cgal_point(i.pos_mesh), cgaltools::eigen_2_cgal_vector(i.direction));
-		}
-		CGAL::IO::write_point_set(logPath + "VVVVVV.ply", vs);
-	}
-	else if (STAGE == 4)
-	{
-		std::vector<Viewpoint> initialTraj = read_normal_path("C:\\Data\\combination\\Sat Jan 22 15 36 02 2022 STAGE 3\\1.1K.txt");
-		write_smith18_path(initialTraj, "C:\\Data\\combination\\Sat Jan 22 15 36 02 2022 STAGE 3\\1.1KSmith.log");
-	}
-	else if (STAGE == 5)
-	{
-		PointSet3 points;
-		CGAL::IO::read_point_set(args["points"].asString(), points);
-
-		std::string viewpath = args["DPviews"].asString();
-		std::vector<Viewpoint> initialTraj = read_normal_path(viewpath);
-		std::vector<std::vector<int>> visibility = compute_visibilityIndex(
-			initialTraj, mesh, points, intrinsic_matrix, maxViewDis, embree_scene
-		);
-		const int vSize = static_cast<int>(initialTraj.size());
-		const int pSize = static_cast<int>(points.size());
-		LOG(INFO) << "Vsize: " << vSize << "  Psize: " << pSize;
-
-		std::vector<Eigen::Vector3d> ptsp(pSize), ptsn(pSize);
-		for (int i = 0; i < pSize; i++)
-		{
-			ptsp.at(i) = cgaltools::cgal_point_2_eigen(points.point(i));
-			ptsn.at(i) = cgaltools::cgal_vector_2_eigen(points.normal(i));
-		}
-		auto curREC = totalRECv(initialTraj, ptsp, ptsn, visibility);
-
-		int q = 0, w = 0, e = 0, r = 0, t = 0, y = 0;
-
-		for (const auto& i : curREC)
-		{
-			if (i == 0.)
-				q++;
-			else if (i < 2.17)
-				w++;
-			else if (i < 4.34)
-				e++;
-			else if (i < 14.34)
-				r++;
-			else if (i < 24.34)
-				t++;
-			else
-				y++;
-		}
-
-		std::cout << q << "\n"
-			<< w << "\n"
-			<< e << "\n"
-			<< r << "\n"
-			<< t << "\n"
-			<< y << "\n";
-	}
-	else
-	{
-
-		PointSet3 points;
-		CGAL::IO::read_point_set(args["points"].asString(), points);
-
-		std::string viewpath = args["DPviews"].asString();
-		std::vector<Viewpoint> initialTraj;
-		PointSet3 views(true);
-		CGAL::IO::read_point_set(viewpath, views);
-		for (const auto& i : views)
-		{
-			Viewpoint tv;
-			tv.pos_mesh = cgaltools::cgal_point_2_eigen(views.point(i));
-			tv.direction = cgaltools::cgal_vector_2_eigen((views.normal(i)));
-			initialTraj.push_back(tv);
-		}
-			std::vector<std::vector<int>> visibility = compute_visibilityIndex(
-				initialTraj, mesh, points, intrinsic_matrix, maxViewDis, embree_scene
-			);
-		const int vSize = static_cast<int>(initialTraj.size());
-		const int pSize = static_cast<int>(points.size());
-		LOG(INFO) << "Vsize: " << vSize << "  Psize: " << pSize;
-
-		std::vector<Eigen::Vector3d> ptsp(pSize), ptsn(pSize);
-		for (int i = 0; i < pSize; i++)
-		{
-			ptsp.at(i) = cgaltools::cgal_point_2_eigen(points.point(i));
-			ptsn.at(i) = cgaltools::cgal_vector_2_eigen(points.normal(i));
-		}
-		auto curREC = totalRECv(initialTraj, ptsp, ptsn, visibility);
-
-		int q = 0, w = 0, e = 0, r = 0, t = 0, y = 0;
-
-		for (const auto& i : curREC)
-		{
-			if (i == 0.)
-				q++;
-			else if (i < 2.17)
-				w++;
-			else if (i < 4.34)
-				e++;
-			else if (i < 14.34)
-				r++;
-			else if (i < 24.34)
-				t++;
-			else
-				y++;
-		}
-
-		std::cout << q << "\n"
-			<< w << "\n"
-			<< e << "\n"
-			<< r << "\n"
-			<< t << "\n"
-			<< y << "\n";
+		SmithAdj(views, pts, mesh, intrinsic_matrix, viewDis, fov_v);
 	}
 
 	return 0;

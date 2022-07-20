@@ -1,8 +1,9 @@
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.18)
 PROJECT(PathPlanning LANGUAGES CUDA CXX)
+set(CMAKE_CXX_STANDARD 17)
 
-set(CUDA_INCLUDE_DIRS "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/include" ${CUDA_INCLUDE_DIRS})
-
+#set(CUDA_INCLUDE_DIRS "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7/include" ${CUDA_INCLUDE_DIRS})
+find_package(CUDAToolkit)
 enable_language(CUDA)
 
 FILE(GLOB SOURCE_FILE *.h *.cu *.cpp *.cuh)
@@ -16,7 +17,7 @@ find_package(tinyxml2 CONFIG REQUIRED)
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 
 target_link_options(${PROJECT_NAME} PUBLIC "/FORCE:MULTIPLE")
-
+target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cudart)
 set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_ARCHITECTURES 75)
 

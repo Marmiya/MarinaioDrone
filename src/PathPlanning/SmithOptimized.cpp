@@ -15,7 +15,7 @@ double upperHallmark = 20.;
 double steplength = 4.;
 int outerIternum = 2;
 int innerItrnum = 50;
-
+/*
 std::array<std::pair<double, double>, 128> viewCandidates{
    {
 	{9. / 16. * M_PI,0.},{10. / 16. * M_PI,0.},{11. / 16. * M_PI,0.},{12. / 16. * M_PI,0.},
@@ -690,9 +690,9 @@ std::vector<Viewpoint> adjustTraj(
                         embree_scene, heightMap
                     );
                 toBeAdjusted[i].second = stts;
-               /* if ((IIN + 1) % 25 == 0) {
-                    checkpointTime(t, "NELDERMEADMETHOD: ");
-                }*/
+               // if ((IIN + 1) % 25 == 0) {
+                  //  checkpointTime(t, "NELDERMEADMETHOD: ");
+                //}
                 if (stts == good) {
                     //LOG(INFO) << "good.";
                     gd++;
@@ -780,4 +780,58 @@ std::vector<Viewpoint> adjustTraj(
     LOG(INFO) << "curREC: " << totalCURREC / pSize;
     
     return ans;
+}
+*/
+
+/*
+ * New interface.
+ */
+
+int candidateViewsDens = 256;
+
+
+std::vector<Viewpoint> SmithAdj(
+    const std::vector<Viewpoint>& views, const PointSet3& pts,
+    const SurfaceMesh& mesh,
+    const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov,
+    const int& CVD
+)
+{
+    initialization(mesh);
+
+    std::vector<Viewpoint> temp;
+    return temp;
+}
+
+std::vector<Viewpoint> adjusting(
+    const std::vector<Viewpoint>& views, const PointSet3& pts,
+    const SurfaceMesh& mesh,
+    const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
+)
+{
+    std::vector<Viewpoint> temp;
+    return temp;
+
+}
+
+void initialization(const SurfaceMesh& mesh, const int& CVD)
+{
+    if (CVD != 256)
+    {
+        candidateViewsDens = CVD;
+    }
+    
+    const int verStripAmount = static_cast<int>(std::ceil((2 + std::sqrt(4 - 8 * (-candidateViewsDens))) / 4));
+    const int horiStripAmount = 2 * verStripAmount - 2;
+    verStripAngle = M_PI / (verStripAmount - 1);
+    horiStripAngle = (2 * M_PI) / horiStripAmount;
+    candidateViewsDens = verStripAmount * horiStripAmount;
+    double2* viewsOffsetCu;
+    cudaMalloc(&viewsOffsetCu, candidateViewsDens * sizeof(double2));
+
+    int blockNum = candidateViewsDens / tpb + 1;
+    initOffsetInf(blockNum, tpb, viewsOffsetCu, candidateViewsDens, horiStripAmount, verStripAngle, horiStripAngle);
+    conveyFromCuda(viewsOffsetCu, viewsOffsetC, candidateViewsDens);
+    cudaFree(viewsOffsetCu);
+
 }

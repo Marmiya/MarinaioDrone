@@ -2,14 +2,14 @@
 #include "common_util.h"
 #include "model_tools.h"
 #include "metrics.h"
+
 #include <cstdlib>
-#include <random>
 #include <unordered_set>
 #include <corecrt_math_defines.h>
-#include <CGAL/point_generators_3.h>
-#include "viewpoint.h"
-#include "calculate_reconstructability.h"
+#include <iomanip>
 
+#include "viewpoint.h"
+#include "SmithOptCuda.cuh"
 #include "SmithViz.h"
 
 extern enum ompStatus;
@@ -56,6 +56,11 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, ompStatus> nelderMeadMethodPREC(
 	const RTCScene& v_embree_scene, const modeltools::Height_map& heightMap
 );
 
+/*
+ * Old interface, for stability of old code.
+ * If you are configuring new system, please use new interface for efficiency.
+ */
+
 std::vector<Viewpoint> adjustTraj(
 	const std::vector<Viewpoint>& traj, const modeltools::Height_map& heightMap,
 	const PointSet3& pts, const SurfaceMesh& mesh,
@@ -63,3 +68,26 @@ std::vector<Viewpoint> adjustTraj(
 	const double v_dmax, const double v_fov_degree,
     SmithViz* v_viz = nullptr
 );
+
+/*
+ * New interface.
+ */
+
+extern int candidateViewsDens;
+
+
+std::vector<Viewpoint> SmithAdj(
+	const std::vector<Viewpoint>& views, const PointSet3& pts,
+	const SurfaceMesh& mesh,
+	const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov,
+	const int& CVD = 256
+);
+
+std::vector<Viewpoint> adjusting(
+	const std::vector<Viewpoint>& views, const PointSet3& pts,
+	const SurfaceMesh& mesh,
+	const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
+);
+
+void initialization(const SurfaceMesh& mesh, const int& CVD = 256);
+
