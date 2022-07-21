@@ -808,12 +808,138 @@ std::vector<Viewpoint> adjusting(
     const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
 )
 {
+    optixInit();
+
     cudaFree(0);
-	optixInit();
     OptixDeviceContextOptions options = {};
     CUcontext cuCtx = 0;
+    CUstream cuStream = 0;
     OptixDeviceContext context = nullptr;
     optixDeviceContextCreate(cuCtx, &options, &context);
+
+    OptixAccelBuildOptions accelOptions = {};
+    OptixBuildInput buildInputs[2];
+
+    CUdeviceptr tempBuffer, outputBuffer;
+    size_t tempBufferSizeINBytes, outputBufferSizeInBytes;
+
+	memset(&accelOptions, 0, sizeof(OptixAccelBuildOptions));
+    accelOptions.buildFlags = OPTIX_BUILD_FLAG_NONE;
+    accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
+    accelOptions.motionOptions.numKeys = 0;
+
+    memset(buildInputs, 0, sizeof(OptixBuildInput) * 2);
+
+    size_t verticesSize = mesh.vertices().size();
+    std::vector<float3> vertices;
+
+    for (const auto& vertex : mesh.points())
+    {
+        vertices.push_back(make_float3(vertex.x(), vertex.y(), vertex.z()));
+    }
+
+    std::vector<int3> indices;
+
+    for (const auto& face : mesh.faces())
+    {
+        std::array<int, 3> index;
+        int vertex_index = 0;
+        for (const auto& VI : mesh.vertices_around_face(mesh.halfedge(face)))
+        {
+            index.at(vertex_index) = VI.idx();
+            vertex_index++;
+        }
+        indices.push_back(make_int3(index.at(0), index.at(1), index.at(2)));
+    }
+
+    vertices.shrink_to_fit();
+    indices.shrink_to_fit();
+
+    size_t verticesSizeInBytes = sizeof(float3) * vertices.size();
+    CUdeviceptr d_vertices = 0;
+    cudaMalloc(reinterpret_cast<void**>(&d_vertices), verticesSizeInBytes);
+    cudaMemcpy(reinterpret_cast<void*>(d_vertices),
+        vertices.data(),
+        verticesSizeInBytes,
+        cudaMemcpyHostToDevice);
+
+    size_t indicesSizeInBytes = sizeof(int3) * indices.size();
+    CUdeviceptr d_indices = 0;
+    cudaMalloc(reinterpret_cast<void**>(&d_indices), indicesSizeInBytes);
+    cudaMemcpy(reinterpret_cast<void*>(d_indices),
+        indices.data(),
+        indicesSizeInBytes,
+        cudaMemcpyHostToDevice);
+
+    const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
+    
+    OptixBuildInputTriangleArray& buildInput = buildInputs[0].triangleArray;
+    buildInputs[0].type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
+
+    buildInput.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
+    buildInput.numVertices = verticesSize;
+    buildInput.vertexBuffers = &d_vertices;
+    
+    
+    buildInput.vertexStrideInBytes = sizeof(float3);
+    buildInput.indexBuffer = d_indices;
+    buildInput.numIndexTriplets = mesh.faces().size();
+    buildInput.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
+    buildInput.indexStrideInBytes = sizeof(int3);
+    buildInput.preTransform = 0;
+
+    OptixAccelBufferSizes bufferSizes = {};
+    optixAccelComputeMemoryUsage(
+        context, &accelOptions,
+        buildInputs, 2, &bufferSizes
+    );
+
+    cudaMalloc(reinterpret_cast<void**>(&outputBuffer), bufferSizes.outputSizeInBytes);
+    cudaMalloc(reinterpret_cast<void**>(&tempBuffer), bufferSizes.tempSizeInBytes);
+
+    OptixTraversableHandle outputHandle = 0;
+
+    OptixResult results = optixAccelBuild(
+        context, cuStream,
+        &accelOptions, buildInputs,
+        2,
+        tempBuffer, bufferSizes.tempSizeInBytes,
+        outputBuffer, bufferSizes.outputSizeInBytes,
+        &outputHandle, nullptr, 0
+    );
+
+    cudaFree(reinterpret_cast<void*>(tempBuffer));
+
+    OptixModuleCompileOptions moduleCompileOptions = {};
+    moduleCompileOptions.maxRegisterCount =
+        OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
+    moduleCompileOptions.optLevel =
+        OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+    moduleCompileOptions.debugLevel =
+        OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+    moduleCompileOptions.numPayloadTypes = 0;
+    moduleCompileOptions.payloadTypes = 0;
+
+    OptixPipelineCompileOptions pipelineComplieOptions = {};
+    pipelineComplieOptions.usesMotionBlur = false;
+    pipelineComplieOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+    pipelineComplieOptions.numPayloadValues = 1;
+    pipelineComplieOptions.pipelineLaunchParamsVariableName = "params";
+
+    const std::string ptx("optixTriangle.cu");
+    char* logString("Marinaiolog.cu");
+    size_t sizeof_log = sizeof(logString);
+
+    OptixModule module = nullptr; // The output module
+    optixModuleCreateFromPTX(
+        context,
+        &moduleCompileOptions,
+        &pipelineComplieOptions,
+        ptx.c_str(),
+        ptx.size(),
+        logString,
+        &sizeof_log,
+        &module);
 
     // TODO: it's wrong now.
     return views;
