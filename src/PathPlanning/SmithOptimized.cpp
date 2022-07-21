@@ -789,7 +789,6 @@ std::vector<Viewpoint> adjustTraj(
 
 int candidateViewsDens = 256;
 
-
 std::vector<Viewpoint> SmithAdj(
     const std::vector<Viewpoint>& views, const PointSet3& pts,
     const SurfaceMesh& mesh,
