@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\analyze_sampling_density.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\viz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{42973B92-33B1-3294-AC9D-591CFE50AFC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{34A35CBE-3052-3F36-934D-51B43A133011}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

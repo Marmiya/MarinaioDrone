@@ -1,0 +1,16 @@
+C:/ProjBuild/MarinaioDrone/CMakeFiles/CGAL_Qt5_moc_and_resources.dir
+C:/ProjBuild/MarinaioDrone/CMakeFiles/AMarinaioDrone.dir
+C:/ProjBuild/MarinaioDrone/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/CMakeFiles/ZERO_CHECK.dir
+C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/DensitySampling.dir
+C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/src/PathPlanning/CMakeFiles/PathPlanning.dir
+C:/ProjBuild/MarinaioDrone/src/PathPlanning/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/src/DroneFly/CMakeFiles/DroneFly.dir
+C:/ProjBuild/MarinaioDrone/src/DroneFly/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/src/voro/CMakeFiles/Voro.dir
+C:/ProjBuild/MarinaioDrone/src/voro/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/src/EvaluateQuality/CMakeFiles/EvaluateQuality.dir
+C:/ProjBuild/MarinaioDrone/src/EvaluateQuality/CMakeFiles/ALL_BUILD.dir
+C:/ProjBuild/MarinaioDrone/src/ImiRT/CMakeFiles/ImiRT.dir
+C:/ProjBuild/MarinaioDrone/src/ImiRT/CMakeFiles/ALL_BUILD.dir

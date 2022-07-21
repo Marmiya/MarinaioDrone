@@ -1,0 +1,35 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeFindDependencyMacro.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindZLIB.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/SelectLibraryConfigurations.cmake
+C:/SSD/GitProject/MarinaioDrone/src/DroneFly/CMakeLists.txt
+C:/src/vcpkg/installed/x64-windows/share/cpr/cprConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cpr/cprConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cpr/cprTargets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/cpr/cprTargets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/cpr/cprTargets.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/CURLConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/CURLConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/CURLTargets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/CURLTargets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/CURLTargets.cmake
+C:/src/vcpkg/installed/x64-windows/share/curl/vcpkg-cmake-wrapper.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-namespaced-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncppConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncppConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyxml2/tinyxml2-config-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyxml2/tinyxml2-config.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyxml2/tinyxml2-shared-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyxml2/tinyxml2-shared-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyxml2/tinyxml2-shared-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/zlib/vcpkg-cmake-wrapper.cmake

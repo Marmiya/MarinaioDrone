@@ -1,0 +1,28 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeFindDependencyMacro.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckCSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindBoost.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindThreads.cmake
+C:/SSD/GitProject/MarinaioDrone/src/EvaluateQuality/CMakeLists.txt
+C:/SSD/GitProject/libnabo/build/libnabo-targets.cmake
+C:/SSD/GitProject/libnabo/build/libnaboConfig.cmake
+C:/SSD/GitProject/libnabo/build/libnaboConfigVersion.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/libpointmatcher-config-release.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/libpointmatcher-config-relwithdebinfo.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/libpointmatcher-config.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/libpointmatcherConfig.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/libpointmatcherConfigVersion.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/yaml-cpp-pm-targets-release.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/yaml-cpp-pm-targets-relwithdebinfo.cmake
+C:/SSD/GitProject/libpointmatcher/build/install/share/libpointmatcher/cmake/yaml-cpp-pm-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/boost/vcpkg-cmake-wrapper.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-namespaced-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncpp-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncppConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/jsoncpp/jsoncppConfigVersion.cmake

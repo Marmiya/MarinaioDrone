@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageMessage.cmake
+C:/SSD/GitProject/MarinaioDrone/src/ImiRT/CMakeLists.txt
+C:/src/vcpkg/installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/nlohmann_json/nlohmann_jsonTargets.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/pangolin/PangolinTargets.cmake

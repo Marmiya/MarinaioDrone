@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\CGAL_Qt5_moc_and_resources_autogen\mocs_compilation_Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\qrc_CGAL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\qrc_Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\qrc_File.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\qrc_Triangulation_2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\CGAL_Qt5_moc_and_resources_autogen\mocs_compilation_Release.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\CGAL_Qt5_moc_and_resources_autogen\mocs_compilation_MinSizeRel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\ProjBuild\MarinaioDrone\CGAL_Qt5_moc_and_resources_autogen\mocs_compilation_RelWithDebInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\GraphicsViewNavigation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\DemosMainWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\GraphicsItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\GraphicsViewInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\frame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\keyFrameInterpolator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\manipulatedCameraFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\manipulatedFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\qglviewer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\image_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\ProjBuild\MarinaioDrone\ui_ImageInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\src\vcpkg\installed\x64-windows\include\CGAL\Qt\resources\ImageInterface.ui" />
+    <CustomBuild Include="C:\ProjBuild\MarinaioDrone\resources\CGAL.qrc" />
+    <CustomBuild Include="C:\ProjBuild\MarinaioDrone\icons\Input.qrc" />
+    <CustomBuild Include="C:\ProjBuild\MarinaioDrone\icons\File.qrc" />
+    <CustomBuild Include="C:\ProjBuild\MarinaioDrone\icons\Triangulation_2.qrc" />
+    <CustomBuild Include="C:\SSD\GitProject\MarinaioDrone\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{42973B92-33B1-3294-AC9D-591CFE50AFC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{34A35CBE-3052-3F36-934D-51B43A133011}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

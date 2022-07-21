@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\c_loops.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\cell.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\cmd_line.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\common.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\container.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\container_prd.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\pre_container.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\unitcell.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\v_base.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\v_base_wl.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\v_compute.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\voro++.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\voro\wall.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\c_loops.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\cell.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\common.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\config.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\container.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\container_prd.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\pre_container.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\rad_option.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\unitcell.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\v_base.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\v_compute.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\voro++.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\wall.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\voro\worklist.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\SSD\GitProject\MarinaioDrone\src\voro\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{42973B92-33B1-3294-AC9D-591CFE50AFC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{34A35CBE-3052-3F36-934D-51B43A133011}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

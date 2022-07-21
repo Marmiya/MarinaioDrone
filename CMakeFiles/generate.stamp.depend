@@ -1,0 +1,145 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeCXXInformation.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeDependentOption.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeFindDependencyMacro.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeParseArguments.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeParseImplicitLinkInfo.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckCSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Compiler/MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindBoost.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindOpenMP.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindThreads.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Internal/CheckSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Platform/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/Platform/WindowsPaths.cmake
+C:/Program Files/SCIPOptSuite 8.0.0/lib/cmake/scip/scip-config-version.cmake
+C:/Program Files/SCIPOptSuite 8.0.0/lib/cmake/scip/scip-config.cmake
+C:/Program Files/SCIPOptSuite 8.0.0/lib/cmake/scip/scip-targets-release.cmake
+C:/Program Files/SCIPOptSuite 8.0.0/lib/cmake/scip/scip-targets.cmake
+C:/ProjBuild/MarinaioDrone/CMakeFiles/3.23.0-rc1/CMakeCCompiler.cmake
+C:/ProjBuild/MarinaioDrone/CMakeFiles/3.23.0-rc1/CMakeCXXCompiler.cmake
+C:/ProjBuild/MarinaioDrone/CMakeFiles/3.23.0-rc1/CMakeRCCompiler.cmake
+C:/ProjBuild/MarinaioDrone/CMakeFiles/3.23.0-rc1/CMakeSystem.cmake
+C:/ProjBuild/MarinaioDrone/icons/File.qrc
+C:/ProjBuild/MarinaioDrone/icons/Input.qrc
+C:/ProjBuild/MarinaioDrone/icons/Triangulation_2.qrc
+C:/ProjBuild/MarinaioDrone/resources/CGAL.qrc
+C:/SSD/GitProject/MarinaioDrone/CMakeLists.txt
+C:/src/vcpkg/installed/x64-windows/share/argparse/argparseConfig-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/argparse/argparseConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/boost/vcpkg-cmake-wrapper.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGALConfig-installation-dirs.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGALConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGALConfigBuildVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGALConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_Common.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_CreateSingleSourceCGALProgram.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_GeneratorSpecificSettings.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_Macros.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_Qt5_moc_and_resource_files.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SCIP_support.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SCM.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SetupBoost.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SetupCGALDependencies.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SetupCGAL_Qt5Dependencies.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SetupGMP.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_SetupVLD.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_TweakFindBoost.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_VersionUtils.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_add_test.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_enable_end_of_configuration_hook.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_setup_target_dependencies.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/CGAL_target_use_TBB.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/FindGMP.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/FindGMPXX.cmake
+C:/src/vcpkg/installed/x64-windows/share/cgal/FindMPFR.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5/Qt5Config.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5/Qt5ConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5/Qt5ModuleLocation.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Core/Qt5CoreConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Core/Qt5CoreConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Core/Qt5CoreMacros.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5GuiConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QGifPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QICNSPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QICOPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QJp2Plugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QJpegPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QMinimalIntegrationPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QOffscreenIntegrationPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QSvgIconPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QSvgPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QTgaPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QTiffPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QTuioTouchPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QWbmpPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QWebpPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QWindowsIntegrationPlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Gui/Qt5Gui_QXdgDesktopPortalThemePlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5OpenGL/Qt5OpenGLConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5OpenGL/Qt5OpenGLConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Svg/Qt5SvgConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Svg/Qt5SvgConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Widgets/Qt5WidgetsConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Widgets/Qt5WidgetsConfigExtras.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake
+C:/src/vcpkg/installed/x64-windows/share/cmake/Qt5Widgets/Qt5Widgets_QWindowsVistaStylePlugin.cmake
+C:/src/vcpkg/installed/x64-windows/share/eigen3/Eigen3Config.cmake
+C:/src/vcpkg/installed/x64-windows/share/eigen3/Eigen3ConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/eigen3/Eigen3Targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/eigen3/UseEigen3.cmake
+C:/src/vcpkg/installed/x64-windows/share/embree/embree-config-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/embree/embree-config.cmake
+C:/src/vcpkg/installed/x64-windows/share/embree/embree-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/embree/embree-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/embree/embree-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/gflags-config-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/gflags-config.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/gflags-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/gflags-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/gflags-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/gflags/vcpkg-cmake-wrapper.cmake
+C:/src/vcpkg/installed/x64-windows/share/glog/glog-config-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/glog/glog-config.cmake
+C:/src/vcpkg/installed/x64-windows/share/glog/glog-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/glog/glog-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/glog/glog-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/opencv/OpenCVConfig-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/opencv/OpenCVConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/opencv/OpenCVModules-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/opencv/OpenCVModules-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/opencv/OpenCVModules.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyobjloader/tinyobjloader-config-version.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyobjloader/tinyobjloader-config.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyobjloader/tinyobjloader-targets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyobjloader/tinyobjloader-targets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyobjloader/tinyobjloader-targets.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyply/tinyplyConfig.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyply/tinyplyConfigVersion.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyply/tinyplyTargets-debug.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyply/tinyplyTargets-release.cmake
+C:/src/vcpkg/installed/x64-windows/share/tinyply/tinyplyTargets.cmake
+C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake

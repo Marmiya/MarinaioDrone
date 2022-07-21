@@ -1,0 +1,437 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6E6DD2AC-4CD6-36C7-899B-D68DDDFEE32F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>DensitySampling</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.7.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="do_not_import_user.props" Condition="exists('do_not_import_user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DensitySampling.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DensitySampling</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">DensitySampling.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">DensitySampling</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">DensitySampling.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">DensitySampling</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">DensitySampling.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">DensitySampling</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4146;4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level2</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/src/DensitySampling/Debug/DensitySampling.exe -installedDir C:/src/vcpkg/installed/x64-windows/debug/bin -OutVariable out
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\Debug\AMarinaioDrone.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\pangolin.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_highguid.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_mld.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_objdetectd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_photod.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_stitchingd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_videod.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_videoiod.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\boost_filesystem-vc140-mt-gd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\boost_serialization-vc140-mt-gd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\tinyobjloader.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\glog.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\embree3.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\tinyplyd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_calib3dd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_dnnd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_features2dd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_flannd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_imgcodecsd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_imgprocd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\opencv_cored.lib;..\..\Debug\CGAL_Qt5_moc_and_resources.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmpxx.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\mpfr.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmp.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\Qt5OpenGLd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\Qt5Svgd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\Qt5Widgetsd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\Qt5Guid.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\Qt5Cored.lib;C:\Program Files\SCIPOptSuite 8.0.0\lib\libscip.lib;dbghelp.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gflags_debug.lib;shlwapi.lib;..\voro\Debug\Voro.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\boost_filesystem-vc140-mt-gd.lib;opengl32.lib;glu32.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\glew32d.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\zlibd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\jpeg.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\glew32d.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\zlibd.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\jpeg.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/ProjBuild/MarinaioDrone/src/DensitySampling/Debug/DensitySampling.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/ProjBuild/MarinaioDrone/src/DensitySampling/Debug/DensitySampling.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <CudaLink>
+      <AdditionalOptions></AdditionalOptions>
+      <PerformDeviceLink>false</PerformDeviceLink>
+    </CudaLink>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>4146;4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level2</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/src/DensitySampling/Release/DensitySampling.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\Release\AMarinaioDrone.lib;C:\src\vcpkg\installed\x64-windows\lib\pangolin.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_highgui.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_ml.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_objdetect.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_photo.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_stitching.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_video.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_videoio.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_serialization-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyobjloader.lib;C:\src\vcpkg\installed\x64-windows\lib\glog.lib;C:\src\vcpkg\installed\x64-windows\lib\embree3.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyply.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_calib3d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_dnn.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_features2d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_flann.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgcodecs.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgproc.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_core.lib;..\..\Release\CGAL_Qt5_moc_and_resources.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmpxx.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\mpfr.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmp.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5OpenGL.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Svg.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Widgets.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Gui.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Core.lib;C:\Program Files\SCIPOptSuite 8.0.0\lib\libscip.lib;dbghelp.lib;C:\src\vcpkg\installed\x64-windows\lib\gflags.lib;shlwapi.lib;..\voro\Release\Voro.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;opengl32.lib;glu32.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/ProjBuild/MarinaioDrone/src/DensitySampling/Release/DensitySampling.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/ProjBuild/MarinaioDrone/src/DensitySampling/Release/DensitySampling.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <CudaLink>
+      <AdditionalOptions></AdditionalOptions>
+      <PerformDeviceLink>false</PerformDeviceLink>
+    </CudaLink>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>4146;4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level2</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/src/DensitySampling/MinSizeRel/DensitySampling.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\MinSizeRel\AMarinaioDrone.lib;C:\src\vcpkg\installed\x64-windows\lib\pangolin.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_highgui.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_ml.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_objdetect.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_photo.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_stitching.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_video.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_videoio.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_serialization-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyobjloader.lib;C:\src\vcpkg\installed\x64-windows\lib\glog.lib;C:\src\vcpkg\installed\x64-windows\lib\embree3.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyply.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_calib3d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_dnn.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_features2d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_flann.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgcodecs.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgproc.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_core.lib;..\..\MinSizeRel\CGAL_Qt5_moc_and_resources.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmpxx.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\mpfr.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmp.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5OpenGL.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Svg.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Widgets.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Gui.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Core.lib;C:\Program Files\SCIPOptSuite 8.0.0\lib\libscip.lib;dbghelp.lib;C:\src\vcpkg\installed\x64-windows\lib\gflags.lib;shlwapi.lib;..\voro\MinSizeRel\Voro.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;opengl32.lib;glu32.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/ProjBuild/MarinaioDrone/src/DensitySampling/MinSizeRel/DensitySampling.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/ProjBuild/MarinaioDrone/src/DensitySampling/MinSizeRel/DensitySampling.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <CudaLink>
+      <AdditionalOptions></AdditionalOptions>
+      <PerformDeviceLink>false</PerformDeviceLink>
+    </CudaLink>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4146;4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level2</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\SSD\GitProject\AirSim\AirLib\include;C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/src/DensitySampling/RelWithDebInfo/DensitySampling.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\RelWithDebInfo\AMarinaioDrone.lib;C:\src\vcpkg\installed\x64-windows\lib\pangolin.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_highgui.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_ml.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_objdetect.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_photo.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_stitching.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_video.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_videoio.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_serialization-vc140-mt.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyobjloader.lib;C:\src\vcpkg\installed\x64-windows\lib\glog.lib;C:\src\vcpkg\installed\x64-windows\lib\embree3.lib;C:\src\vcpkg\installed\x64-windows\lib\tinyply.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_calib3d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_dnn.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_features2d.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_flann.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgcodecs.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_imgproc.lib;C:\src\vcpkg\installed\x64-windows\lib\opencv_core.lib;..\..\RelWithDebInfo\CGAL_Qt5_moc_and_resources.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmpxx.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\mpfr.lib;C:\src\vcpkg\installed\x64-windows\debug\lib\gmp.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5OpenGL.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Svg.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Widgets.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Gui.lib;C:\src\vcpkg\installed\x64-windows\lib\Qt5Core.lib;C:\Program Files\SCIPOptSuite 8.0.0\lib\libscip.lib;dbghelp.lib;C:\src\vcpkg\installed\x64-windows\lib\gflags.lib;shlwapi.lib;..\voro\RelWithDebInfo\Voro.lib;C:\src\vcpkg\installed\x64-windows\lib\boost_filesystem-vc140-mt.lib;opengl32.lib;glu32.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;C:\src\vcpkg\installed\x64-windows\lib\glew32.lib;C:\src\vcpkg\installed\x64-windows\lib\avdevice.lib;C:\src\vcpkg\installed\x64-windows\lib\avfilter.lib;C:\src\vcpkg\installed\x64-windows\lib\avformat.lib;C:\src\vcpkg\installed\x64-windows\lib\avcodec.lib;C:\src\vcpkg\installed\x64-windows\lib\swresample.lib;C:\src\vcpkg\installed\x64-windows\lib\swscale.lib;C:\src\vcpkg\installed\x64-windows\lib\avutil.lib;C:\src\vcpkg\installed\x64-windows\lib\libpng16.lib;C:\src\vcpkg\installed\x64-windows\lib\zlib.lib;C:\src\vcpkg\installed\x64-windows\lib\jpeg.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/ProjBuild/MarinaioDrone/src/DensitySampling/RelWithDebInfo/DensitySampling.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/ProjBuild/MarinaioDrone/src/DensitySampling/RelWithDebInfo/DensitySampling.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <CudaLink>
+      <AdditionalOptions></AdditionalOptions>
+      <PerformDeviceLink>false</PerformDeviceLink>
+    </CudaLink>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/SSD/GitProject/MarinaioDrone/src/DensitySampling/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/SSD/GitProject/MarinaioDrone -BC:/ProjBuild/MarinaioDrone --check-stamp-file C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindThreads.cmake;C:\src\vcpkg\installed\x64-windows\share\glm\glm-config.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfig.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfigVersion.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-debug.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-release.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/SSD/GitProject/MarinaioDrone/src/DensitySampling/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/SSD/GitProject/MarinaioDrone -BC:/ProjBuild/MarinaioDrone --check-stamp-file C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindThreads.cmake;C:\src\vcpkg\installed\x64-windows\share\glm\glm-config.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfig.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfigVersion.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-debug.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-release.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/SSD/GitProject/MarinaioDrone/src/DensitySampling/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/SSD/GitProject/MarinaioDrone -BC:/ProjBuild/MarinaioDrone --check-stamp-file C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindThreads.cmake;C:\src\vcpkg\installed\x64-windows\share\glm\glm-config.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfig.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfigVersion.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-debug.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-release.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/SSD/GitProject/MarinaioDrone/src/DensitySampling/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/SSD/GitProject/MarinaioDrone -BC:/ProjBuild/MarinaioDrone --check-stamp-file C:/ProjBuild/MarinaioDrone/src/DensitySampling/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindThreads.cmake;C:\src\vcpkg\installed\x64-windows\share\glm\glm-config.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfig.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinConfigVersion.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-debug.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets-release.cmake;C:\src\vcpkg\installed\x64-windows\share\pangolin\PangolinTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\ProjBuild\MarinaioDrone\src\DensitySampling\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\analyze_sampling_density.cpp" />
+    <ClInclude Include="C:\SSD\GitProject\MarinaioDrone\src\DensitySampling\viz.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\ProjBuild\MarinaioDrone\ZERO_CHECK.vcxproj">
+      <Project>{13CA1C76-10F5-3D8D-9156-62E59A81A2AE}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\ProjBuild\MarinaioDrone\AMarinaioDrone.vcxproj">
+      <Project>{0CD4A389-E262-3B8E-BBDC-B2B783147133}</Project>
+      <Name>AMarinaioDrone</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\ProjBuild\MarinaioDrone\CGAL_Qt5_moc_and_resources.vcxproj">
+      <Project>{DF33748A-220B-3954-8A03-ADF230E3ADB9}</Project>
+      <Name>CGAL_Qt5_moc_and_resources</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\ProjBuild\MarinaioDrone\src\voro\Voro.vcxproj">
+      <Project>{443EE872-3B73-305A-92BC-B52A9C302EC7}</Project>
+      <Name>Voro</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.7.targets" />
+  </ImportGroup>
+</Project>
