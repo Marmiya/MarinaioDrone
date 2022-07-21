@@ -117,7 +117,6 @@
     <CudaCompile>
       <Include>C:\SSD\GitProject\AirSim\AirLib\include;C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.5.0\include;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning\cuda;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning;C:\ProjBuild\MarinaioDrone\include;C:\ProjBuild\MarinaioDrone\src\PathPlanning;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(Include)</Include>
       <Defines>%(Defines);_WINDOWS;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;_USE_MATH_DEFINES;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;TINYXML2_DEBUG;TINYXML2_IMPORT;CMAKE_INTDIR="Debug"</Defines>
-      <AdditionalOptions>%(AdditionalOptions) /MP /W2 /Zc:__cplusplus /wd4146 -std=c++17 -Xcompiler="/EHsc -Zi -Ob0"</AdditionalOptions>
       <CompileOut>$(IntDir)%(Filename).obj</CompileOut>
       <CudaRuntime>Static</CudaRuntime>
       <GPUDebugInfo>false</GPUDebugInfo>
@@ -138,7 +137,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <PostBuildEvent>
-      <Message></Message>
+      <Message>
+      </Message>
       <Command>setlocal
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/bin/Debug/PathPlanning.exe -installedDir C:/src/vcpkg/installed/x64-windows/debug/bin -OutVariable out
 if %errorlevel% neq 0 goto :cmEnd
@@ -219,7 +219,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <PostBuildEvent>
-      <Message></Message>
+      <Message>
+      </Message>
       <Command>setlocal
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/bin/Release/PathPlanning.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
 if %errorlevel% neq 0 goto :cmEnd
@@ -300,7 +301,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <PostBuildEvent>
-      <Message></Message>
+      <Message>
+      </Message>
       <Command>setlocal
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/bin/MinSizeRel/PathPlanning.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
 if %errorlevel% neq 0 goto :cmEnd
@@ -360,7 +362,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <CudaCompile>
       <Include>C:\SSD\GitProject\AirSim\AirLib\include;C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.5.0\include;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning\cuda;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning;C:\ProjBuild\MarinaioDrone\include;C:\ProjBuild\MarinaioDrone\src\PathPlanning;C:\SSD\GitProject\MarinaioDrone\src\PathPlanning\..\..\include;C:\src\vcpkg\installed\x64-windows\share\pangolin\..\..\include;C:\ProjBuild\MarinaioDrone;C:\src\vcpkg\installed\x64-windows\include\eigen3;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include;C:\src\vcpkg\installed\x64-windows\include;C:\src\vcpkg\installed\x64-windows\include\qt5;C:\src\vcpkg\installed\x64-windows\include\qt5\QtWidgets;C:\src\vcpkg\installed\x64-windows\include\qt5\QtGui;C:\src\vcpkg\installed\x64-windows\include\qt5\QtCore;C:\src\vcpkg\installed\x64-windows\tools\qt5\mkspecs\win32-msvc;C:\src\vcpkg\installed\x64-windows\include\qt5\QtOpenGL;C:\src\vcpkg\installed\x64-windows\include\qt5\QtSvg;C:\Program Files\SCIPOptSuite 8.0.0\lib\cmake\scip\..\..\..\include;C:\Program Files\SCIPOptSuite 8.0.0\include;%(Include)</Include>
       <Defines>%(Defines);_WINDOWS;NDEBUG;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NOMINMAX;CGAL_USE_BASIC_VIEWER;_USE_MATH_DEFINES;QT_NO_KEYWORDS;CGAL_USE_GMPXX=1;BOOST_ALL_DYN_LINK=1;QT_WIDGETS_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_NO_DEBUG;QT_OPENGL_LIB;QT_SVG_LIB;CGAL_USE_SCIP;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);GFLAGS_IS_A_DLL=1;TINYXML2_IMPORT;CMAKE_INTDIR="RelWithDebInfo"</Defines>
-      <AdditionalOptions>%(AdditionalOptions) /MP /W2 /Zc:__cplusplus /wd4146 -std=c++17 -Xcompiler="/EHsc -Zi -Ob1"</AdditionalOptions>
       <CompileOut>$(IntDir)%(Filename).obj</CompileOut>
       <CudaRuntime>Static</CudaRuntime>
       <GPUDebugInfo>false</GPUDebugInfo>
@@ -380,7 +381,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <PostBuildEvent>
-      <Message></Message>
+      <Message>
+      </Message>
       <Command>setlocal
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/src/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/ProjBuild/MarinaioDrone/bin/RelWithDebInfo/PathPlanning.exe -installedDir C:/src/vcpkg/installed/x64-windows/bin -OutVariable out
 if %errorlevel% neq 0 goto :cmEnd
