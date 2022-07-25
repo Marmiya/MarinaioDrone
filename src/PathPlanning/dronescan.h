@@ -8,7 +8,7 @@
 #include <corecrt_math_defines.h>
 #include <CGAL/point_generators_3.h>
 #include "viewpoint.h"
-#include "calculate_reconstructability.h"
+#include "CalRec.cuh"
 
 #include "DroneScanViz.h"
 

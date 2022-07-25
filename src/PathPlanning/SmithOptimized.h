@@ -91,3 +91,8 @@ std::vector<Viewpoint> adjusting(
 
 void initialization(const SurfaceMesh& mesh, const int& CVD = 256);
 
+std::pair<std::vector<double3>, std::vector<double3>>
+viewsInCuda(const std::vector<Viewpoint>& views);
+
+std::pair<std::vector<double3>, std::vector<double3>>
+ptsInCuda(const PointSet3& pts);

@@ -15,6 +15,7 @@ extern double horiStripAngle;
 
 extern int tpb;
 
+
 __device__ bool vis();
 
 __device__ double4 maximizeScore();

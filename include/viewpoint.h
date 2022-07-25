@@ -1,12 +1,8 @@
 #pragma once
 #include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
+#include <cuda_runtime.h>
 #include "common_util.h"
 #include "map_util.h"
-
-/*
- * Data Structure
- */
 
 struct Viewpoint
 {
@@ -25,6 +21,14 @@ struct Viewpoint
 		ar& pos_mesh;
 		ar& direction;
 		ar& focus_point;
+	}
+	double3 getCudaPos() const
+	{
+		return make_double3(pos_mesh.x(), pos_mesh.y(), pos_mesh.z());
+	}
+	double3 getCudaDirection() const
+	{
+		return make_double3(direction.x(), direction.y(), direction.z());
 	}
 };
 

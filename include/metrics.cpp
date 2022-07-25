@@ -285,17 +285,6 @@ std::vector<std::array<double, 5>> reconstructability_hueristic(std::vector<View
 				}
 			}
 		}
-
-
-		//std::cout<<"Reconstructability Smith18 "<< std::endl;
-		//  int log_step=0;
-		//for (int id_view1 = 0; id_view1 < trajectory.size(); id_view1++)
-		//{
-		//	for (int id_view2 = id_view1+1; id_view2 < trajectory.size(); id_view2++)
-		//		std::cout<<(boost::format("%3d, ")%std::get<4>(point_recon[log_step++])).str();
-		//	std::cout<<std::endl;
-		//}
-
 		std::array<double, 5> total_recon = std::accumulate(point_recon.begin(), point_recon.end(), std::array<double, 5>{0., 0., 0., 0., 0.}, [](std::array<double, 5> sum, auto item)
 			{
 				sum[0] += std::get<0>(item);
@@ -315,12 +304,9 @@ std::vector<std::array<double, 5>> reconstructability_hueristic(std::vector<View
 				total_recon[3] / num_view_pair,
 				(total_recon[4] > 0 ? total_recon[4] : 0) / num_view_pair};
 
-#pragma omp critical
-		{
-			if (log_step != 0 && log_step % (point_set.size() / 10) == 0)
-				LOG(INFO) << log_step << " / " << point_set.size();
-			log_step += 1;
-		}
+		if (log_step != 0 && log_step % (point_set.size() / 10) == 0)
+			LOG(INFO) << log_step << " / " << point_set.size();
+		log_step += 1;
 	}
 
 	return reconstructabilities;

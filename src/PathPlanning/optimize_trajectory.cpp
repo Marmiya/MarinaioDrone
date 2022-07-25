@@ -586,11 +586,49 @@ int main(int argc, char** argv)
 	}
 	else if (STAGE == 6)
 	{
-		PointSet3 pts(true), vs(true);
-		load_samples_by_user(pts, args["points"].asString());
+		PointSet3 pts(true);
+		CGAL::IO::read_point_set(args["points"].asString(),pts);
+		std::cout << pts.size() << std::endl;
+		//load_samples_by_user(pts, args["points"].asString());
 		std::vector<Viewpoint> views;
-		load_cameras_by_user(views, args["DPviews"].asString());
-		SmithAdj(views, pts, mesh, intrinsic_matrix, viewDis, fov_v);
+		views = read_normal_path(args["DPviews"].asString());
+		//SmithAdj(views, pts, mesh, intrinsic_matrix, viewDis, fov_v);
+		std::cout << views.size() << std::endl;
+
+		/*auto vis = compute_visibility(
+			views, mesh, pts, intrinsic_matrix, maxViewDis, embree_scene);
+		auto orirec = reconstructability_hueristic(
+			views, pts, mesh, vis, maxViewDis, fov_h, fov_v);*/
+
+		auto visIdx = compute_visibilityIndex(
+			views, mesh, pts, intrinsic_matrix, maxViewDis, embree_scene);
+		auto newRec = totalRecv(
+			viewsInCuda(views).first, ptsInCuda(pts).first, ptsInCuda(pts).second,
+			visIdx, 256, maxViewDis, fov_h, fov_v);
+
+		std::ofstream ori(logPath + "ori.txt");
+		std::ofstream newrec(logPath + "new.txt");
+	
+	/*	for (const auto& i : orirec)
+		{
+			ori << std::get<4>(i) << std::endl;
+		}*/
+
+		for (const auto& i : newRec)
+		{
+			newrec << i << std::endl;
+		}
+		for (const auto& i : pts)
+		{
+			ori <<pts.point(i).x() << std::endl;
+		}
+		Viewpoint v1(Eigen::Vector3<double>(100, 80, 20), Eigen::Vector3<double>(100, 80, 30));
+		Viewpoint v2(Eigen::Vector3<double>(80, 60, 50), Eigen::Vector3<double>(100, 80, 30));
+		Eigen::Vector3d pp(90, 70, 10);
+		Eigen::Vector3d pn(0, 0, 5);
+		double g1 = std::get<4>(calculate_point_reconstructability(v1, v2, pp, pn, maxViewDis));
+		double  g2 = pt(v1.getCudaPos(), v2.getCudaPos(), make_double3(90, 70, 10), make_double3(0, 0, 5), maxViewDis);
+		std::cout << g1 << "  " << g2 << std::endl;
 	}
 
 	return 0;

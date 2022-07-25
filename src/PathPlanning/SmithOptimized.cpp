@@ -966,3 +966,31 @@ void initialization(const SurfaceMesh& mesh, const int& CVD)
     cudaFree(viewsOffsetCu);
 
 }
+
+std::pair<std::vector<double3>, std::vector<double3>>
+viewsInCuda(const std::vector<Viewpoint>& views)
+{
+    std::vector<double3> viewPos;
+    std::vector<double3> viewNormal;
+
+    for (const auto& i : views)
+    {
+        viewPos.push_back(i.getCudaPos());
+        viewNormal.push_back(i.getCudaDirection());
+    }
+    return { viewPos,viewNormal };
+}
+
+std::pair<std::vector<double3>, std::vector<double3>>
+ptsInCuda(const PointSet3& pts)
+{
+    std::vector<double3> ptsPos;
+    std::vector<double3> ptsNormal;
+
+    for (const auto& i : pts)
+    {
+        ptsPos.push_back(make_double3(pts.point(i).x(), pts.point(i).y(), pts.point(i).z()));
+        ptsNormal.push_back(make_double3(pts.normal(i).x(), pts.normal(i).y(), pts.normal(i).z()));
+    }
+    return { ptsPos,ptsNormal };
+}

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <fstream>
 #include <tinyxml2.h>
