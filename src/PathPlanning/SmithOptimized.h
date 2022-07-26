@@ -89,7 +89,9 @@ std::vector<Viewpoint> adjusting(
 	const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
 );
 
-void initialization(const SurfaceMesh& mesh, const int& CVD = 256);
+std::pair<OptixTraversableHandle, OptixResult> initialization(const SurfaceMesh& mesh, OptixDeviceContext cucontext, CUstream custream, const int& CVD = 256);
+
+std::pair<OptixTraversableHandle, OptixResult> initAS(const SurfaceMesh& mesh, OptixDeviceContext cucontext, CUstream custream);
 
 std::pair<std::vector<double3>, std::vector<double3>>
 viewsInCuda(const std::vector<Viewpoint>& views);

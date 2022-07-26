@@ -796,7 +796,49 @@ std::vector<Viewpoint> SmithAdj(
     const int& CVD
 )
 {
-    initialization(mesh);
+    optixInit();
+    cudaFree(0);
+    CUcontext cuCtx = 0;
+    CUstream cuStream = 0;
+
+    OptixDeviceContextOptions options = {};
+    OptixDeviceContext context = nullptr;
+    optixDeviceContextCreate(cuCtx, &options, &context);
+
+    auto [OutputHandle,results] = initialization(mesh, context, cuStream);
+
+    //OptixModuleCompileOptions moduleCompileOptions = {};
+    //moduleCompileOptions.maxRegisterCount =
+    //    OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
+    //moduleCompileOptions.optLevel =
+    //    OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+    //moduleCompileOptions.debugLevel =
+    //    OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+    //moduleCompileOptions.numPayloadTypes = 0;
+    //moduleCompileOptions.payloadTypes = 0;
+
+    //OptixPipelineCompileOptions pipelineComplieOptions = {};
+    //pipelineComplieOptions.usesMotionBlur = false;
+    //pipelineComplieOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+    //pipelineComplieOptions.numPayloadValues = 1;
+    //pipelineComplieOptions.pipelineLaunchParamsVariableName = "params";
+
+    //const std::string ptx("optixTriangle.cu");
+    //char* logString("Marinaiolog.cu");
+    //size_t sizeof_log = sizeof(logString);
+
+    //OptixModule module = nullptr; // The output module
+    //optixModuleCreateFromPTX(
+    //    context,
+    //    &moduleCompileOptions,
+    //    &pipelineComplieOptions,
+    //    ptx.c_str(),
+    //    ptx.size(),
+    //    logString,
+    //    &sizeof_log,
+    //    &module);
+
+
 
     std::vector<Viewpoint> temp;
     return temp;
@@ -808,14 +850,40 @@ std::vector<Viewpoint> adjusting(
     const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
 )
 {
-    optixInit();
+    
+   
 
-    cudaFree(0);
-    OptixDeviceContextOptions options = {};
-    CUcontext cuCtx = 0;
-    CUstream cuStream = 0;
-    OptixDeviceContext context = nullptr;
-    optixDeviceContextCreate(cuCtx, &options, &context);
+    
+
+    // TODO: it's wrong now.
+    return views;
+}
+
+std::pair<OptixTraversableHandle, OptixResult> initialization(const SurfaceMesh& mesh, OptixDeviceContext cucontext, CUstream custream, const int& CVD)
+{
+    if (CVD != 256)
+    {
+        candidateViewsDens = CVD;
+    }
+    
+    const int verStripAmount = static_cast<int>(std::ceil((2 + std::sqrt(4 - 8 * (-candidateViewsDens))) / 4));
+    const int horiStripAmount = 2 * verStripAmount - 2;
+    verStripAngle = M_PI / (verStripAmount - 1);
+    horiStripAngle = (2 * M_PI) / horiStripAmount;
+    candidateViewsDens = verStripAmount * horiStripAmount;
+    double2* viewsOffsetCu;
+    cudaMalloc(&viewsOffsetCu, candidateViewsDens * sizeof(double2));
+
+    int blockNum = candidateViewsDens / tpb + 1;
+    initOffsetInf(blockNum, tpb, viewsOffsetCu, candidateViewsDens, horiStripAmount, verStripAngle, horiStripAngle);
+    conveyFromCuda(viewsOffsetCu, viewsOffsetC, candidateViewsDens);
+    cudaFree(viewsOffsetCu);
+    
+    return initAS(mesh, cucontext, custream);
+}
+std::pair<OptixTraversableHandle, OptixResult> initAS(const SurfaceMesh& mesh, OptixDeviceContext cucontext, CUstream custream)
+{
+    
 
     OptixAccelBuildOptions accelOptions = {};
     OptixBuildInput buildInputs[2];
@@ -823,7 +891,7 @@ std::vector<Viewpoint> adjusting(
     CUdeviceptr tempBuffer, outputBuffer;
     size_t tempBufferSizeINBytes, outputBufferSizeInBytes;
 
-	memset(&accelOptions, 0, sizeof(OptixAccelBuildOptions));
+    memset(&accelOptions, 0, sizeof(OptixAccelBuildOptions));
     accelOptions.buildFlags = OPTIX_BUILD_FLAG_NONE;
     accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
     accelOptions.motionOptions.numKeys = 0;
@@ -872,25 +940,30 @@ std::vector<Viewpoint> adjusting(
         cudaMemcpyHostToDevice);
 
     const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
-    
+
     OptixBuildInputTriangleArray& buildInput = buildInputs[0].triangleArray;
     buildInputs[0].type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
     buildInput.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
     buildInput.numVertices = verticesSize;
     buildInput.vertexBuffers = &d_vertices;
-    
-    
     buildInput.vertexStrideInBytes = sizeof(float3);
+
     buildInput.indexBuffer = d_indices;
     buildInput.numIndexTriplets = mesh.faces().size();
     buildInput.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
     buildInput.indexStrideInBytes = sizeof(int3);
+
     buildInput.preTransform = 0;
+
+    unsigned int flagsPerSBTRecord[2];
+    flagsPerSBTRecord[0] = OPTIX_GEOMETRY_FLAG_NONE;
+    flagsPerSBTRecord[1] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT;
+    buildInput.flags = flagsPerSBTRecord;
 
     OptixAccelBufferSizes bufferSizes = {};
     optixAccelComputeMemoryUsage(
-        context, &accelOptions,
+        cucontext, &accelOptions,
         buildInputs, 2, &bufferSizes
     );
 
@@ -900,7 +973,7 @@ std::vector<Viewpoint> adjusting(
     OptixTraversableHandle outputHandle = 0;
 
     OptixResult results = optixAccelBuild(
-        context, cuStream,
+        cucontext, custream,
         &accelOptions, buildInputs,
         2,
         tempBuffer, bufferSizes.tempSizeInBytes,
@@ -910,61 +983,7 @@ std::vector<Viewpoint> adjusting(
 
     cudaFree(reinterpret_cast<void*>(tempBuffer));
 
-    OptixModuleCompileOptions moduleCompileOptions = {};
-    moduleCompileOptions.maxRegisterCount =
-        OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
-    moduleCompileOptions.optLevel =
-        OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-    moduleCompileOptions.debugLevel =
-        OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
-    moduleCompileOptions.numPayloadTypes = 0;
-    moduleCompileOptions.payloadTypes = 0;
-
-    OptixPipelineCompileOptions pipelineComplieOptions = {};
-    pipelineComplieOptions.usesMotionBlur = false;
-    pipelineComplieOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
-    pipelineComplieOptions.numPayloadValues = 1;
-    pipelineComplieOptions.pipelineLaunchParamsVariableName = "params";
-
-    const std::string ptx("optixTriangle.cu");
-    char* logString("Marinaiolog.cu");
-    size_t sizeof_log = sizeof(logString);
-
-    OptixModule module = nullptr; // The output module
-    optixModuleCreateFromPTX(
-        context,
-        &moduleCompileOptions,
-        &pipelineComplieOptions,
-        ptx.c_str(),
-        ptx.size(),
-        logString,
-        &sizeof_log,
-        &module);
-
-    // TODO: it's wrong now.
-    return views;
-}
-
-void initialization(const SurfaceMesh& mesh, const int& CVD)
-{
-    if (CVD != 256)
-    {
-        candidateViewsDens = CVD;
-    }
-    
-    const int verStripAmount = static_cast<int>(std::ceil((2 + std::sqrt(4 - 8 * (-candidateViewsDens))) / 4));
-    const int horiStripAmount = 2 * verStripAmount - 2;
-    verStripAngle = M_PI / (verStripAmount - 1);
-    horiStripAngle = (2 * M_PI) / horiStripAmount;
-    candidateViewsDens = verStripAmount * horiStripAmount;
-    double2* viewsOffsetCu;
-    cudaMalloc(&viewsOffsetCu, candidateViewsDens * sizeof(double2));
-
-    int blockNum = candidateViewsDens / tpb + 1;
-    initOffsetInf(blockNum, tpb, viewsOffsetCu, candidateViewsDens, horiStripAmount, verStripAngle, horiStripAngle);
-    conveyFromCuda(viewsOffsetCu, viewsOffsetC, candidateViewsDens);
-    cudaFree(viewsOffsetCu);
-
+    return { outputHandle,results };
 }
 
 std::pair<std::vector<double3>, std::vector<double3>>

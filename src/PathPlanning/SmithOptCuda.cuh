@@ -32,8 +32,6 @@ __global__ void conveyDataDouble2(double2* data, int length, double* cpuDataFst,
 
 void conveyDataDouble2Inf(double2* data, int length, double* cpuDataFst, double* cpuDataSnd);
 
-
-
 template <typename T, typename U>
 bool conveyFromCuda(T* cudaData, U& cpuData, int length)
 {
