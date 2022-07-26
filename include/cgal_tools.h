@@ -1,11 +1,10 @@
 #pragma once
 
-//#define TINYOBJLOADER_IMPLEMENTATION
-// TINYOBJLOADER_USE_MAPBOX_EARCUT: Enable better triangulation. Requires C++11
-
 #include <tuple>
 #include <iostream>
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 #include <corecrt_math_defines.h>
 
@@ -48,10 +47,10 @@
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
-#include <CGAL/Shape_detection.h>
+//#include <CGAL/Shape_detection.h>
 
 #include <CGAL/Polygonal_surface_reconstruction.h>
-#include <CGAL/SCIP_mixed_integer_program_traits.h>
+//#include <CGAL/SCIP_mixed_integer_program_traits.h>
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 
@@ -90,22 +89,22 @@ using SMFI = SurfaceMesh::Face_index;
 using SMVI = SurfaceMesh::vertex_index;
 using SMHEI = SurfaceMesh::halfedge_index;
 
-using PNI = boost::tuple<Point3, Vector3, int>;
-using Point_vector = std::vector<PNI>;
-using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
-using Normal_map = CGAL::Nth_of_tuple_property_map<1, PNI>;
-using Plane_index_map = CGAL::Nth_of_tuple_property_map<2, PNI>;
-using Traits = CGAL::Shape_detection::Efficient_RANSAC_traits<K, Point_vector, Point_map, Normal_map>;
-using Efficient_ransac = CGAL::Shape_detection::Efficient_RANSAC<Traits>;
-using Plane = CGAL::Shape_detection::Plane<Traits>;
-using Point_to_shape_index_map = CGAL::Shape_detection::Point_to_shape_index_map<Traits>;
-using Polygonal_surface_reconstruction = CGAL::Polygonal_surface_reconstruction<K>;
-using MIP_Solver = CGAL::SCIP_mixed_integer_program_traits<double>;
+//using PNI = boost::tuple<Point3, Vector3, int>;
+//using Point_vector = std::vector<PNI>;
+//using Point_map = CGAL::Nth_of_tuple_property_map<0, PNI>;
+//using Normal_map = CGAL::Nth_of_tuple_property_map<1, PNI>;
+//using Plane_index_map = CGAL::Nth_of_tuple_property_map<2, PNI>;
+//using Traits = CGAL::Shape_detection::Efficient_RANSAC_traits<K, Point_vector, Point_map, Normal_map>;
+//using Efficient_ransac = CGAL::Shape_detection::Efficient_RANSAC<Traits>;
+//using Plane = CGAL::Shape_detection::Plane<Traits>;
+//using Point_to_shape_index_map = CGAL::Shape_detection::Point_to_shape_index_map<Traits>;
+//using Polygonal_surface_reconstruction = CGAL::Polygonal_surface_reconstruction<K>;
+//using MIP_Solver = CGAL::SCIP_mixed_integer_program_traits<double>;
 
 using FT = K::FT;
-using Neighbor_query = CGAL::Shape_detection::Point_set::Sphere_neighbor_query<K, Point_vector, Point_map>;
-using Region_type = CGAL::Shape_detection::Point_set::Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map>;
-using Region_growing = CGAL::Shape_detection::Region_growing<Point_vector, Neighbor_query, Region_type>;
+//using Neighbor_query = CGAL::Shape_detection::Point_set::Sphere_neighbor_query<K, Point_vector, Point_map>;
+//using Region_type = CGAL::Shape_detection::Point_set::Least_squares_plane_fit_region<K, Point_vector, Point_map, Normal_map>;
+//using Region_growing = CGAL::Shape_detection::Region_growing<Point_vector, Neighbor_query, Region_type>;
 
 class Index_map {
 public:

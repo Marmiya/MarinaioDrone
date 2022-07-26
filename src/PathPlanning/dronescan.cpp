@@ -4,7 +4,7 @@
 std::vector<Viewpoint> droneScan(
     PointSet3& points, const SurfaceMesh& mesh, const Eigen::Matrix3d& intrinsicMatrix,
     const int maxIterTimes, const int initViewNum, const std::string logPath,
-    const double viewDis, const double maxAngle, const double maxDis, DroneScanViz* v_viz,
+    const double viewDis, const double maxAngle, const double maxDis,
     const bool& modl
 )
 {
@@ -66,14 +66,6 @@ std::vector<Viewpoint> droneScan(
     viewSize = static_cast<int>(trajectory.size());
 
     LOG(INFO) << "ptssize: " << pointsSize << "\t" << "viewsize: " << viewSize;
-
-    if (v_viz != nullptr)
-    {
- 	    v_viz->lock();
-    	v_viz->points_failed_to_initialized = points_failed_to_initialized;
-    	v_viz->initial_views = trajectory;
- 	    v_viz->unlock();
-     }
 
     // Selection of views.
 
@@ -188,22 +180,6 @@ std::vector<Viewpoint> droneScan(
     // ************************************************************************
 
     //print_vector_distribution(recpts);
-    if (v_viz != nullptr)
-    {
-	    PointSet3 initial_reconstructability_points(points);
-	    auto color_map = initial_reconstructability_points.add_property_map("color",Eigen::Vector3d(0.,0.,0.)).first;
- 		for (int i = 0; i < initial_reconstructability_points.size(); i++)
- 		{
- 			double color = std::min(1., recpts[i] / 15);
- 			color_map[i]=Eigen::Vector3d(color,color,color);
- 		}
-	    {
- 		    v_viz->lock();
-    		v_viz->initial_reconstructability_points = initial_reconstructability_points;
- 		    v_viz->unlock();
-	     }
-	    comutil::debug_img();
-    }
 
     int del = 0;
 	#pragma omp parallel for
@@ -226,7 +202,7 @@ std::vector<Viewpoint> droneScan(
     LOG(INFO) << "Points num now: " << points.size();
 
     finalAns = droneScanAdj(points, trajectory, mesh, intrinsicMatrix,
-        viewDis, maxAngle, maxDis, v_viz, modl
+        viewDis, maxAngle, maxDis, modl
     );
 
     
@@ -238,7 +214,7 @@ std::vector<Viewpoint> droneScan(
 std::vector<Viewpoint> droneScanAdj(
     const PointSet3& points, const std::vector<Viewpoint>& traj,
     const SurfaceMesh& mesh, const Eigen::Matrix3d& intrinsicMatrix,
-    const double viewDis, const double maxAngle, const double maxDis, DroneScanViz* v_viz,
+    const double viewDis, const double maxAngle, const double maxDis,
     const bool& modl
 )
 {
@@ -257,12 +233,6 @@ std::vector<Viewpoint> droneScanAdj(
     int viewSize = static_cast<int>(traj.size());
 
     LOG(INFO) << "ptssize: " << pointsSize << "\t" << "viewsize: " << viewSize;
-
-    if (v_viz != nullptr) {
-        v_viz->lock();
-        v_viz->initial_views = traj;
-        v_viz->unlock();
-    }
 
     // The reconstructability of every points.
     std::vector<double> recpts(pointsSize, 0);

@@ -807,36 +807,38 @@ std::vector<Viewpoint> SmithAdj(
 
     auto [OutputHandle,results] = initialization(mesh, context, cuStream);
 
-    //OptixModuleCompileOptions moduleCompileOptions = {};
-    //moduleCompileOptions.maxRegisterCount =
-    //    OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
-    //moduleCompileOptions.optLevel =
-    //    OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-    //moduleCompileOptions.debugLevel =
-    //    OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
-    //moduleCompileOptions.numPayloadTypes = 0;
-    //moduleCompileOptions.payloadTypes = 0;
+    OptixModuleCompileOptions moduleCompileOptions = {};
+    moduleCompileOptions.maxRegisterCount =
+        OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
+    moduleCompileOptions.optLevel =
+        OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+    moduleCompileOptions.debugLevel =
+        OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+    moduleCompileOptions.numPayloadTypes = 0;
+    moduleCompileOptions.payloadTypes = 0;
 
-    //OptixPipelineCompileOptions pipelineComplieOptions = {};
-    //pipelineComplieOptions.usesMotionBlur = false;
-    //pipelineComplieOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
-    //pipelineComplieOptions.numPayloadValues = 1;
-    //pipelineComplieOptions.pipelineLaunchParamsVariableName = "params";
+    OptixPipelineCompileOptions pipelineCompileOptions = {};
+    pipelineCompileOptions.usesMotionBlur = false;
+    pipelineCompileOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+    pipelineCompileOptions.numPayloadValues = 1;
+    pipelineCompileOptions.pipelineLaunchParamsVariableName = "params";
+    pipelineCompileOptions.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
 
-    //const std::string ptx("optixTriangle.cu");
-    //char* logString("Marinaiolog.cu");
-    //size_t sizeof_log = sizeof(logString);
+    OptixModule optixModule = nullptr;
+    char* logString = "Marinaiolog.cu";
+    size_t sizeof_log = sizeof(logString);
 
-    //OptixModule module = nullptr; // The output module
-    //optixModuleCreateFromPTX(
-    //    context,
-    //    &moduleCompileOptions,
-    //    &pipelineComplieOptions,
-    //    ptx.c_str(),
-    //    ptx.size(),
-    //    logString,
-    //    &sizeof_log,
-    //    &module);
+    const std::string ptx("optixTriangle.cu");
+    
+    OptixResult res = optixModuleCreateFromPTX(
+        context,
+        &moduleCompileOptions,
+        &pipelineCompileOptions,
+        ptx.c_str(),
+        ptx.size(),
+        logString,
+        &sizeof_log,
+        &optixModule);
 
 
 
@@ -850,10 +852,6 @@ std::vector<Viewpoint> adjusting(
     const Eigen::Matrix3d& intrinsicMatrix, const double viewDis, const double fov
 )
 {
-    
-   
-
-    
 
     // TODO: it's wrong now.
     return views;

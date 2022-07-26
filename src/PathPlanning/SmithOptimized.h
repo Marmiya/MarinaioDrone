@@ -10,7 +10,7 @@
 
 #include "viewpoint.h"
 #include "SmithOptCuda.cuh"
-#include "SmithViz.h"
+
 
 extern enum ompStatus;
 extern double harmony;
@@ -65,8 +65,7 @@ std::vector<Viewpoint> adjustTraj(
 	const std::vector<Viewpoint>& traj, const modeltools::Height_map& heightMap,
 	const PointSet3& pts, const SurfaceMesh& mesh,
 	const Eigen::Matrix3d& v_intrinsic_matrix,
-	const double v_dmax, const double v_fov_degree,
-    SmithViz* v_viz = nullptr
+	const double v_dmax, const double v_fov_degree
 );
 
 /*

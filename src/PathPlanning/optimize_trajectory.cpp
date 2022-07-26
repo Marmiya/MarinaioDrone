@@ -5,230 +5,12 @@
 #include <json/reader.h> 
 #include <glog/logging.h>
 #include <filesystem>
-#include <QString>
-#include <QStringList>
 
 #include "dronescan.h"
-#include "DroneScanViz.h"
-#include "viz.h"
 #include "metrics.h"
 #include "initialize.h"
 #include "SmithOptimized.h"
-
-#include "CGAL/Point_set_3.h"
-
-Point2 lonLat2Mercator(const Point2& lonLat)
-{
-	Point2  mercator;
-	double x = lonLat.x() * 20037508.34 / 180;
-	double y = log(tan((90 + lonLat.y()) * M_PI / 360)) / (M_PI / 180);
-	y = y * 20037508.34 / 180;
-	/*
-	//Æ«ÒÆÁ¿
-	//Global_sig_2019::X_tranlate_
-	//Global_sig_2019::Y_tranlate_
-	//*/
-	//x -= Global_sig_2019::X_tranlate_;
-	//y -= Global_sig_2019::Y_tranlate_;
-	////end
-	mercator = Point2(x, y);
-	return mercator;
-}
-
-Point2 mercator2lonLat(const Point2& mercator)
-{
-	Point2 lonLat;
-	double x, y;
-	x = mercator.x();
-	//x += Global_sig_2019::X_tranlate_;
-	y = mercator.y();
-	//y += Global_sig_2019::Y_tranlate_;
-	//end
-	double x2 = x / 20037508.34 * 180;
-	double y2 = y / 20037508.34 * 180;
-	y2 = double(180.0 / M_PI * (2 * atan(exp(y2 * M_PI / 180.0)) - M_PI / 2.0));
-	lonLat = Point2(x2, y2);
-	return lonLat;
-}
-
-float normalize(Vector3& v)
-{
-	float len = std::sqrt(v.squared_length());
-	if (len != 0.0f)
-		v = v / len;
-	return len;
-}
-
-bool view_direction_heading_pith_from(const FT& heading, const FT& picth, Vector3& view_direction)
-{
-	FT x = cos(picth * M_PI / 180) * sin(heading * M_PI / 180);
-	FT y = cos(picth * M_PI / 180) * cos(heading * M_PI / 180);
-	FT z = sin(picth * M_PI / 180);
-
-	view_direction = Vector3(x, y, z);
-	normalize(view_direction);
-	return true;
-};
-
-bool heading_pith_from_view_direction(const Vector3& view_direction, FT& heading, FT& picth)
-{
-	FT length = view_direction.squared_length();
-
-	if (length < 0.0001)
-	{
-		return false;
-	}
-	Vector3 v_tmp = view_direction;
-	normalize(v_tmp);
-	heading = atan2(v_tmp.x(), v_tmp.y()) * 180 / M_PI;
-	picth = atan2(v_tmp.z(), sqrt(v_tmp.x() * v_tmp.x() + v_tmp.y() * v_tmp.y())) * 180 / M_PI;
-	return true;
-};
-
-void load_cameras_by_user(std::vector<Viewpoint>& m_path_views_, const std::string& file_name)
-{
-	const int LINE_LENGTH = 500;
-	char str[500];
-
-	std::ifstream input(file_name.c_str());
-	if (input.fail()) {
-		std::cout << "could not open file\'" << file_name << "\'" << std::endl;
-		return;
-	}
-
-	double focal35mm = 24;
-	FT Horiozental_FOV, Vertical_FOV;
-	Horiozental_FOV = 2 * atan(36.0 / (2 * focal35mm));
-	Vertical_FOV = 2 * atan(24.0 / (2 * focal35mm));
-	while (!input.eof()) {
-		input.getline(str, LINE_LENGTH);
-		QString sss = QString::fromStdString(str);
-		sss = sss.trimmed();
-
-		if (sss.startsWith("#"))
-		{
-			continue;
-		}
-
-		QString sss_tmp = sss;
-		sss.replace("	", " ");
-		sss.replace("  ", " ");
-		while (sss.length() < sss_tmp.length())
-		{
-			sss_tmp = sss;
-			sss = sss.replace("  ", " ");
-		}
-
-		QStringList ss_list = sss.split(" ");
-		//Updated by fd 2021/8/9
-		if (ss_list.size() == 5 ||
-			ss_list.size() == 6)
-		{
-			int ID;
-			double lon, lat, altitude, GPitch, DPitch, DYaw;
-			std::string time_stap_date = ss_list[1].toStdString();
-			std::string time_stap_time = ss_list[2].toStdString();
-			lon = ss_list[0].toDouble();
-			lat = ss_list[1].toDouble();
-			altitude = ss_list[2].toDouble();
-			GPitch = ss_list[4].toDouble();
-			DYaw = ss_list[3].toDouble();
-			if (ss_list.size() == 6)
-			{
-				bool isFited = false;
-				focal35mm = ss_list[5].toDouble(&isFited);
-				if (!isFited)
-					focal35mm = 24;
-			}
-
-			Point2 p_lon_lat(lon, lat);
-			Point2 p_Mercator = lonLat2Mercator(p_lon_lat);
-			Point3 pos = Point3(p_Mercator.x(), p_Mercator.y(), altitude);
-			//	Point3f pos = Point3f(lon, lat, altitude);
-			Vector3 v_dir;
-			view_direction_heading_pith_from(DYaw, GPitch, v_dir);
-
-			//Updated by fd 2021/11/9
-			Viewpoint tempView;
-			tempView.pos_mesh = cgaltools::cgal_point_2_eigen(pos);
-			tempView.direction = cgaltools::cgal_vector_2_eigen(v_dir / CGAL::sqrt(v_dir.squared_length()));
-			//(pos, v_dir, Vertical_FOV, Horiozental_FOV);
-			//tempView.canDelete = false;
-			m_path_views_.push_back(tempView);
-			//end
-		}
-	}
-	input.close();
-}
-void load_samples_by_user(PointSet3& pts, const std::string& file_name)
-{
-	const int LINE_LENGTH = 500;
-	char str[500];
-
-	std::ifstream input(file_name.c_str());
-	if (input.fail()) {
-		std::cout << "could not open file\'" << file_name << "\'" << std::endl;
-		return;
-	}
-
-	double focal35mm = 24;
-	FT Horiozental_FOV, Vertical_FOV;
-	Horiozental_FOV = 2 * atan(36.0 / (2 * focal35mm));
-	Vertical_FOV = 2 * atan(24.0 / (2 * focal35mm));
-	while (!input.eof()) {
-		input.getline(str, LINE_LENGTH);
-		QString sss = QString::fromStdString(str);
-		sss = sss.trimmed();
-
-		if (sss.startsWith("#"))
-		{
-			continue;
-		}
-
-		QString sss_tmp = sss;
-		sss.replace("	", " ");
-		sss.replace("  ", " ");
-		while (sss.length() < sss_tmp.length())
-		{
-			sss_tmp = sss;
-			sss = sss.replace("  ", " ");
-		}
-
-		QStringList ss_list = sss.split(" ");
-		//Updated by fd 2021/8/9
-		if (ss_list.size() == 5 ||
-			ss_list.size() == 6)
-		{
-			int ID;
-			double lon, lat, altitude, GPitch, DPitch, DYaw;
-			std::string time_stap_date = ss_list[1].toStdString();
-			std::string time_stap_time = ss_list[2].toStdString();
-			lon = ss_list[0].toDouble();
-			lat = ss_list[1].toDouble();
-			altitude = ss_list[2].toDouble();
-			GPitch = ss_list[4].toDouble();
-			DYaw = ss_list[3].toDouble();
-			if (ss_list.size() == 6)
-			{
-				bool isFited = false;
-				focal35mm = ss_list[5].toDouble(&isFited);
-				if (!isFited)
-					focal35mm = 24;
-			}
-
-			Point2 p_lon_lat(lon, lat);
-			Point2 p_Mercator = lonLat2Mercator(p_lon_lat);
-			Point3 pos = Point3(p_Mercator.x(), p_Mercator.y(), altitude);
-			//	Point3f pos = Point3f(lon, lat, altitude);
-			Vector3 v_dir;
-			view_direction_heading_pith_from(DYaw, GPitch, v_dir);
-			
-			pts.insert(pos, v_dir / CGAL::sqrt(v_dir.squared_length()));
-			//end
-		}
-	}
-	input.close();
-}
+#include "trajectory.h"
 
 int main(int argc, char** argv)
 {
@@ -541,16 +323,9 @@ int main(int argc, char** argv)
 
 		LOG(INFO) << boost::format("Totally %d points") % points.number_of_points();
 
-		DroneScanViz* droneScanviz = new DroneScanViz(args["model"].asString());
-		{
-			droneScanviz->lock();
-			droneScanviz->sample_points = points;
-			droneScanviz->unlock();
-		}
-
 		auto finalAns = droneScan(
 			points, mesh, intrinsic_matrix, MAX_ITER_TIMES, initialViewsAmount,
-			logPath, viewDis, maxAngle, maxViewDis, droneScanviz, false
+			logPath, viewDis, maxAngle, maxViewDis, false
 		);
 
 		/*LOG(INFO) << "Statistic of the final reconstructability";
@@ -569,12 +344,7 @@ int main(int argc, char** argv)
 		}
 		print_vector_distribution(reconstructability);*/
 
-		{
-			droneScanviz->lock();
-			droneScanviz->final_reconstructability_points = points;
-			droneScanviz->final_views = finalAns;
-			droneScanviz->unlock();
-		}
+		
 
 		std::chrono::system_clock::time_point t = std::chrono::system_clock::now();
 		std::string txttime = comutil::timeToString(t);
