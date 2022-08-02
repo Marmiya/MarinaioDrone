@@ -3,7 +3,7 @@
     "points": "C:\\TempData\\DATA\\samples\\xuexiao_7K.ply",
     "model": "C:\\TempData\\DATA\\models\\xuexiao_mesh.ply",
     "stage": 6,
-    "logPath": "C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\",
+    "logPath": "C:\\ProjBuild\\MarinaioDrone\\log\\PathPlanning\\",
     "traj": "C:/DATA/combination",
     "DPviews":"C:\\SSD\\GitProject\\MarinaioDrone\\log\\PathPlanning\\Fri Mar  4 14 03 08 2022 STAGE 2 xx\\initialans.txt",
     "initialViewNum":3
